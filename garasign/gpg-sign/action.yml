@@ -1,8 +1,8 @@
 name: "Sign artifact using garasign"
 description: "Signs a release artifact"
 inputs:
-  filename:
-    description: "File name to sign"
+  filenames:
+    description: "Files name to sign, space separated"
     required: true
   garasign_username:
     description: "Garasign username"
@@ -39,13 +39,17 @@ runs:
         artifactory_password: ${{ inputs.artifactory_password }}
         artifactory_registry: ${{ inputs.artifactory_registry }}
 
-    - name: "Create detached signature"
+    - name: "Create detached signature for filename"
       run: |
-        podman run \
-          --env-file=envfile \
-          --rm \
-          -v $(pwd):$(pwd) \
-          -w $(pwd) \
-          ${{ inputs.artifactory_registry }}/${{ inputs.artifactory_image }} \
-          /bin/bash -c "gpgloader && gpg --detach-sign --armor --output ${{ inputs.filename }}.sig ${{ inputs.filename }}"
+        export filenames="${{ inputs.filenames }}"
+        for filename in "${filenames[@]}"
+        do
+          podman run \
+            --env-file=envfile \
+            --rm \
+            -v $(pwd):$(pwd) \
+            -w $(pwd) \
+            ${{ inputs.artifactory_registry }}/${{ inputs.artifactory_image }} \
+            /bin/bash -c "gpgloader && gpg --detach-sign --armor --output ${{ inputs.filename }}.sig ${{ inputs.filename }}"
+        done
       shell: bash
