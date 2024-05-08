@@ -1,5 +1,5 @@
-name: "Sign artifact using garasign"
-description: "Signs a release artifact"
+name: "Run git actions in a signing container"
+description: "Allows running arbitrary git actions in a container with GPG keys loaded"
 inputs:
   command:
     description: "Command to run inside the container"
