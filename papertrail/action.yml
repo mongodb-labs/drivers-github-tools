@@ -5,7 +5,7 @@ inputs:
     description: "Name of product"
     required: true
   release_version:
-    description: "The release version"
+    description: "The release version. If not provided, the github.ref_name variable will be used"
     required: false
   filenames:
     description: "Artifact filenames to include in the report, space-separated"
