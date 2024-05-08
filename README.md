@@ -69,8 +69,3 @@ You can also supply multiple space-separated filenames to sign a list of files:
     artifactory_username: ${{ secrets.ARTIFACTORY_USER }}
     artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
 ```
-
-### setup
-
-The setup action is used by `git-sign` and `gpg-sign` to create an env file and
-sign in to artifactory. It can also be used standalone.
