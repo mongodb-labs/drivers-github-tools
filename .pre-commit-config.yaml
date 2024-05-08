@@ -1,0 +1,29 @@
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-case-conflict
+  - id: check-yaml
+  - id: trailing-whitespace
+
+# We use the Python version instead of the original version which seems to require Docker
+# https://github.com/koalaman/shellcheck-precommit
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: v0.9.0.6
+  hooks:
+    - id: shellcheck
+      name: shellcheck
+      args: ["--severity=warning"]
+      stages: [manual]
+
+- repo: https://github.com/sirosen/check-jsonschema
+  rev: 0.28.3
+  hooks:
+    - id: check-github-actions
+      files: >
+        (?x)^(
+          (.+/)?action\.(yml|yaml)
+        )$
+    - id: check-dependabot
