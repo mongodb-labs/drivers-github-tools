@@ -13,7 +13,8 @@ GPG key.
 ### git-sign
 
 Use this action to create signed git artifacts:
-```markdown
+
+```yaml
 - name: "Create signed commit"
   uses: mongodb/drivers-github-tools/garasign/git-sign@main
   with:
@@ -41,7 +42,7 @@ option can be set to a truthy value to avoid unnecessary logins to artifactory.
 
 This action is used to create detached signatures for files:
 
-```markdown
+```yaml
 - name: "Create detached signature"
   uses: mongodb/drivers-github-tools/garasign/gpg-sign@main
   with:
@@ -59,7 +60,7 @@ option can be set to a truthy value to avoid unnecessary logins to artifactory.
 
 You can also supply multiple space-separated filenames to sign a list of files:
 
-```markdown
+```yaml
 - name: "Create detached signature"
   uses: mongodb/drivers-github-tools/garasign/gpg-sign@main
   with:
@@ -68,4 +69,24 @@ You can also supply multiple space-separated filenames to sign a list of files:
     garasign_password: ${{ secrets.GRS_CONFIG_USER1_PASSWORD }}
     artifactory_username: ${{ secrets.ARTIFACTORY_USER }}
     artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+```
+
+## Reporting tools
+
+The following tools are meant to aid in generating Software Security Development Lifecycle
+reports associated with a product release.
+
+### Papertrail
+
+This action will create a record of authorized publication on distribution channels.
+By default it will create a "papertrail.txt" file in the current directory.
+
+```yaml
+- name: "Create papertrail report"
+  uses: mongodb/drivers-github-tools/papertrail@main
+  with:
+    product_name: Mongo Python Driver
+    release_version: ${{ github.ref_name }}
+    filenames: $DIST_FILES
+    token: ${{ github.token }}
 ```
