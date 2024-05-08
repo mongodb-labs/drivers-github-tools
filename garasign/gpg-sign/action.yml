@@ -46,17 +46,13 @@ runs:
         password: ${{ inputs.artifactory_password }}
         registry: ${{ inputs.artifactory_registry }}
 
-    - name: "Create detached signature for filename"
+    - name: "Create detached signature for file"
       run: |
-        export filenames="${{ inputs.filenames }}"
-        for filename in "${filenames[@]}"
-        do
-          podman run \
-            --env-file=envfile \
-            --rm \
-            -v $(pwd):$(pwd) \
-            -w $(pwd) \
-            ${{ inputs.artifactory_registry }}/${{ inputs.artifactory_image }} \
-            /bin/bash -c "gpgloader && gpg --detach-sign --armor --output ${{ inputs.filename }}.sig ${{ inputs.filename }}"
-        done
+        podman run \
+          --env-file=envfile \
+          --rm \
+          -v $(pwd):$(pwd) \
+          -w $(pwd) \
+          ${{ inputs.artifactory_registry }}/${{ inputs.artifactory_image }} \
+          /bin/bash -c 'gpgloader && for filename in "${{ inputs.filenames }}"; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
       shell: bash
