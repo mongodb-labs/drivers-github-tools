@@ -5,8 +5,8 @@ inputs:
     description: "Name of product"
     required: true
   release_version:
-    description: "The release version. If not provided, the github.ref_name variable will be used"
-    required: false
+    description: "The release version"
+    required: true
   filenames:
     description: "Artifact filename(s) to include in the report, can be a glob pattern"
     required: true
@@ -26,12 +26,8 @@ runs:
           export GH_TOKEN=${{ inputs.token }}
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
           export PAPERTRAIL="${{ inputs.output }}"
-          export VERSION="${{ github.ref_name }}"
-          if [ -n "${{ inputs.release_version }}" ]; then
-              export VERSION="${{ inputs.release_version }}"
-          fi
           echo "Product: ${{ inputs.product_name }}" > $PAPERTRAIL
-          echo "Version: $VERSION" >> $PAPERTRAIL
+          echo "Version: ${{ inputs.version }}" >> $PAPERTRAIL
           echo "Releaser: $NAME"  >> $PAPERTRAIL
           echo "Build Source: GitHub Actions"
           echo "Build Number: ${{ github.run_id }}"
