@@ -54,5 +54,5 @@ runs:
           -v $(pwd):$(pwd) \
           -w $(pwd) \
           ${{ inputs.artifactory_registry }}/${{ inputs.artifactory_image }} \
-          /bin/bash -c 'gpgloader && for filename in "${{ inputs.filenames }}"; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
+          /bin/bash -c 'gpgloader && for filename in ${{ inputs.filenames }}; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
       shell: bash
