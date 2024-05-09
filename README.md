@@ -64,7 +64,7 @@ You can also supply multiple space-separated filenames to sign a list of files:
 - name: "Create detached signature"
   uses: mongodb/drivers-github-tools/garasign/gpg-sign@main
   with:
-    filenames: somefile.ext someotherfile.txt
+    filenames: dist/*
     garasign_username: ${{ secrets.GRS_CONFIG_USER1_USERNAME }}
     garasign_password: ${{ secrets.GRS_CONFIG_USER1_PASSWORD }}
     artifactory_username: ${{ secrets.ARTIFACTORY_USER }}
@@ -87,6 +87,6 @@ By default it will create a "papertrail.txt" file in the current directory.
   with:
     product_name: Mongo Python Driver
     release_version: ${{ github.ref_name }}
-    filenames: $DIST_FILES
+    filenames: dist/*
     token: ${{ github.token }}
 ```
