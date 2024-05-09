@@ -35,7 +35,7 @@ runs:
           echo "Releaser: $NAME"  >> $PAPERTRAIL
           echo "Build Source: GitHub Actions"
           echo "Build Number: ${{ github.run_id }}"
-          for filename in"${{ inputs.filenames }}"; do
+          for filename in ${{ inputs.filenames }}; do
               SHA=$(shasum -a 256 $filename | awk '{print $1;}')
               echo "Filename: $filename"  >> $PAPERTRAIL
               echo "Shasum: $SHA"  >> $PAPERTRAIL
