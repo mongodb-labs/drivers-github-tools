@@ -27,7 +27,7 @@ runs:
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
           export PAPERTRAIL="${{ inputs.output }}"
           echo "Product: ${{ inputs.product_name }}" > $PAPERTRAIL
-          echo "Version: ${{ inputs.version }}" >> $PAPERTRAIL
+          echo "Version: ${{ inputs.release_version }}" >> $PAPERTRAIL
           echo "Releaser: $NAME"  >> $PAPERTRAIL
           echo "Build Source: GitHub Actions"
           echo "Build Number: ${{ github.run_id }}"
