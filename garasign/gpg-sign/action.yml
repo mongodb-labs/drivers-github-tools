@@ -2,7 +2,7 @@ name: "Sign artifact using garasign"
 description: "Signs a release artifact"
 inputs:
   filenames:
-    description: "File names to sign, space separated"
+    description: "File name(s) to sign, can be a glob pattern"
     required: true
   garasign_username:
     description: "Garasign username"

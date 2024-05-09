@@ -8,7 +8,7 @@ inputs:
     description: "The release version. If not provided, the github.ref_name variable will be used"
     required: false
   filenames:
-    description: "Artifact filenames to include in the report, space-separated"
+    description: "Artifact filename(s) to include in the report, can be a glob pattern"
     required: true
   token:
     description: "The GitHub token for the action"
