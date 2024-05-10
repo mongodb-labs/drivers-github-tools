@@ -5,17 +5,17 @@ inputs:
     description: "Name of product"
     required: true
   release_version:
-    description: "The release version. If not provided, the github.ref_name variable will be used"
-    required: false
+    description: "The release version"
+    required: true
   filenames:
-    description: "Artifact filenames to include in the report, space-separated"
+    description: "Artifact filename(s) to include in the report, can be a glob pattern"
     required: true
   token:
     description: "The GitHub token for the action"
     required: true
   output:
     description: "The output filename"
-    default: "papertail.txt"
+    default: "papertrail.txt"
 
 runs:
   using: composite
@@ -26,16 +26,12 @@ runs:
           export GH_TOKEN=${{ inputs.token }}
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
           export PAPERTRAIL="${{ inputs.output }}"
-          export VERSION="${{ github.ref_name }}"
-          if [ -n "${{ inputs.release_version }}" ]; then
-              export VERSION="${{ inputs.release_version }}"
-          fi
           echo "Product: ${{ inputs.product_name }}" > $PAPERTRAIL
-          echo "Version: $VERSION" >> $PAPERTRAIL
+          echo "Version: ${{ inputs.release_version }}" >> $PAPERTRAIL
           echo "Releaser: $NAME"  >> $PAPERTRAIL
           echo "Build Source: GitHub Actions"
           echo "Build Number: ${{ github.run_id }}"
-          for filename in"${{ inputs.filenames }}"; do
+          for filename in ${{ inputs.filenames }}; do
               SHA=$(shasum -a 256 $filename | awk '{print $1;}')
               echo "Filename: $filename"  >> $PAPERTRAIL
               echo "Shasum: $SHA"  >> $PAPERTRAIL
