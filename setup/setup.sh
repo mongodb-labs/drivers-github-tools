@@ -7,6 +7,7 @@ echo "PREFIX=$prefix"
 prefix=${prefix}_
 compgen -A variable $prefix | while read v; do
     new_key=$(echo $v | sed "s/$prefix//g")
+    echo "hello $new_key"
     declare -g "$new_key=${!v}"
 done
 
