@@ -6,12 +6,11 @@ prefix=$(echo $AWS_SECRET_ID | tr '[:lower:]' '[:upper:]' | sed -r 's/[-/]+/_/g'
 prefix=${prefix}_
 compgen -A variable $prefix | while read v; do
     new_key=$(echo $v | sed "s/$prefix//g")
-    echo $new_key
-    declare "${new_key}=${!v}"
+    read "$new_key" <<<${!v}
 done
 
 echo "::group::Set up artifactory"
-echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USER --password-stdin $ARTIFACTORY_REGISTRY
+echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USERNAME --password-stdin $ARTIFACTORY_REGISTRY
 podman pull $ARTIFACTORY_REGISTRY/$ARTIFACTORY_IMAGE
 echo "::endgroup::"
 
