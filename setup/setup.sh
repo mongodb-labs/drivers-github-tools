@@ -6,7 +6,7 @@ prefix=$(echo $AWS_SECRET_ID | tr '[:lower:]' '[:upper:]' | sed -r 's/[-/]+/_/g'
 for var in "${!n$prefix_@}"; do
     printf '%s=%s\n' "$var" "${!var}"
 done
-exit
+exit 1
 
 echo "::group::Set up artifactory"
 echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USER --password-stdin $ARTIFACTORY_REGISTRY
