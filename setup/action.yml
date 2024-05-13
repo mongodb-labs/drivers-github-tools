@@ -10,6 +10,12 @@ inputs:
   aws_secret_id:
     description: "The name of the aws secret to use"
     required: true
+  app_id:
+    description: "The GitHub App id"
+    required: true
+  private_key:
+    description: "The GitHub App private key"
+    required: true
   artifactory_registry:
     description: "Artifactory registry to be used"
     default: artifactory.corp.mongodb.com
@@ -20,6 +26,14 @@ inputs:
 runs:
   using: composite
   steps:
+  - uses: actions/create-github-app-token@v1
+    id: app-token
+    with:
+      app-id: ${{ inputs.app_id }}
+      private-key: ${{ inputs.private_key }}
+  - uses: actions/checkout@v4
+    with:
+      token: ${{ steps.app-token.outputs.token }}
   - name: configure aws credentials
     uses: aws-actions/configure-aws-credentials@v4
     with:
@@ -40,16 +54,3 @@ runs:
       ARTIFACTORY_REGISTRY: ${{ inputs.artifactory_registry }}
       ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
-  - uses: actions/create-github-app-token@v1
-    id: app-token
-    with:
-      app-id: ${{ steps.setup.outputs.app-id }}
-      private-key: ${{ steps.setup.outputs.private-key }}
-  - uses: actions/checkout@v4
-    with:
-      token: ${{ steps.app-token.outputs.token }}
-  - name: Set up git config
-    shell: bash
-    run: |
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      git config user.name "github-actions[bot]"

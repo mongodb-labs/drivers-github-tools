@@ -22,10 +22,6 @@ GRS_CONFIG_USER1_USERNAME=$GARASIGN_USERNAME
 GRS_CONFIG_USER1_PASSWORD=$GARASIGN_PASSWORD
 EOF
 
-echo "Set outputs for GitHub App auth"
-echo "app-id=$GITHUB_APP_ID" >> "$GITHUB_OUTPUT"
-echo "private-key=$GITHUB_APP_PRIVATE_KEY" >> "$GITHUB_OUTPUT"
-
 echo "Set up output directories"
 export RELEASE_ASSETS=/tmp/release-assets
 mkdir $RELEASE_ASSETS
@@ -44,3 +40,7 @@ ARTIFACTORY_REGISTRY=$ARTIFACTORY_REGISTRY
 RELEASE_ASSETS=$RELEASE_ASSETS
 S3_ASSETS=$S3_ASSETS
 EOF
+
+echo "Set up git credentials"
+git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+git config user.name "github-actions[bot]"
