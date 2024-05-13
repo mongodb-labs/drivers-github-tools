@@ -97,7 +97,3 @@ ARTIFACTORY_REGISTRY=$ARTIFACTORY_REGISTRY
 RELEASE_ASSETS=$RELEASE_ASSETS
 S3_ASSETS=$S3_ASSETS
 EOF
-
-echo "Set up git config"
-git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-git config --global user.name "github-actions[bot]"

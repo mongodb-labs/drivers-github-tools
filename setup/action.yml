@@ -35,3 +35,8 @@ runs:
       ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
   - uses: actions/checkout@v4
+  - name: Set up git config
+    shell: bash
+    run: |
+      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      git config user.name "github-actions[bot]"
