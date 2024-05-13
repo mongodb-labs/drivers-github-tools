@@ -37,6 +37,7 @@ EOF
 ####################
 # Generate App Token
 # https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app#example-using-bash-to-generate-a-jwt
+echo "Generate App Token"
 client_id=$APP_ID
 
 pem=$(echo $APP_PRIVATE_KEY | base64 --decode)
@@ -71,9 +72,11 @@ signature=$(
 
 # Create JWT
 JWT="${header_payload}"."${signature}"
+echo "::add-mask::$JWT"
 
-# Set as the "token" output
-echo "token=$JWT" >> "$GITHUB_OUTPUT"
+# Set the git config for checkout
+git config --global credential.https://github.com.username git
+git config --global credential.https://github.com.password $JWT
 ####################
 
 echo "Set up output directories"

@@ -35,5 +35,3 @@ runs:
       ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
   - uses: actions/checkout@v4
-    with:
-      token: ${{ steps.setup.outputs.token }}
