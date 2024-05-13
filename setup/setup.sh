@@ -7,7 +7,7 @@ echo "PREFIX=$prefix"
 prefix=${prefix}_
 compgen -A variable $prefix | while read v; do
     new_key=$(echo $v | sed "s/$prefix//g")
-    declare -g $new_key=${!v}
+    declare -g "$new_key=${!v}"
 done
 
 echo "::group::Set up artifactory"
@@ -25,6 +25,7 @@ EOF
 echo "Set outputs for GitHub App auth"
 pem=$(echo $APP_PRIVATE_KEY | base64 --decode)
 echo "app-id=$APP_ID" >> "$GITHUB_OUTPUT"
+# Ensure the value is not printed to logs.
 echo "::add-mask::$pem"
 echo "private-key=$pem" >> "$GITHUB_OUTPUT"
 
