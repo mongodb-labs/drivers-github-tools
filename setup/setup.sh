@@ -3,10 +3,12 @@ set -eu
 
 echo "Normalize secrets variable names"
 prefix=$(echo $AWS_SECRET_ID | tr '[:lower:]' '[:upper:]' | sed -r 's/[-/]+/_/g')
-for var in "${!n$prefix_@}"; do
-    printf '%s=%s\n' "$var" "${!var}"
+prefix=${prefix}_
+compgen -A variable $prefix | while read v; do
+    new_key=$(echo $v | sed "s/$prefix//g")
+    echo $new_key
+    declare "${new_key}=${!v}"
 done
-exit 1
 
 echo "::group::Set up artifactory"
 echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USER --password-stdin $ARTIFACTORY_REGISTRY
