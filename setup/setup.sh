@@ -3,10 +3,11 @@ set -eu
 
 echo "Normalize secrets variable names"
 prefix=$(echo $AWS_SECRET_ID | tr '[:lower:]' '[:upper:]' | sed -r 's/[-/]+/_/g')
+echo "PREFIX=$prefix"
 prefix=${prefix}_
 compgen -A variable $prefix | while read v; do
     new_key=$(echo $v | sed "s/$prefix//g")
-    read "$new_key" <<<${!v}
+    declare -g $new_key=${!v}
 done
 
 echo "::group::Set up artifactory"
