@@ -25,11 +25,11 @@ runs:
       run: |
         bash ${{ inputs.version_bump_script }} ${{ inputs.version }}
     - name: Commit the version bump
-      uses: ./.github/actions/git-sign
+      uses: blink1073/drivers-github-tools/git-sign@refactor
       with:
         command: git commit -a -m \"BUMP ${{ inputs.version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
     - name: Tag the version
-      uses: ./.github/actions/git-sign
+      uses: blink1073/drivers-github-tools/git-sign@refactor
       with:
         command: git tag -a \"${{ inputs.version }}\" -m \"BUMP ${{ inputs.version }}\" -s --local-user=${{ env.GPG_KEY_ID }}
     - name: Verify the tag

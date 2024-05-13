@@ -33,10 +33,10 @@ runs:
         name: all-dist-${{ github.run_id }}
         path: dist/
     - name: Create detached signature for dist files
-      uses: ./.github/actions/gpg-sign
+      uses: blink1073/drivers-github-tools/gpg-sign@refactor
       with:
         filenames: dist/*
-    - uses: ./.github/actions/authorized-pub
+    - uses: blink1073/drivers-github-tools/authorized-pub@refactor
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
@@ -60,7 +60,7 @@ runs:
         git clean -dffx
         bash ${{ inputs.version_bump_script }} ${{ inputs.version }}
     - name: Commit the version bump
-      uses: ./.github/actions/git-sign
+      uses: blink1073/drivers-github-tools/git-sign@refactor
       with:
         command: git commit -a -m \"BUMP ${{ inputs.post_version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
     - name: Push the commit to the source branch
