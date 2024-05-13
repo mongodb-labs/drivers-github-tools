@@ -3,15 +3,12 @@ set -eu
 
 echo "Normalize secrets variable names"
 prefix=$(echo $AWS_SECRET_ID | tr '[:lower:]' '[:upper:]' | sed -r 's/[-/]+/_/g')
-declare ARTIFACTORY_PASSWORD=${!$prefix_ARTIFACTORY_PASSWORD}
-declare ARTIFACTORY_USERNAME=${!$prefix_ARTIFACTORY_USERNAME}
-declare GARASIGN_PASSWORD=${!$prefix_GARASIGN_PASSWORD}
-declare GARASIGN_USERNAME=${!$prefix_GARASIGN_USERNAME}
-declare GITHUB_APP_ID=${!$prefix_GITHUB_APP_ID}
-declare GITHUB_APP_PRIVATE_KEY=${!$prefix_GITHUB_APP_PRIVATE_KEY}
-declare GPG_KEY_ID=${!$prefix_GPG_KEY_ID}
-declare GPG_PUBLIC_URL=${!$prefix_GPG_PUBLIC_URL}
-declare RELEASE_ASSETS_BUCKET=${!$prefix_RELEASE_ASSETS_BUCKET}
+prefix=${prefix}_
+vars=$(compgen -A variable | grep $prefix | tr '\n' ' ')
+for var in $vars; do
+     new_key=$(echo $var | sed "s/$prefix//g")
+     declare $new_key=${!var}
+done
 
 echo "::group::Set up artifactory"
 echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USERNAME --password-stdin $ARTIFACTORY_REGISTRY
