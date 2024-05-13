@@ -18,13 +18,13 @@ echo "::endgroup::"
 echo "Set up envfile for artifactory image"
 GARASIGN_ENVFILE=/tmp/envfile
 cat << EOF > $GARASIGN_ENVFILE
-GRS_CONFIG_USER1_USERNAME=$GRS_CONFIG_USER1_USERNAME
-GRS_CONFIG_USER1_PASSWORD=$GRS_CONFIG_USER1_PASSWORD
+GRS_CONFIG_USER1_USERNAME=$GARASIGN_USERNAME
+GRS_CONFIG_USER1_PASSWORD=$GARASIGN_PASSWORD
 EOF
 
 echo "Set outputs for GitHub App auth"
-pem=$(echo $APP_PRIVATE_KEY | base64 --decode)
-echo "app-id=$APP_ID" >> "$GITHUB_OUTPUT"
+pem=$(echo $GITHUB_APP_PRIVATE_KEY | base64 --decode)
+echo "app-id=$GITHUB_APP_ID" >> "$GITHUB_OUTPUT"
 # Ensure the value is not printed to logs.
 echo "::add-mask::$pem"
 echo "private-key=$pem" >> "$GITHUB_OUTPUT"
@@ -38,7 +38,7 @@ mkdir $S3_ASSETS
 
 echo "Set up global variables"
 cat <<EOF >> $GITHUB_ENV
-AWS_BUCKET=$AWS_BUCKET
+AWS_BUCKET=$RELEASE_ASSETS_BUCKET
 GPG_KEY_ID=$GPG_KEY_ID
 GPG_PUBLIC_URL=$GPG_PUBLIC_URL
 GARASIGN_ENVFILE=$GARASIGN_ENVFILE
