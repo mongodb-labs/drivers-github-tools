@@ -23,15 +23,8 @@ GRS_CONFIG_USER1_PASSWORD=$GARASIGN_PASSWORD
 EOF
 
 echo "Set outputs for GitHub App auth"
-pem=$(echo $GITHUB_APP_PRIVATE_KEY | base64 --decode)
-# Encode the string for GitHub output
-pem="${pem//'%'/'%25'}"
-pem="${pem//$'\n'/'%0A'}"
-pem="${pem//$'\r'/'%0D'}"
-# Ensure the value is not printed to logs
-echo "::add-mask::$pem"
 echo "app-id=$GITHUB_APP_ID" >> "$GITHUB_OUTPUT"
-echo "private-key=$pem" >> "$GITHUB_OUTPUT"
+echo "private-key=$GITHUB_APP_PRIVATE_KEY" >> "$GITHUB_OUTPUT"
 
 echo "Set up output directories"
 export RELEASE_ASSETS=/tmp/release-assets
