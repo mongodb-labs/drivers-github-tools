@@ -20,8 +20,6 @@ The action requires `id-token: write` permissions.
     aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
     aws_region_name: ${{ vars.AWS_REGION_NAME }}
     aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
-    app_id: ${{ vars.APP_ID }}
-    private_key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
 
 ## Signing tools

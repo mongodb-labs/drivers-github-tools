@@ -4,6 +4,9 @@ inputs:
   command:
     description: "Command to run inside the container"
     required: true
+  artifactory_image:
+    description: "Image to use for artifactory"
+    default: release-tools-container-registry-local/garasign-git
 
 runs:
   using: composite
@@ -15,6 +18,6 @@ runs:
           --rm \
           -v $(pwd):$(pwd) \
           -w $(pwd) \
-          ${ARTIFACTORY_REGISTRY}/${ARTIFACTORY_IMAGE} \
+          ${ARTIFACTORY_REGISTRY}/${{ inputs.artifactory_image }} \
           /bin/bash -c "gpgloader && ${{ inputs.command }}"
       shell: bash

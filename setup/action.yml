@@ -10,34 +10,13 @@ inputs:
   aws_secret_id:
     description: "The name of the aws secret to use"
     required: true
-  app_id:
-    description: "The GitHub App id"
-    required: true
-  private_key:
-    description: "The GitHub App private key"
-    required: true
   artifactory_registry:
     description: "Artifactory registry to be used"
     default: artifactory.corp.mongodb.com
-  artifactory_image:
-    description: "Image to use for artifactory"
-    default: release-tools-container-registry-local/garasign-git
-outputs:
-  token:
-    description: "GitHub installation access token"
-    value: ${{ steps.app-token.outputs.token }}
 
 runs:
   using: composite
   steps:
-  - uses: actions/create-github-app-token@v1
-    id: app-token
-    with:
-      app-id: ${{ inputs.app_id }}
-      private-key: ${{ inputs.private_key }}
-  - uses: actions/checkout@v4
-    with:
-      token: ${{ steps.app-token.outputs.token }}
   - name: configure aws credentials
     uses: aws-actions/configure-aws-credentials@v4
     with:
