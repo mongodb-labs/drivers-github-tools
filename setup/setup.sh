@@ -42,5 +42,5 @@ S3_ASSETS=$S3_ASSETS
 EOF
 
 echo "Set up git credentials"
-git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-git config user.name "github-actions[bot]"
+git config user.email "167856002+mongodb-dbx-release-bot[bot]@users.noreply.github.com"
+git config user.name "mongodb-dbx-release-bot[bot]"
