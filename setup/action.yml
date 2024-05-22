@@ -22,6 +22,10 @@ inputs:
   artifactory_image:
     description: "Image to use for artifactory"
     default: release-tools-container-registry-local/garasign-git
+outputs:
+  token:
+    description: "GitHub installation access token"
+    value: ${{ steps.app-token.outputs.token }}
 
 runs:
   using: composite
