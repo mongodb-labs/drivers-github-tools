@@ -142,7 +142,7 @@ If `dry_run` is set, nothing will be published or pushed.
 - uses: mongodb-labs/drivers-github-tools/python/publish@main
   with:
     version: ${{ inputs.version }}
-    post_version: ${{ inputs.post_version }}
+    following_version: ${{ inputs.following_version }}
     version_bump_script: ./.github/scripts/bump-version.sh
     product_name: winkerberos
     token: ${{ github.token }}
