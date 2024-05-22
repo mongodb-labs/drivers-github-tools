@@ -5,8 +5,8 @@ inputs:
   version:
     description: "The published version"
     required: true
-  post_version:
-    description: "The post version"
+  following_version:
+    description: "The following (dev) version"
     required: true
   version_bump_script:
     description: "The version bump script"
@@ -54,7 +54,7 @@ runs:
     - name: Publish distribution 📦 to PyPI
       if: inputs.dry_run == 'false'
       uses: pypa/gh-action-pypi-publish@release/v1
-    - name: Set post version
+    - name: Set following version
       shell: bash -eux {0}
       run: |
         git clean -dffx
@@ -62,10 +62,12 @@ runs:
     - name: Commit the version bump
       uses: mongodb-labs/drivers-github-tools/git-sign@main
       with:
-        command: git commit -a -m \"BUMP ${{ inputs.post_version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
+        command: git commit -a -m \"BUMP ${{ inputs.following_version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
     - name: Push the commit to the source branch
       shell: bash -eux {0}
       run: |
         if [ ${{ inputs.dry_run }} != "true" ]; then
           git push origin --tags
+        else
+          echo "Not pushing the following_version tag since it is a dry run"
         fi
