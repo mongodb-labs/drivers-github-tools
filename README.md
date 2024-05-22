@@ -128,7 +128,7 @@ Push the commit and tag to the source branch unless `dry_run` is set.
 
 Handles tasks related to publishing Python packages, including
 signing `dist` file and publishing the `dist` files to PyPI.
-It will also push the post (dev) version to the source branch.
+It will also push the following (dev) version to the source branch.
 It will create a draft GitHub release and attach the signature files.
 Finally, it will publish a report to the appropriate S3 bucket.
 If `dry_run` is set, nothing will be published or pushed.
