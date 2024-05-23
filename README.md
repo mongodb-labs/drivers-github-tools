@@ -139,7 +139,7 @@ If `dry_run` is set, nothing will be published or pushed.
   with:
     ...
 
-- uses: mongodb-labs/drivers-github-tools/python/publish@main
+- uses: mongodb-labs/drivers-github-tools/python/publish@v2
   with:
     version: ${{ inputs.version }}
     following_version: ${{ inputs.following_version }}
