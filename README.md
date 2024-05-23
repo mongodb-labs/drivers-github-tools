@@ -41,7 +41,7 @@ Use this action to create signed git artifacts:
   uses: mongodb/drivers-github-tools/git-sign@main
 
 - name: Create signed tag
-  uses: mongodb/drivers-github-tools/git-sign@main
+  uses: mongodb/drivers-github-tools/git-sign@v2
 ```
 
 ### gpg-sign
