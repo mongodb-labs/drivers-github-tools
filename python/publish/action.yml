@@ -33,10 +33,10 @@ runs:
         name: all-dist-${{ github.run_id }}
         path: dist/
     - name: Create detached signature for dist files
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@main
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
         filenames: dist/*
-    - uses: mongodb-labs/drivers-github-tools/authorized-pub@main
+    - uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
@@ -60,7 +60,7 @@ runs:
         git clean -dffx
         bash ${{ inputs.version_bump_script }} ${{ inputs.version }}
     - name: Commit the version bump
-      uses: mongodb-labs/drivers-github-tools/git-sign@main
+      uses: mongodb-labs/drivers-github-tools/git-sign@v2
       with:
         command: git commit -a -m \"BUMP ${{ inputs.following_version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
     - name: Push the commit to the source branch

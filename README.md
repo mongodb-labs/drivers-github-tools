@@ -22,6 +22,11 @@ The action requires `id-token: write` permissions.
     aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
 ```
 
+> [!Note]
+> You *must* use the `actions/checkout` action prior to calling the `setup` action,
+> Since the `setup` action sets up git config that would be overridden by the
+> `actions/checkout action`
+
 ## Signing tools
 
 The actions in the `garasign` folder are used to sign artifacts using the team's
@@ -72,7 +77,7 @@ You can also supply a glob pattern to sign a group of files:
     ...
 
 - name: Create detached signature
-  uses: mongodb/drivers-github-tools/garasign/gpg-sign@main
+  uses: mongodb/drivers-github-tools/garasign/gpg-sign@v1
   with:
     filenames: dist/*
 ```
