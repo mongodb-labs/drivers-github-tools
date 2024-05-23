@@ -15,7 +15,7 @@ The action requires `id-token: write` permissions.
 
 ```yaml
 - name: setup
-  uses: mongodb/drivers-github-tools/setup@main
+  uses: mongodb/drivers-github-tools/setup@v2
   with:
     aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
     aws_region_name: ${{ vars.AWS_REGION_NAME }}
