@@ -67,7 +67,7 @@ You can also supply a glob pattern to sign a group of files:
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@main
+  uses: mongodb/drivers-github-tools/setup@v2
   with:
     ...
 
