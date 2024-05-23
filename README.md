@@ -89,7 +89,7 @@ It will create the file `$S3_ASSETS/authorized_publication.txt`
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@main
+  uses: mongodb/drivers-github-tools/setup@v2
   with:
     ...
 
