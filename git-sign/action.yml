@@ -1,0 +1,23 @@
+name: "Run git actions in a signing container"
+description: "Allows running arbitrary git actions in a container with GPG keys loaded"
+inputs:
+  command:
+    description: "Command to run inside the container"
+    required: true
+  artifactory_image:
+    description: "Image to use for artifactory"
+    default: release-tools-container-registry-local/garasign-git
+
+runs:
+  using: composite
+  steps:
+    - name: "Run git command"
+      run: |
+        podman run \
+          --env-file=$GARASIGN_ENVFILE \
+          --rm \
+          -v $(pwd):$(pwd) \
+          -w $(pwd) \
+          ${ARTIFACTORY_REGISTRY}/${{ inputs.artifactory_image }} \
+          /bin/bash -c "gpgloader && ${{ inputs.command }}"
+      shell: bash
