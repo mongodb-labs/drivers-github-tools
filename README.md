@@ -38,7 +38,7 @@ Use this action to create signed git artifacts:
     ...
 
 - name: Create signed commit
-  uses: mongodb/drivers-github-tools/git-sign@main
+  uses: mongodb/drivers-github-tools/git-sign@v2
 
 - name: Create signed tag
   uses: mongodb/drivers-github-tools/git-sign@v2
