@@ -113,7 +113,7 @@ Push the commit and tag to the source branch unless `dry_run` is set.
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@main
+  uses: mongodb/drivers-github-tools/setup@v2
   with:
     ...
 
