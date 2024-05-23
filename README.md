@@ -135,7 +135,7 @@ If `dry_run` is set, nothing will be published or pushed.
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@main
+  uses: mongodb/drivers-github-tools/setup@v2
   with:
     ...
 
