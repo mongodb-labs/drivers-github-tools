@@ -55,7 +55,7 @@ This action is used to create detached signatures for files:
     ...
 
 - name: Create detached signature
-  uses: mongodb/drivers-github-tools/gpg-sign@main
+  uses: mongodb/drivers-github-tools/gpg-sign@v2
   with:
     filenames: somefile.ext
 ```
