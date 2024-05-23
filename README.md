@@ -50,7 +50,7 @@ This action is used to create detached signatures for files:
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@main
+  uses: mongodb/drivers-github-tools/setup@v2
   with:
     ...
 
