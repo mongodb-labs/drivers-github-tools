@@ -33,7 +33,7 @@ Use this action to create signed git artifacts:
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@main
+  uses: mongodb/drivers-github-tools/setup@v2
   with:
     ...
 
