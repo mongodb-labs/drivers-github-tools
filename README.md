@@ -94,7 +94,7 @@ It will create the file `$S3_ASSETS/authorized_publication.txt`
     ...
 
 - name: Create Authorized Publication Report
-  uses: mongodb/drivers-github-tools/authorized-pub@main
+  uses: mongodb/drivers-github-tools/authorized-pub@v2
   with:
     product_name: Mongo Python Driver
     release_version: ${{ github.ref_name }}
