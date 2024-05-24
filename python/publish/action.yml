@@ -14,6 +14,9 @@ inputs:
   product_name:
     description: "The name of the product"
     required: true
+  silk_asset_group:
+    description: The Silk Asset Group for the Project
+    required: true
   token:
     description: "The GitHub access token"
     required: true
@@ -44,7 +47,7 @@ runs:
         token: ${{ inputs.token }}
     - uses: blink1073/drivers-github-tools/sbom@test-pypi
       with:
-        silk_asset_group: ${{ vars.SILK_ASSET_GROUP }}
+        silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Run publish script
       shell: bash
       run: ${{github.action_path}}/publish.sh
