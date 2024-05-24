@@ -45,7 +45,7 @@ runs:
         release_version: ${{ inputs.version }}
         filenames: dist/*
         token: ${{ inputs.token }}
-    - uses: blink1073/drivers-github-tools/sbom@test-pypi
+    - uses: mongodb-labs/drivers-github-tools/sbom@v2
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Run publish script

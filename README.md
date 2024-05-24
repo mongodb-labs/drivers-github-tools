@@ -107,6 +107,22 @@ It will create the file `$S3_ASSETS/authorized_publication.txt`
     token: ${{ github.token }}
 ```
 
+### Software Bill of Materials (SBOM)
+
+This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
+
+```yaml
+- name: Setup
+  uses: mongodb/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Create SBOM
+  uses: mongodb/drivers-github-tools/sbom@v2
+  with:
+    silk_asset_group: mongodb-python-driver
+```
+
 ## Python Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases.
