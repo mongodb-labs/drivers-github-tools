@@ -44,9 +44,13 @@ Use this action to create signed git artifacts:
 
 - name: Create signed commit
   uses: mongodb/drivers-github-tools/git-sign@v2
+  with:
+    command: "git commit -m 'Commit' -s --gpg-sign=${{ vars.GPG_KEY_ID }}"
 
 - name: Create signed tag
   uses: mongodb/drivers-github-tools/git-sign@v2
+  with:
+    command: "git tag -m 'Tag' -s --local-user=${{ vars.GPG_KEY_ID }} <tag>"
 ```
 
 ### gpg-sign
