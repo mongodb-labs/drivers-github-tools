@@ -29284,10 +29284,13 @@ const path = __importStar(__nccwpck_require__(1017));
  */
 async function run() {
     const repositoryInfo = getRepositoryInfo();
-    const alerts = await (0, api_1.getAlerts)(repositoryInfo.owner, repositoryInfo.repo, core.getInput('ref'), core.getInput('token'));
+    const ref = core.getInput('ref');
+    core.debug(`Fetching open and dismissed alerts for repository ${repositoryInfo.owner}/${repositoryInfo.repo}#${ref}`);
+    const alerts = await (0, api_1.getAlerts)(repositoryInfo.owner, repositoryInfo.repo, ref, core.getInput('token'));
+    core.debug(`Found ${alerts.length} alerts, processing now...`);
     const sarifReport = (0, sarif_1.createSarifReport)(alerts);
-    const filePath = path.join(process.cwd(), core.getInput('file'));
-    core.debug(`Writing to file ${filePath}`);
+    const filePath = path.join(process.cwd(), core.getInput('output-file'));
+    core.debug(`Processing done, writing report to file ${filePath}`);
     fs.writeFileSync(filePath, JSON.stringify(sarifReport), {});
 }
 exports.run = run;

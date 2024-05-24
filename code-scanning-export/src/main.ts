@@ -16,17 +16,23 @@ type RepositoryInfo = {
  */
 export async function run(): Promise<void> {
   const repositoryInfo = getRepositoryInfo()
+  const ref = core.getInput('ref');
+
+  core.debug(`Fetching open and dismissed alerts for repository ${repositoryInfo.owner}/${repositoryInfo.repo}#${ref}`)
 
   const alerts = await getAlerts(
     repositoryInfo.owner,
     repositoryInfo.repo,
-    core.getInput('ref'),
+    ref,
     core.getInput('token')
   )
 
+  core.debug(`Found ${alerts.length} alerts, processing now...`)
+
   const sarifReport = createSarifReport(alerts)
-  const filePath = path.join(process.cwd(), core.getInput('file'))
-  core.debug(`Writing to file ${filePath}`)
+  const filePath = path.join(process.cwd(), core.getInput('output-file'))
+
+  core.debug(`Processing done, writing report to file ${filePath}`)
 
   fs.writeFileSync(filePath, JSON.stringify(sarifReport), {})
 }
