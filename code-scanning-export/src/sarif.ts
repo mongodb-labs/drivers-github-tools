@@ -61,7 +61,7 @@ export function createSarifReport(alerts: AlertType[]): SarifReport {
 
     results[alert.tool.name].results.push(createSarifResult(alert))
 
-    const ruleName = getRuleIdentifier(alert)
+    const ruleName = getRuleIdentifier(alert.rule)
 
     if (ruleName && !results[alert.tool.name].tool.driver.rules[ruleName]) {
       results[alert.tool.name].tool.driver.rules[ruleName] = createSarifRule(
@@ -93,7 +93,7 @@ export function createSarifReport(alerts: AlertType[]): SarifReport {
 
 function createSarifRule(rule: RuleType): object {
   return {
-    id: rule.name,
+    id: getRuleIdentifier(rule),
     shortDescription: { text: rule.description },
     properties: { tags: rule.tags }
   }
@@ -101,7 +101,7 @@ function createSarifRule(rule: RuleType): object {
 
 export function createSarifResult(alert: AlertType): object {
   return {
-    ruleId: getRuleIdentifier(alert),
+    ruleId: getRuleIdentifier(alert.rule),
     message: alert.most_recent_instance.message,
     level: alert.rule.severity,
     locations: createResultLocation(alert),
@@ -163,6 +163,6 @@ function createRegion(location: AlertLocationType): Region {
   return region
 }
 
-function getRuleIdentifier(alert: AlertType): string {
-  return alert.rule.name ? alert.rule.name : alert.rule.id ? alert.rule.id : ''
+function getRuleIdentifier(rule: RuleType): string {
+  return rule.name ? rule.name : rule.id ? rule.id : ''
 }

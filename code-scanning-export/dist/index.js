@@ -29344,7 +29344,7 @@ function createSarifReport(alerts) {
             };
         }
         results[alert.tool.name].results.push(createSarifResult(alert));
-        const ruleName = getRuleIdentifier(alert);
+        const ruleName = getRuleIdentifier(alert.rule);
         if (ruleName && !results[alert.tool.name].tool.driver.rules[ruleName]) {
             results[alert.tool.name].tool.driver.rules[ruleName] = createSarifRule(alert.rule);
         }
@@ -29369,14 +29369,14 @@ function createSarifReport(alerts) {
 exports.createSarifReport = createSarifReport;
 function createSarifRule(rule) {
     return {
-        id: rule.name,
+        id: getRuleIdentifier(rule),
         shortDescription: { text: rule.description },
         properties: { tags: rule.tags }
     };
 }
 function createSarifResult(alert) {
     return {
-        ruleId: getRuleIdentifier(alert),
+        ruleId: getRuleIdentifier(alert.rule),
         message: alert.most_recent_instance.message,
         level: alert.rule.severity,
         locations: createResultLocation(alert),
@@ -29429,8 +29429,8 @@ function createRegion(location) {
     }
     return region;
 }
-function getRuleIdentifier(alert) {
-    return alert.rule.name ? alert.rule.name : alert.rule.id ? alert.rule.id : '';
+function getRuleIdentifier(rule) {
+    return rule.name ? rule.name : rule.id ? rule.id : '';
 }
 
 

@@ -185,6 +185,50 @@ describe('createSarifReport', () => {
     })
     expect(report.runs[0].results).toHaveLength(2)
   })
+
+  it('generate a valid report for PHPStan', () => {
+    const report = createSarifReport([phpstanAlert])
+
+    expect(report).toMatchSchema(sarifSchema)
+
+    expect(report).toMatchObject({
+      version: '2.1.0',
+      $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
+      runs: [
+        {
+          tool: {
+            driver: {
+              name: 'PHPStan',
+              version: '1.11.x-dev@0055aac',
+              rules: [
+                {
+                  id: 'new.static',
+                  shortDescription: { text: '' },
+                  properties: { tags: [] }
+                }
+              ]
+            }
+          },
+          results: [
+            {
+              ruleId: 'new.static',
+              message: { text: 'Unsafe usage of new static().' },
+              level: 'error',
+              locations: [
+                {
+                  physicalLocation: {
+                    artifactLocation: { uri: 'src/Query/Builder.php' },
+                    region: { startLine: 954, endLine: 954, startColumn: 1 }
+                  }
+                }
+              ],
+              suppressions: []
+            }
+          ]
+        }
+      ]
+    })
+  })
 })
 
 describe('createSarifResult', () => {
