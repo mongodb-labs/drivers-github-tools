@@ -15,6 +15,6 @@ runs:
       shell: bash
       run: |
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
-          --env-file=$SILKBOMB_ENVFILE \
+          --env-file=${SILKBOMB_ENVFILE} \
           ${{ inputs.artifactory_image }} \
           download --silk-asset-group ${{ inputs.silk_asset_group }} --sbom-out /pwd/sbom.json

@@ -27,6 +27,7 @@ cat << EOF > $SILKBOMB_ENVFILE
 SILK_CLIENT_ID=${SILKBOMB_USER}
 SILK_CLIENT_SECRET=${SILKBOMB_KEY}
 EOF
+cat $SILKBOMB_ENVFILE
 
 echo "Set up output directories"
 export RELEASE_ASSETS=/tmp/release-assets
