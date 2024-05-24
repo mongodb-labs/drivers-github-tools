@@ -122,6 +122,53 @@ const openAlert: AlertType = {
   instances_url:
     'https://api.github.com/repos/mongodb/mongo-php-library/code-scanning/alerts/331/instances'
 }
+const phpstanAlert: AlertType = {
+  number: 3,
+  created_at: '2024-05-24T09:29:19Z',
+  updated_at: '2024-05-24T09:29:23Z',
+  url: 'https://api.github.com/repos/alcaeus/laravel-mongodb/code-scanning/alerts/3',
+  html_url:
+    'https://github.com/alcaeus/laravel-mongodb/security/code-scanning/3',
+  state: 'open',
+  fixed_at: null,
+  dismissed_by: null,
+  dismissed_at: null,
+  dismissed_reason: null,
+  dismissed_comment: null,
+  rule: {
+    id: 'new.static',
+    severity: 'error',
+    description: '',
+    name: '',
+    tags: []
+  },
+  tool: {
+    name: 'PHPStan',
+    guid: null,
+    version: '1.11.x-dev@0055aac'
+  },
+  most_recent_instance: {
+    ref: 'refs/heads/export-sarif-on-release',
+    analysis_key: '.github/workflows/coding-standards.yml:analysis',
+    environment: '{"php":"8.2"}',
+    category: '.github/workflows/coding-standards.yml:analysis/php:8.2',
+    state: 'open',
+    commit_sha: '05cd5c7d1f6a16840fdf98b59e95cdde3c26bd77',
+    message: {
+      text: 'Unsafe usage of new static().'
+    },
+    location: {
+      path: 'src/Query/Builder.php',
+      start_line: 954,
+      end_line: 954,
+      start_column: 1,
+      end_column: 0
+    },
+    classifications: []
+  },
+  instances_url:
+    'https://api.github.com/repos/alcaeus/laravel-mongodb/code-scanning/alerts/3/instances'
+}
 
 describe('createSarifReport', () => {
   it('generates a valid sarif report', () => {
@@ -192,6 +239,29 @@ describe('createSarifResult', () => {
           justification: "won't fix"
         }
       ]
+    })
+  })
+
+  it('generates correct sarif for a phpstan alert', () => {
+    expect(createSarifResult(phpstanAlert)).toEqual({
+      ruleId: 'new.static',
+      message: {
+        text: 'Unsafe usage of new static().'
+      },
+      level: 'error',
+      locations: [
+        {
+          physicalLocation: {
+            artifactLocation: { uri: 'src/Query/Builder.php' },
+            region: {
+              startLine: 954,
+              endLine: 954,
+              startColumn: 1
+            }
+          }
+        }
+      ],
+      suppressions: []
     })
   })
 })

@@ -16,9 +16,11 @@ type RepositoryInfo = {
  */
 export async function run(): Promise<void> {
   const repositoryInfo = getRepositoryInfo()
-  const ref = core.getInput('ref');
+  const ref = core.getInput('ref')
 
-  core.debug(`Fetching open and dismissed alerts for repository ${repositoryInfo.owner}/${repositoryInfo.repo}#${ref}`)
+  core.debug(
+    `Fetching open and dismissed alerts for repository ${repositoryInfo.owner}/${repositoryInfo.repo}#${ref}`
+  )
 
   const alerts = await getAlerts(
     repositoryInfo.owner,

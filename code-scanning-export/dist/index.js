@@ -29344,10 +29344,9 @@ function createSarifReport(alerts) {
             };
         }
         results[alert.tool.name].results.push(createSarifResult(alert));
-        if (alert.rule.name &&
-            !results[alert.tool.name].tool.driver.rules[alert.rule.name]) {
-            results[alert.tool.name].tool.driver.rules[alert.rule.name] =
-                createSarifRule(alert.rule);
+        const ruleName = getRuleIdentifier(alert);
+        if (ruleName && !results[alert.tool.name].tool.driver.rules[ruleName]) {
+            results[alert.tool.name].tool.driver.rules[ruleName] = createSarifRule(alert.rule);
         }
     }
     return {
@@ -29377,7 +29376,7 @@ function createSarifRule(rule) {
 }
 function createSarifResult(alert) {
     return {
-        ruleId: alert.rule.name,
+        ruleId: getRuleIdentifier(alert),
         message: alert.most_recent_instance.message,
         level: alert.rule.severity,
         locations: createResultLocation(alert),
@@ -29393,12 +29392,7 @@ function createResultLocation(alert) {
         {
             physicalLocation: {
                 artifactLocation: { uri: alert.most_recent_instance.location.path },
-                region: {
-                    startLine: alert.most_recent_instance.location.start_line,
-                    endLine: alert.most_recent_instance.location.end_line,
-                    startColumn: alert.most_recent_instance.location.start_column,
-                    endColumn: alert.most_recent_instance.location.end_column
-                }
+                region: createRegion(alert.most_recent_instance.location)
             }
         }
     ];
@@ -29418,6 +29412,25 @@ function createResultSuppressions(alert) {
             justification
         }
     ];
+}
+function createRegion(location) {
+    const region = {};
+    if (location.start_line) {
+        region.startLine = location.start_line;
+    }
+    if (location.end_line) {
+        region.endLine = location.end_line;
+    }
+    if (location.start_column) {
+        region.startColumn = location.start_column;
+    }
+    if (location.end_column) {
+        region.endColumn = location.end_column;
+    }
+    return region;
+}
+function getRuleIdentifier(alert) {
+    return alert.rule.name ? alert.rule.name : alert.rule.id ? alert.rule.id : '';
 }
 
 
