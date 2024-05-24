@@ -14,11 +14,18 @@ echo "::group::Set up artifactory"
 echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USERNAME --password-stdin $ARTIFACTORY_REGISTRY
 echo "::endgroup::"
 
-echo "Set up envfile for artifactory image"
-GARASIGN_ENVFILE=/tmp/envfile
+echo "Set up envfile for garasign"
+GARASIGN_ENVFILE=/tmp/garasign-envfile
 cat << EOF > $GARASIGN_ENVFILE
 GRS_CONFIG_USER1_USERNAME=$GARASIGN_USERNAME
 GRS_CONFIG_USER1_PASSWORD=$GARASIGN_PASSWORD
+EOF
+
+echo "Set up envfile for silkbomb"
+SILKBOMB_ENVFILE=/temp/silkbom-envfile
+cat << EOF > $SILKBOMB_ENVFILE
+SILK_CLIENT_ID=${SILKBOMB_USER}
+SILK_CLIENT_SECRET=${SILKBOMB_KEY}
 EOF
 
 echo "Set up output directories"

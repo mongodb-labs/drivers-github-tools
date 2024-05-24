@@ -42,6 +42,9 @@ runs:
         release_version: ${{ inputs.version }}
         filenames: dist/*
         token: ${{ inputs.token }}
+    - uses: blink1073/drivers-github-tools/sbom@test-pypi
+      with:
+        silk_asset_group: ${{ vars.SILK_ASSET_GROUP }}
     - name: Run publish script
       shell: bash
       run: ${{github.action_path}}/publish.sh
