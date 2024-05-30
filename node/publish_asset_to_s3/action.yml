@@ -37,4 +37,3 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
         FILE: ${{ inputs.file }}
-    
