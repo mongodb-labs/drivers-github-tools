@@ -1,3 +1,4 @@
+/* eslint import/no-unresolved: 0 */
 import { components } from '@octokit/openapi-types'
 
 export type AlertType = components['schemas']['code-scanning-alert-items']

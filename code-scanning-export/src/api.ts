@@ -1,5 +1,6 @@
 import * as github from '@actions/github'
 import { AlertType } from './sarif'
+/* eslint import/no-unresolved: 0 */
 import { components } from '@octokit/openapi-types'
 
 type StateType = components['schemas']['code-scanning-alert-state']
