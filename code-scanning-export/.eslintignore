@@ -1,0 +1,5 @@
+__tests__/
+lib/
+dist/
+node_modules/
+coverage/
