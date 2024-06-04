@@ -2,6 +2,8 @@
 
 set -eux
 
+mv sarif-report.json $S3_ASSETS
+
 if [ "$DRY_RUN" == "false" ]; then
     echo "Uploading Release Reports"
     TARGET=s3://${AWS_BUCKET}/${PRODUCT_NAME}/${VERSION}
