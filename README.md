@@ -26,6 +26,11 @@ The action requires `id-token: write` permissions.
 > You *must* use the `actions/checkout` action prior to calling the `setup` action,
 > Since the `setup` action sets up git config that would be overridden by the
 > `actions/checkout action`
+>
+> The following keys MUST be defined in the ``AWS_SECRET_ID`` vault:
+> `artifactory-username`, `artifactory-password`, `garasign-username`
+> `garasign-password`, `gpg-key-id`.  If uploading to an S3 bucket, also define
+> `release-assets-bucket`.
 
 ## Signing tools
 
