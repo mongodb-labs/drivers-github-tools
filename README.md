@@ -55,7 +55,7 @@ Use this action to create signed git artifacts:
 - name: Create signed tag
   uses: mongodb-labs/drivers-github-tools/git-sign@v2
   with:
-    command: "git tag -m 'Tag' -s --local-user=${{ env.GPG_KEY_ID }} <tag>"
+    command: "git tag -m 'Tag' -s --local-user=${{ env.GPG_KEY_ID }} -a <tag>"
 ```
 
 ### gpg-sign
