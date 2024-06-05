@@ -35,12 +35,12 @@ jobs:
         run: |
           export VERSION=$(cat .github/workflows/version.txt)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          git push origin ":${VERSION}"
+          git push origin ":v${VERSION}"
 
       - name: Create a new signed tag
         uses: mongodb-labs/drivers-github-tools/git-sign@v2
         with:
-          command: git tag -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }} ${{ env.VERSION }}"
+          command: git tag -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }} v${{ env.VERSION }}"
 
       - name: Push the tag
         run:
