@@ -25,4 +25,4 @@ runs:
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
-        mv ${{inputs.filenames}}.sig $RELEASE_ASSETS
+        for filename in ${{ inputs.filenames }}; do mv ${filename}.sig $RELEASE_ASSETS; done
