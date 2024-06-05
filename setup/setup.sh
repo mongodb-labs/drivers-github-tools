@@ -21,12 +21,14 @@ GRS_CONFIG_USER1_USERNAME=$GARASIGN_USERNAME
 GRS_CONFIG_USER1_PASSWORD=$GARASIGN_PASSWORD
 EOF
 
-echo "Set up envfile for silkbomb"
-SILKBOMB_ENVFILE=/tmp/silkbom-envfile
-cat << EOF > $SILKBOMB_ENVFILE
+if [ -n "${SILKBOMB_USER:-}" ]; then
+  echo "Set up envfile for silkbomb"
+  SILKBOMB_ENVFILE=/tmp/silkbomb-envfile
+  cat << EOF > $SILKBOMB_ENVFILE
 SILK_CLIENT_ID=${SILKBOMB_USER}
 SILK_CLIENT_SECRET=${SILKBOMB_KEY}
 EOF
+fi
 
 echo "Set up output directories"
 export RELEASE_ASSETS=/tmp/release-assets
