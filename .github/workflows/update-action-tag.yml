@@ -35,7 +35,7 @@ jobs:
         run: |
           export VERSION=$(cat .github/workflows/version.txt)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-          git push origin ":v${VERSION}"
+          git push origin ":v${VERSION}" || true
 
       - name: Create a new signed tag
         uses: ./git-sign
