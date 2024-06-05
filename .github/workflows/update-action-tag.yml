@@ -25,7 +25,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup
-        uses: ./.github/workflows/setup
+        uses: ./setup
         with:
           aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
           aws_region_name: ${{ vars.AWS_REGION_NAME }}
@@ -38,7 +38,7 @@ jobs:
           git push origin ":v${VERSION}"
 
       - name: Create a new signed tag
-        uses: ./.github/workflows/git-sign
+        uses: ./git-sign
         with:
           command: git tag -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }} v${{ env.VERSION }}"
 
