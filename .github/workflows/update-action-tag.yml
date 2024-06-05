@@ -40,7 +40,7 @@ jobs:
       - name: Create a new signed tag
         uses: ./.github/workflows/git-sign
         with:
-          command: git tag -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }} v${{ env.VERSION }}"
+          command: git tag -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }} "v${{ env.VERSION }}"
 
       - name: Push the tag
         run:
