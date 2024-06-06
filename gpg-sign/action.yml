@@ -29,9 +29,9 @@ runs:
           -v $(pwd):$(pwd) \
           -w $(pwd) \
           ${ARTIFACTORY_REGISTRY}/${{ inputs.artifactory_image }} \
-          /bin/bash -c 'gpgloader && for filename in ${{ inputs.filenames }}; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
+          /bin/bash -c 'gpgloader && for filename in $FILENAMES; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
 
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
-        for filename in ${{ steps.filenames.output.names }}; do mv ${filename}.sig $RELEASE_ASSETS; done
+        for filename in ${{ steps.filenames.outputs.names }}; do mv ${filename}.sig $RELEASE_ASSETS; done
