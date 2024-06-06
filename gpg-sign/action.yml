@@ -15,6 +15,7 @@ runs:
       shell: bash
       id: filenames
       run: |
+          set -eux
           export FILENAMES="${{inputs.filenames}}"
           if [[ $FILENAMES =~ '*' ]]; then
             FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
@@ -34,4 +35,8 @@ runs:
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
+        # TODO: REMOVE
+        set -eux
+        ls dist
+        ls
         for filename in ${{ steps.filenames.outputs.names }}; do mv ${filename}.sig $RELEASE_ASSETS; done
