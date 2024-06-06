@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+
+set -eux
 
 cat << EOF >> ${S3_ASSETS}/ssdlc_compliance_report.md
 Release Creator
@@ -16,5 +19,5 @@ Signature Information
 See ${AUTHORIZED_PUB_NAME}
 
 Known Vulnerabilities
-Any vulnerabilities that may be shown in the links referenced above have been reviewed and accepted by the appropriate approvers.
+Any vulnerabilities that may be shown in the files referenced above have been reviewed and accepted by the appropriate approvers.
 EOF
