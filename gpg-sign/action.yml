@@ -11,33 +11,22 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Convert a glob pattern to a list of files
-      shell: bash
-      id: filenames
-      run: |
-          set -eux
-          export FILENAMES="${{inputs.filenames}}"
-          if [[ $FILENAMES =~ '*' ]]; then
-            FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
-          fi
-          echo "names=\"$FILENAMES\"" >> $GITHUB_OUTPUT
     - name: "Create detached signature for file"
       shell: bash
       run: |
-        export FILENAMES=${{ steps.filenames.outputs.names }}
         podman run \
           --env-file=$GARASIGN_ENVFILE \
           --rm \
           -v $(pwd):$(pwd) \
           -w $(pwd) \
           ${ARTIFACTORY_REGISTRY}/${{ inputs.artifactory_image }} \
-          /bin/bash -c 'gpgloader && for filename in ${FILENAMES}; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
+          /bin/bash -c 'gpgloader && for filename in ${{ inputs.filenames}}; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
 
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
-        # TODO: REMOVE
-        set -eux
-        ls dist
-        ls
-        for filename in ${{ steps.filenames.outputs.names }}; do mv ${filename}.sig $RELEASE_ASSETS; done
+        export FILENAMES="${{inputs.filenames}}"
+        if [[ $FILENAMES =~ '*' ]]; then
+          FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
+        fi
+        for filename in $FILENAMES; do mv ${filename}.sig $RELEASE_ASSETS; done
