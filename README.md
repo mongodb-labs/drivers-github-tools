@@ -15,7 +15,7 @@ The action requires `id-token: write` permissions.
 
 ```yaml
 - name: setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
     aws_region_name: ${{ vars.AWS_REGION_NAME }}
@@ -26,6 +26,11 @@ The action requires `id-token: write` permissions.
 > You *must* use the `actions/checkout` action prior to calling the `setup` action,
 > Since the `setup` action sets up git config that would be overridden by the
 > `actions/checkout action`
+>
+> The following keys MUST be defined in the ``AWS_SECRET_ID`` vault:
+> `artifactory-username`, `artifactory-password`, `garasign-username`
+> `garasign-password`, `gpg-key-id`.  If uploading to an S3 bucket, also define
+> `release-assets-bucket`.
 
 ## Signing tools
 
@@ -38,15 +43,19 @@ Use this action to create signed git artifacts:
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     ...
 
 - name: Create signed commit
-  uses: mongodb/drivers-github-tools/git-sign@v2
+  uses: mongodb-labs/drivers-github-tools/git-sign@v2
+  with:
+    command: "git commit -m 'Commit' -s --gpg-sign=${{ env.GPG_KEY_ID }}"
 
 - name: Create signed tag
-  uses: mongodb/drivers-github-tools/git-sign@v2
+  uses: mongodb-labs/drivers-github-tools/git-sign@v2
+  with:
+    command: "git tag -m 'Tag' -s --local-user=${{ env.GPG_KEY_ID }} -a <tag>"
 ```
 
 ### gpg-sign
@@ -55,12 +64,12 @@ This action is used to create detached signatures for files:
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     ...
 
 - name: Create detached signature
-  uses: mongodb/drivers-github-tools/gpg-sign@v2
+  uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
   with:
     filenames: somefile.ext
 ```
@@ -72,12 +81,12 @@ You can also supply a glob pattern to sign a group of files:
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     ...
 
 - name: Create detached signature
-  uses: mongodb/drivers-github-tools/garasign/gpg-sign@v1
+  uses: mongodb-labs/drivers-github-tools/garasign/gpg-sign@v1
   with:
     filenames: dist/*
 ```
@@ -94,12 +103,12 @@ It will create the file `$S3_ASSETS/authorized_publication.txt`
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     ...
 
 - name: Create Authorized Publication Report
-  uses: mongodb/drivers-github-tools/authorized-pub@v2
+  uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
   with:
     product_name: Mongo Python Driver
     release_version: ${{ github.ref_name }}
@@ -134,11 +143,11 @@ Push the commit and tag to the source branch unless `dry_run` is set.
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     ...
 
-- uses: mongodb/drivers-github-tools/python/bump-and-tag@v2
+- uses: mongodb-labs/drivers-github-tools/python/bump-and-tag@v2
   with:
     version: ${{ inputs.version }}
     version_bump_script: ./.github/scripts/bump-version.sh
@@ -156,7 +165,7 @@ If `dry_run` is set, nothing will be published or pushed.
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     ...
 
