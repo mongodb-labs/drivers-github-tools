@@ -45,12 +45,6 @@ runs:
         release_version: ${{ inputs.version }}
         filenames: dist/*
         token: ${{ inputs.token }}
-    - name: Verify the tag
-      shell: bash -eux {0}
-      run: |
-        curl $GPG_PUBLIC_URL --output /tmp/signature.pub
-        gpg --import /tmp/signature.pub
-        git verify-tag ${{inputs.version}}
     - uses: mongodb-labs/drivers-github-tools/sbom@v2
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}

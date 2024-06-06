@@ -32,6 +32,12 @@ runs:
       uses: mongodb-labs/drivers-github-tools/git-sign@v2
       with:
         command: git tag -a \"${{ inputs.version }}\" -m \"BUMP ${{ inputs.version }}\" -s --local-user=${{ env.GPG_KEY_ID }}
+    - name: Verify the tag
+      shell: bash -eux {0}
+      run: |
+        curl $GPG_PUBLIC_URL --output /tmp/signature.pub
+        gpg --import /tmp/signature.pub
+        git verify-tag ${{inputs.version}}
     - name: Push the commit and tag to the source branch
       shell: bash -eux {0}
       run: |
