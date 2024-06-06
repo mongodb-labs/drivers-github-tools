@@ -113,7 +113,7 @@ This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
 
 ```yaml
 - name: Setup
-  uses: mongodb/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v2
   with:
     ...
 
