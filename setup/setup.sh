@@ -49,6 +49,8 @@ RELEASE_ASSETS=$RELEASE_ASSETS
 S3_ASSETS=$S3_ASSETS
 EOF
 
+echo "GPG_PUBLIC_URL=$GPG_PUBLIC_URL"
+
 echo "Set up git credentials"
 git config user.email "167856002+mongodb-dbx-release-bot[bot]@users.noreply.github.com"
 git config user.name "mongodb-dbx-release-bot[bot]"
