@@ -24,6 +24,7 @@ runs:
     - name: "Create detached signature for file"
       shell: bash
       run: |
+        export FILENAMES=${{ steps.filenames.outputs.names }}
         podman run \
           --env-file=$GARASIGN_ENVFILE \
           --rm \
