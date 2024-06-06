@@ -11,6 +11,15 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Convert a glob pattern to a list of files
+      shell: bash
+      id: filenames
+      run: |
+          export FILENAMES="${{inputs.filenames}}"
+          if [[ $FILENAMES =~ '*' ]]; then
+            FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
+          fi
+          echo "names=\"$FILENAMES\"" >> $GITHUB_OUTPUT
     - name: "Create detached signature for file"
       shell: bash
       run: |
@@ -25,4 +34,4 @@ runs:
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
-        for filename in ${{ inputs.filenames }}; do mv ${filename}.sig $RELEASE_ASSETS; done
+        for filename in ${{ steps.filenames.output.names }}; do mv ${filename}.sig $RELEASE_ASSETS; done
