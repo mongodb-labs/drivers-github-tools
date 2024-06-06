@@ -19,10 +19,10 @@ runs:
     - name: Generate Compliance Report
       shell: bash
       run: |
+        set -eux
         export GH_TOKEN=${{ inputs.token }}
         export RELEASE_CREATOR=$(gh api users/${{ github.actor }} --jq '.name')
         export SBOM_NAME=${{ inputs.sbom_name }}
         export SARIF_NAME=${{ inputs.sarif_name }}
         export AUTHORIZED_PUB_NAME=${{ inputs.authorized_pub_name }}
         bash ${{ github.action_path }}/generate.sh
-

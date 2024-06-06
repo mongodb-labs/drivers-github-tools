@@ -14,6 +14,7 @@ runs:
     - name: Download the Augmented SBOM file to the release assets and s3 assets folders
       shell: bash
       run: |
+        set -eux
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
           --env-file=${SILKBOMB_ENVFILE} \
           ${{ inputs.artifactory_image }} \
