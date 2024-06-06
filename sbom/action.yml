@@ -1,0 +1,20 @@
+name: Download the Augmented SBOM
+description: Downloads the Augmented SBOM for the project
+inputs:
+  silk_asset_group:
+    description: The Silk Asset Group for the Project
+    required: true
+  artifactory_image:
+    description: Image to use for artifactory
+    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:1.0
+
+runs:
+  using: composite
+  steps:
+    - name: Download the Augmented SBOM file to the release assets folder
+      shell: bash
+      run: |
+        podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
+          --env-file=${SILKBOMB_ENVFILE} \
+          ${{ inputs.artifactory_image }} \
+          download --silk-asset-group ${{ inputs.silk_asset_group }} --sbom-out /pwd/sbom.json

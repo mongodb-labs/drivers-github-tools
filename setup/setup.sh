@@ -14,12 +14,21 @@ echo "::group::Set up artifactory"
 echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USERNAME --password-stdin $ARTIFACTORY_REGISTRY
 echo "::endgroup::"
 
-echo "Set up envfile for artifactory image"
-GARASIGN_ENVFILE=/tmp/envfile
+echo "Set up envfile for garasign"
+GARASIGN_ENVFILE=/tmp/garasign-envfile
 cat << EOF > $GARASIGN_ENVFILE
 GRS_CONFIG_USER1_USERNAME=$GARASIGN_USERNAME
 GRS_CONFIG_USER1_PASSWORD=$GARASIGN_PASSWORD
 EOF
+
+if [ -n "${SILKBOMB_USER:-}" ]; then
+  echo "Set up envfile for silkbomb"
+  SILKBOMB_ENVFILE=/tmp/silkbomb-envfile
+  cat << EOF > $SILKBOMB_ENVFILE
+SILK_CLIENT_ID=${SILKBOMB_USER}
+SILK_CLIENT_SECRET=${SILKBOMB_KEY}
+EOF
+fi
 
 echo "Set up output directories"
 export RELEASE_ASSETS=/tmp/release-assets
@@ -34,6 +43,7 @@ AWS_BUCKET=${RELEASE_ASSETS_BUCKET:-}"
 GPG_KEY_ID=$GPG_KEY_ID
 GPG_PUBLIC_URL=${GPG_PUBLIC_URL:-}"
 GARASIGN_ENVFILE=$GARASIGN_ENVFILE
+SILKBOMB_ENVFILE=$SILKBOMB_ENVFILE
 ARTIFACTORY_REGISTRY=$ARTIFACTORY_REGISTRY
 RELEASE_ASSETS=$RELEASE_ASSETS
 S3_ASSETS=$S3_ASSETS

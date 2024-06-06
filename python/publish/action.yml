@@ -14,6 +14,9 @@ inputs:
   product_name:
     description: "The name of the product"
     required: true
+  silk_asset_group:
+    description: The Silk Asset Group for the Project
+    required: true
   token:
     description: "The GitHub access token"
     required: true
@@ -42,6 +45,9 @@ runs:
         release_version: ${{ inputs.version }}
         filenames: dist/*
         token: ${{ inputs.token }}
+    - uses: mongodb-labs/drivers-github-tools/sbom@v2
+      with:
+        silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Generate Sarif Report
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
