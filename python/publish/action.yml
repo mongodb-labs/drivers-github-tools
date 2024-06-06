@@ -36,7 +36,7 @@ runs:
         name: all-dist-${{ github.run_id }}
         path: dist/
     - name: Create detached signature for dist files
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      uses: blink1073/drivers-github-tools/gpg-sign@add-compliance-report
       with:
         filenames: dist/*
     - uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
