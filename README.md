@@ -118,7 +118,7 @@ This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
     ...
 
 - name: Create SBOM
-  uses: mongodb/drivers-github-tools/sbom@v2
+  uses: mongodb-labs/drivers-github-tools/sbom@v2
   with:
     silk_asset_group: mongodb-python-driver
 ```
