@@ -36,6 +36,6 @@ runs:
       shell: bash
       run: |
         set -eux
-        export FILENAMES="${{steps.filenames.outputs.name}}"
+        export FILENAMES="${{steps.filenames.outputs.names}}"
         for filename in $FILENAMES; do mv ${filename}.sig $RELEASE_ASSETS; done
         ls $RELEASE_ASSETS
