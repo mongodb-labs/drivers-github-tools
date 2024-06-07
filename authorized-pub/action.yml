@@ -22,7 +22,7 @@ runs:
       run: |
           export GH_TOKEN=${{ inputs.token }}
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
-          export REPORT=$S3_ASSETS/authorized_publication.txt
+          export REPORT=$S3_ASSETS/authorized-publication.txt
           echo "Product: ${{ inputs.product_name }}" > $REPORT
           echo "Version: ${{ inputs.release_version }}" >> $REPORT
           echo "Releaser: $NAME"  >> $REPORT
