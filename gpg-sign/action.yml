@@ -16,7 +16,7 @@ runs:
       id: filenames
       run: |
           set -eux
-          export FILENAMES="${{inputs.filenames}}"
+          export FILENAMES=${{inputs.filenames}}
           if [[ $FILENAMES =~ '*' ]]; then
             FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
           fi
@@ -36,6 +36,6 @@ runs:
       shell: bash
       run: |
         set -eux
-        export FILENAMES="${{steps.filenames.outputs.names}}"
+        export FILENAMES=${{steps.filenames.outputs.names}}
         for filename in $FILENAMES; do mv ${filename}.sig $RELEASE_ASSETS; done
         ls $RELEASE_ASSETS
