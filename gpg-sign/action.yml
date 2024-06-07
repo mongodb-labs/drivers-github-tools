@@ -11,6 +11,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Get the list of filenames as a space-separated string
+      shell: bash
+      id: filenames
+      run: |
+          set -eux
+          export FILENAMES="${{inputs.filenames}}"
+          if [[ $FILENAMES =~ '*' ]]; then
+            FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
+          fi
+          echo "names=\"$FILENAMES\"" >> $GITHUB_OUTPUT
     - name: "Create detached signature for file"
       shell: bash
       run: |
@@ -25,9 +35,5 @@ runs:
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
-        set -eux
-        export FILENAMES=${{inputs.filenames}}
-        if [[ $FILENAMES =~ '*' ]]; then
-          export FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
-        fi
+        export FILENAMES="${{steps.filenames.outputs.name}}"
         for filename in $FILENAMES; do mv ${filename}.sig $RELEASE_ASSETS; done
