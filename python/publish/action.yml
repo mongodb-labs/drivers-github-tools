@@ -36,24 +36,24 @@ runs:
         name: all-dist-${{ github.run_id }}
         path: dist/
     - name: Create detached signature for dist files
-      uses: blink1073/drivers-github-tools/gpg-sign@add-compliance-report
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
         filenames: dist/*
-    - uses: blink1073/drivers-github-tools/authorized-pub@add-compliance-report
+    - uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
         filenames: dist/*
         token: ${{ inputs.token }}
-    - uses: blink1073/drivers-github-tools/sbom@add-compliance-report
+    - uses: mongodb-labs/drivers-github-tools/sbom@v2
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Generate Sarif Report
-      uses: blink1073/drivers-github-tools/code-scanning-export@add-compliance-report
+      uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
         ref: ${{ inputs.version }}
     - name: Generate Compliance Report
-      uses: blink1073/drivers-github-tools/compliance-report@add-compliance-report
+      uses: mongodb-labs/drivers-github-tools/compliance-report@v2
       with:
         token: ${{ inputs.token }}
     - name: Run publish script
@@ -74,7 +74,7 @@ runs:
         git clean -dffx
         bash ${{ inputs.version_bump_script }} ${{ inputs.version }}
     - name: Commit the version bump
-      uses: blink1073/drivers-github-tools/git-sign@add-compliance-report
+      uses: mongodb-labs/drivers-github-tools/git-sign@v2
       with:
         command: git commit -a -m \"BUMP ${{ inputs.following_version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
     - name: Push the commit to the source branch
