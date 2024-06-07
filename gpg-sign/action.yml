@@ -25,8 +25,9 @@ runs:
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
-        export FILENAMES="${{inputs.filenames}}"
+        set -eux
+        export FILENAMES=${{inputs.filenames}}
         if [[ $FILENAMES =~ '*' ]]; then
-          FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
+          export FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
         fi
         for filename in $FILENAMES; do mv ${filename}.sig $RELEASE_ASSETS; done
