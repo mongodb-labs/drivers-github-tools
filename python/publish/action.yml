@@ -65,9 +65,9 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
-    # - name: Publish distribution 📦 to PyPI
-    #   if: inputs.dry_run == 'false'
-    #   uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Publish distribution 📦 to PyPI
+      if: inputs.dry_run == 'false'
+      uses: pypa/gh-action-pypi-publish@release/v1
     - name: Set following version
       shell: bash -eux {0}
       run: |
