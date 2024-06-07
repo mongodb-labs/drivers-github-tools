@@ -35,5 +35,7 @@ runs:
     - name: "Move the signature files to the release directory"
       shell: bash
       run: |
+        set -eux
         export FILENAMES="${{steps.filenames.outputs.name}}"
         for filename in $FILENAMES; do mv ${filename}.sig $RELEASE_ASSETS; done
+        ls $RELEASE_ASSETS
