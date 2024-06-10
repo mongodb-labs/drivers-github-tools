@@ -45,9 +45,9 @@ runs:
         release_version: ${{ inputs.version }}
         filenames: dist/*
         token: ${{ inputs.token }}
-    - uses: mongodb-labs/drivers-github-tools/sbom@v2
-      with:
-        silk_asset_group: ${{ inputs.silk_asset_group }}
+    # - uses: mongodb-labs/drivers-github-tools/sbom@v2
+    #   with:
+    #     silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Generate Sarif Report
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
@@ -65,23 +65,12 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
-    - name: Publish distribution 📦 to PyPI
-      if: inputs.dry_run == 'false'
-      uses: pypa/gh-action-pypi-publish@release/v1
+    # - name: Publish distribution 📦 to PyPI
+    #   if: inputs.dry_run == 'false'
+    #   uses: pypa/gh-action-pypi-publish@release/v1
     - name: Set following version
-      shell: bash -eux {0}
-      run: |
-        git clean -dffx
-        bash ${{ inputs.version_bump_script }} ${{ inputs.version }}
-    - name: Commit the version bump
-      uses: mongodb-labs/drivers-github-tools/git-sign@v2
+      uses: blink1073/drivers-github-tools/bump-version@bump-version
       with:
-        command: git commit -a -m \"BUMP ${{ inputs.following_version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
-    - name: Push the commit to the source branch
-      shell: bash -eux {0}
-      run: |
-        if [ ${{ inputs.dry_run }} != "true" ]; then
-          git push origin --tags
-        else
-          echo "Not pushing the following_version tag since it is a dry run"
-        fi
+          version: ${{ inputs.following_version }}
+          version_bump_script: ${{ inputs.version_bump_script }}
+          dry_run: ${{ inputs.dry_run }}

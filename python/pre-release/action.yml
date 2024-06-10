@@ -1,0 +1,30 @@
+name: Python Pre-Release
+description: Perform pre-release operations for Python Libraries
+inputs:
+  version:
+    description: The published version
+    required: true
+  version_bump_script:
+    description: The version bump script
+    required: true
+  dry_run:
+    description: Whether this is a dry run
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Set version
+      uses: blink1073/drivers-github-tools/bump-version@bump-version
+      with:
+        version: ${{ inputs.version }}
+        version_bump_script: ${{ inputs.version_bump_script }}
+        dry_run: ${{ inputs.dry_run }}
+    - name: Tag version
+      uses: blink1073/drivers-github-tools/tag-version@bump-version
+      with:
+        version: ${{ inputs.version }}
+        dry_run: ${{ inputs.dry_run }}
