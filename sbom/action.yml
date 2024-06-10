@@ -11,10 +11,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Download the Augmented SBOM file to the release assets folder
+    - name: Download the Augmented SBOM file to the release assets and s3 assets folders
       shell: bash
       run: |
+        set -eux
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
           --env-file=${SILKBOMB_ENVFILE} \
           ${{ inputs.artifactory_image }} \
-          download --silk-asset-group ${{ inputs.silk_asset_group }} --sbom-out /pwd/sbom.json
+          download --silk-asset-group ${{ inputs.silk_asset_group }} --sbom-out /pwd/cyclonedx.sbom.json
+        cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}

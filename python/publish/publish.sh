@@ -2,7 +2,8 @@
 
 set -eux
 
-mv sarif-report.json $S3_ASSETS
+cp $RELEASE_ASSETS/*.sig $S3_ASSETS
+mv code-scanning-alerts.json $S3_ASSETS
 
 if [ "$DRY_RUN" == "false" ]; then
     echo "Uploading Release Reports"
