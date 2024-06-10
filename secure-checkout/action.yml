@@ -1,0 +1,31 @@
+name: Secure Checkout
+description: Secure Checkout with GitHub App Credentials
+inputs:
+  app-id:
+    description: The ID of the GitHub app.
+    required: true
+  private-key:
+    description: The private key of the GitHub app.
+    required: true
+  ref:
+    description: The reference to check out
+    default: ${{ github.ref }}
+
+runs:
+  using: composite
+  steps:
+      - name: Create temporary app token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Store GitHub token in environment
+        run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+        shell: bash
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          token: ${{ env.GH_TOKEN }}
