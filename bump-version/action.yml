@@ -10,8 +10,8 @@ inputs:
   commit_template:
     description: The template for the git commit message
     default: "BUMP ${VERSION}"
-  dry_run:
-    description: Whether this is a dry run
+  push_commit:
+    description: Whether to push the commit
     required: true
   artifactory_image:
     description: "Image to use for artifactory"
@@ -38,9 +38,9 @@ runs:
     - name: Push the commit to the source branch
       shell: bash -eux {0}
       run: |
-        if [ ${{ inputs.dry_run }} != "true" ]; then
+        if [ ${{ inputs.push_commit }} != "true" ]; then
           git push origin
-          echo "### Version bump: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+          echo "### Pushed version bump: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         else
-          echo "### Version bump : ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+          echo "### Created version bump (no push): ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         fi

@@ -10,8 +10,8 @@ inputs:
   tag_message_template:
     description: The template for the git tag message
     default: "BUMP ${VERSION}"
-  dry_run:
-    description: Whether this is a dry run
+  push_tag:
+    description: Whether to push the tag
     required: true
   artifactory_image:
     description: "Image to use for artifactory"
@@ -50,9 +50,9 @@ runs:
     - name: Push the tag to the source branch
       shell: bash -eux {0}
       run: |
-        if [ ${{ inputs.dry_run }} != "true" ]; then
+        if [ ${{ inputs.push_tag }} != "true" ]; then
           git push origin --tags
           echo "### Pushed tag: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         else
-          echo "### Create tag (dry run): ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+          echo "### Created tag (no push): ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         fi
