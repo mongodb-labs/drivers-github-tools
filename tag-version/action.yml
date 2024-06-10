@@ -24,7 +24,7 @@ runs:
       shell: bash -eux {0}
       run: |
         export VERSION=${{inputs.version}}
-        export TAG=$(echo "${{inputs.tag_template}} | envsubst)
+        export TAG=$(echo "${{inputs.tag_template}}" | envsubst)
         echo "TAG=$TAG" >> $GITHUB_ENV
     - name: Get the tag message
       shell: bash -eux {0}
