@@ -18,8 +18,8 @@ runs:
         uses: actions/create-github-app-token@v1
         id: app-token
         with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          app-id: ${{ inputs.app-id }}
+          private-key: ${{ inputs.private-key }}
 
       - name: Store GitHub token in environment
         run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
