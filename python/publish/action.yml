@@ -45,9 +45,9 @@ runs:
         release_version: ${{ inputs.version }}
         filenames: dist/*
         token: ${{ inputs.token }}
-    # - uses: mongodb-labs/drivers-github-tools/sbom@v2
-    #   with:
-    #     silk_asset_group: ${{ inputs.silk_asset_group }}
+    - uses: mongodb-labs/drivers-github-tools/sbom@v2
+      with:
+        silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Generate Sarif Report
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
@@ -65,9 +65,9 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
-    # - name: Publish distribution 📦 to PyPI
-    #   if: inputs.dry_run == 'false'
-    #   uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Publish distribution 📦 to PyPI
+      if: inputs.dry_run == 'false'
+      uses: pypa/gh-action-pypi-publish@release/v1
     - name: Ensure a clean repo
       shell: bash -eux {0}
       run: |
