@@ -1,0 +1,41 @@
+name: Secure Checkout
+description: Secure Checkout with GitHub App Credentials
+inputs:
+  app_id:
+    description: The ID of the GitHub app.
+    required: true
+  private_key:
+    description: The private key of the GitHub app.
+    required: true
+  ref:
+    description: The reference to check out
+    default: ${{ github.ref }}
+  fetch-depth:
+    description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
+    default: "1"
+  submodules:
+    description: >
+      Whether to checkout submodules: `true` to checkout submodules or `recursive` to
+      recursively checkout submodules.
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+      - name: Create temporary app token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ inputs.app_id }}
+          private-key: ${{ inputs.private_key }}
+
+      - name: Store GitHub token in environment
+        run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+        shell: bash
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          token: ${{ env.GH_TOKEN }}
+          fetch-depth: ${ {inputs.fetch-depth }}
+          submodules: ${{ inputs.submodules }}
