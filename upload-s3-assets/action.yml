@@ -8,9 +8,13 @@ inputs:
     description: "The name of the product"
     required: true
   filenames:
-    description: Files to upload - supports wildcards and glob patterns
+    description: "Files to upload - supports wildcards and glob patterns"
     default: '*'
     required: false
+  dry_run:
+    description: "Only print files that would be uploaded, but don't upload any files"
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -18,4 +22,8 @@ runs:
     - shell: bash
       working-directory: ${{ env.S3_ASSETS }}
       run: |
-        for filename in ${{ inputs.filenames }}; do aws s3 cp ${filename} s3://${AWS_BUCKET}/${{ inputs.product_name }}/${{ inputs.version }}/${filename}; done
+        if [ "${{ inputs.dry_run }}" == "false" ]; then
+          for filename in ${{ inputs.filenames }}; do aws s3 cp ${filename} s3://${AWS_BUCKET}/${{ inputs.product_name }}/${{ inputs.version }}/${filename}; done
+        else
+          for filename in ${{ inputs.filenames }}; do echo "Would upload ${filename} to ${{ inputs.product_name }}/${{ inputs.version }}/${filename}"; done
+        fi

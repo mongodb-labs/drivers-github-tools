@@ -167,7 +167,9 @@ be uploaded to the product's S3 bucket:
 ```
 
 Optionally, you can specify which files to upload using the `filenames` input.
-By default, all files in the S3 directory are uploaded.
+By default, all files in the S3 directory are uploaded. When the `dry_run` input
+is set to anything other than `false`, no files are uploaded, but instead the
+filename along with the resulting location in the bucket is printed.
 
 ## Python Helper Scripts
 
