@@ -32,7 +32,10 @@ export async function run(): Promise<void> {
   core.info(`Found ${alerts.length} alerts, processing now...`)
 
   const sarifReport = createSarifReport(alerts)
-  const filePath = path.join(process.cwd(), core.getInput('output-file'))
+  const outputFile = core.getInput('output-file')
+  const filePath = path.isAbsolute(outputFile)
+    ? outputFile
+    : path.join(process.cwd(), outputFile)
 
   core.info(`Processing done, writing report to file ${filePath}`)
 

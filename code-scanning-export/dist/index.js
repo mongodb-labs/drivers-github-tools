@@ -29289,7 +29289,10 @@ async function run() {
     const alerts = await (0, api_1.getAlerts)(repositoryInfo.owner, repositoryInfo.repo, ref, core.getInput('token'));
     core.info(`Found ${alerts.length} alerts, processing now...`);
     const sarifReport = (0, sarif_1.createSarifReport)(alerts);
-    const filePath = path.join(process.cwd(), core.getInput('output-file'));
+    const outputFile = core.getInput('output-file');
+    const filePath = path.isAbsolute(outputFile)
+        ? outputFile
+        : path.join(process.cwd(), outputFile);
     core.info(`Processing done, writing report to file ${filePath}`);
     fs.writeFileSync(filePath, JSON.stringify(sarifReport), {});
 }
