@@ -10,6 +10,14 @@ inputs:
   ref:
     description: The reference to check out
     default: ${{ github.ref }}
+  fetch-depth:
+    description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'
+    default: "1"
+  submodules:
+    description: >
+      Whether to checkout submodules: `true` to checkout submodules or `recursive` to
+      recursively checkout submodules.
+    default: "false"
 
 runs:
   using: composite
@@ -29,3 +37,5 @@ runs:
         with:
           ref: ${{ inputs.ref }}
           token: ${{ env.GH_TOKEN }}
+          fetch-depth: ${ {inputs.fetch-depth }}
+          submodules: ${{ inputs.submodules }}
