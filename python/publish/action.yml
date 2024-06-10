@@ -72,6 +72,7 @@ runs:
       shell: bash -eux {0}
       run: |
         git clean -dffx
+        git pull origin ${{ github.ref }}
     - name: Set following version
       uses: blink1073/drivers-github-tools/bump-version@bump-version
       with:
