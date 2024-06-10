@@ -132,6 +132,22 @@ This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
     silk_asset_group: mongodb-python-driver
 ```
 
+### Code Scanning Alerts
+
+This action will export all dismissed and open alerts to a SARIF file. By
+default, this file is named `code-scanning-alerts.json` and placed in the
+working directory.
+
+```yaml
+- name: Setup
+  uses: mongodb-labs/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Export Code Scanning Alerts
+  uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
+```
+
 ## Python Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases.
