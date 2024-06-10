@@ -28,7 +28,7 @@ runs:
       shell: bash -eux {0}
       run: |
         export VERSION=${{inputs.version}}
-        export COMMIT_MESSAGE=$(echo "${{inputs.commit_template}} | envsubst)
+        export COMMIT_MESSAGE=$(echo "${{inputs.commit_template}}" | envsubst)
         echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
     - name: Commit the version bump
       uses: mongodb-labs/drivers-github-tools/git-sign@v2

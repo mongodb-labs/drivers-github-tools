@@ -30,7 +30,7 @@ runs:
       shell: bash -eux {0}
       run: |
         export VERSION=${{inputs.version}}
-        export TAG_MESSAGE=$(echo "${{inputs.tag_message_template}} | envsubst)
+        export TAG_MESSAGE=$(echo "${{inputs.tag_message_template}}" | envsubst)
         echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_ENV
     - name: Tag the version
       uses: mongodb-labs/drivers-github-tools/git-sign@v2
