@@ -1,0 +1,21 @@
+name: Upload S3 assets
+description: Uploads assets from the S3 asset directory
+inputs:
+  version:
+    description: "The published version"
+    required: true
+  product_name:
+    description: "The name of the product"
+    required: true
+  filenames:
+    description: Files to upload - supports wildcards and glob patterns
+    default: '*'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ env.S3_ASSETS }}
+      run: |
+        for filename in ${{ inputs.filenames }}; do aws s3 cp ${filename} s3://${AWS_BUCKET}/${{ inputs.product_name }}/${{ inputs.version }}/${filename}; done

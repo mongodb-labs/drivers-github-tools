@@ -148,6 +148,27 @@ working directory.
   uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
 ```
 
+## Upload S3 assets
+
+A number of scripts create files in the `tmp/s3_assets` folder, which then can
+be uploaded to the product's S3 bucket:
+
+```yaml
+- name: Setup
+  uses: mongodb-labs/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Upload S3 assets
+  uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+  with:
+    version: <release version>
+    product_name: <product_name>
+```
+
+Optionally, you can specify which files to upload using the `filenames` input.
+By default, all files in the S3 directory are uploaded.
+
 ## Python Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases.
