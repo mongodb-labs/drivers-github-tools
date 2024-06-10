@@ -5,6 +5,23 @@
 
 This repository contains GitHub Actions that are common to drivers.
 
+## Secure Checkout
+
+This action will perform a checkout with the GitHub App credentials.
+
+```yaml
+- name: secure-checkout
+  uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+  with:
+    app-id: ${{ vars.APP_ID }}
+    private-key: ${{ secrets.APP_PRIVATE_KEY }}
+```
+
+By default it will use the current `${{github.ref}}` if the `ref` parameter is
+not given.  It will write the secure global variable `GH_TOKEN` that can be
+used with the `gh` cli.
+
+
 ## Setup
 
 There is a common setup action that is meant to be run before all
