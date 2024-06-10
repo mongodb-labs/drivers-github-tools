@@ -36,6 +36,7 @@ runs:
       uses: mongodb-labs/drivers-github-tools/git-sign@v2
       with:
         command: git tag -a \"${{ env.TAG }}\" -m \"${{ env.TAG_MESSAGE }}\" -s --local-user=${{ env.GPG_KEY_ID }}
+        artifactory_image: ${{ inputs.artifactory_image }}
     - name: Verify the tag
       shell: bash -eux {0}
       run: |

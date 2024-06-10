@@ -68,6 +68,10 @@ runs:
     # - name: Publish distribution 📦 to PyPI
     #   if: inputs.dry_run == 'false'
     #   uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Ensure a clean repo
+      shell: bash -eux {0}
+      run: |
+        git clean -dffx
     - name: Set following version
       uses: blink1073/drivers-github-tools/bump-version@bump-version
       with:
