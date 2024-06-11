@@ -75,7 +75,7 @@ an argument and update the version accordingly.
 ### tag-version
 
 This is a convenience action to create a signed tag, optionally verify the tag,
-and push the tag if it is not a dry run.  You can override the tag format and the
+and push the tag unless `push_tag` is disabled.  You can override the tag format and the
 tag message format if desired.
 
 ```yaml
