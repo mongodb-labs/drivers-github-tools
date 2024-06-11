@@ -60,7 +60,7 @@ Use this action to create signed git artifacts:
 ### bump-version
 
 This is a convenience action to bump the version, create a signed commit, and
-push the commit if it is not a dry run.  You can override the commit message
+push the commit unless `push_commit` is disabled.  You can override the commit message
 format if desired.  The version bump script should accept a new version as
 an argument and update the version accordingly.
 
