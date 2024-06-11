@@ -51,8 +51,7 @@ The action requires `id-token: write` permissions.
 
 ## Signing tools
 
-The actions in the `garasign` folder are used to sign artifacts using the team's
-GPG key.
+These actions are used to sign artifacts using the team's GPG key.
 
 ### git-sign
 
@@ -73,6 +72,34 @@ Use this action to create signed git artifacts:
   uses: mongodb-labs/drivers-github-tools/git-sign@v2
   with:
     command: "git tag -m 'Tag' -s --local-user=${{ env.GPG_KEY_ID }} -a <tag>"
+```
+
+### bump-version
+
+This is a convenience action to bump the version, create a signed commit, and
+push the commit unless `push_commit` is disabled.  You can override the commit message
+format if desired.  The version bump script should accept a new version as
+an argument and update the version accordingly.
+
+```yaml
+- name: Bump version
+  uses: mongodb-labs/drivers-github-tools/bump-version@v2
+  with:
+    version: ${{ inputs.version }}
+    version_bump_script: "bash ./my-bump-version-script.sh"
+```
+
+### tag-version
+
+This is a convenience action to create a signed tag, optionally verify the tag,
+and push the tag unless `push_tag` is disabled.  You can override the tag format and the
+tag message format if desired.
+
+```yaml
+- name: Tag version
+  uses: mongodb-labs/drivers-github-tools/tag-version@v2
+  with:
+    version: ${{ inputs.version }}
 ```
 
 ### gpg-sign

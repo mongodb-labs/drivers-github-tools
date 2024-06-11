@@ -1,0 +1,58 @@
+name: Bump Version
+description: Bump the version and push if not a dry-run
+inputs:
+  version:
+    description: The new version
+    required: true
+  tag_template:
+    description: The template for the git tag
+    default: "${VERSION}"
+  tag_message_template:
+    description: The template for the git tag message
+    default: "BUMP ${VERSION}"
+  push_tag:
+    description: Whether to push the tag
+    default: "true"
+  artifactory_image:
+    description: "Image to use for artifactory"
+    default: release-tools-container-registry-local/garasign-git
+
+runs:
+  using: composite
+  steps:
+    - name: Get the tag
+      shell: bash -eux {0}
+      run: |
+        export VERSION=${{inputs.version}}
+        export TAG=$(echo "${{inputs.tag_template}}" | envsubst)
+        echo "TAG=$TAG" >> $GITHUB_ENV
+    - name: Get the tag message
+      shell: bash -eux {0}
+      run: |
+        export VERSION=${{inputs.version}}
+        export TAG_MESSAGE=$(echo "${{inputs.tag_message_template}}" | envsubst)
+        echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_ENV
+    - name: Tag the version
+      uses: mongodb-labs/drivers-github-tools/git-sign@v2
+      with:
+        command: git tag -a \"${{ env.TAG }}\" -m \"${{ env.TAG_MESSAGE }}\" -s --local-user=${{ env.GPG_KEY_ID }}
+        artifactory_image: ${{ inputs.artifactory_image }}
+    - name: Verify the tag
+      shell: bash -eux {0}
+      run: |
+        if [ -n "$GPG_PUBLIC_URL" ]; then
+          curl $GPG_PUBLIC_URL --output /tmp/signature.pub
+          gpg --import /tmp/signature.pub
+          git verify-tag $TAG
+        else
+          echo "Skipping tag verification"
+        fi
+    - name: Push the tag to the source branch
+      shell: bash -eux {0}
+      run: |
+        if [ ${{ inputs.push_tag }} == "true" ]; then
+          git push origin --tags
+          echo "### Pushed tag: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "### Created tag (no push): ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+        fi
