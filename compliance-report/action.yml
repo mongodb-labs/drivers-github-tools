@@ -1,9 +1,6 @@
 name: Generate a compliance report
 description: Generates the compliance report in the S3_ASSETS folder
 inputs:
-  token:
-    description: The GitHub token for the action
-    required: true
   sbom_name:
     description: The name of the SBOM file in the S3 bucket
     default: cyclonedx.sbom.json
@@ -13,6 +10,8 @@ inputs:
   authorized_pub_name:
     description: The name of the Authorized Publication file in the S3 bucket
     default: authorized-publication.txt
+  token:
+    description: The GitHub token for the action
 runs:
   using: composite
   steps:
@@ -20,7 +19,9 @@ runs:
       shell: bash
       run: |
         set -eux
-        export GH_TOKEN=${{ inputs.token }}
+        if [ -n ${{ inputs.token }]; then
+          export GH_TOKEN=${{ inputs.token }}
+        fi
         export RELEASE_CREATOR=$(gh api users/${{ github.actor }} --jq '.name')
         export SBOM_NAME=${{ inputs.sbom_name }}
         export SARIF_NAME=${{ inputs.sarif_name }}

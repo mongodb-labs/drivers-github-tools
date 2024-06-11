@@ -19,7 +19,6 @@ inputs:
     required: true
   token:
     description: "The GitHub access token"
-    required: true
   dry_run:
     description: "Whether this is a dry run"
     required: true
@@ -39,24 +38,18 @@ runs:
       uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
         filenames: dist/*
-    - uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
+    - uses: blink1073/drivers-github-tools/full-report@full-report
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
-        filenames: dist/*
-        token: ${{ inputs.token }}
-    - uses: mongodb-labs/drivers-github-tools/sbom@v2
-      with:
+        dist_filenames: dist/*
         silk_asset_group: ${{ inputs.silk_asset_group }}
-    - name: Generate Sarif Report
-      uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
-      with:
-        ref: ${{ inputs.version }}
-    - name: Generate Compliance Report
-      uses: mongodb-labs/drivers-github-tools/compliance-report@v2
-      with:
         token: ${{ inputs.token }}
-    - name: Run publish script
+    - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      with:
+          version: ${{ inputs.version }}
+          product_name: ${{ inputs.product_name }}
+    - name: Run GitHub Publish script
       shell: bash
       run: ${{github.action_path}}/publish.sh
       env:

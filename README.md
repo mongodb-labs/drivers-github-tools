@@ -152,7 +152,7 @@ This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
 ### Code Scanning Alerts
 
 This action will export all dismissed and open alerts to a SARIF file. By
-default, this file is named `code-scanning-alerts.json` and placed in the
+default, this defeault file is named `code-scanning-alerts.json` and placed in the
 working directory.
 
 ```yaml
@@ -163,6 +163,41 @@ working directory.
 
 - name: Export Code Scanning Alerts
   uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
+```
+
+### Compliance Report
+
+This action will generate the SSDLC compliance report in the `S3_ASSETS` folder,
+caled `ssdlc_compliance_report.md`.
+
+```yaml
+- name: Setup
+  uses: mongodb-labs/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Export Code Scanning Alerts
+  uses: mongodb-labs/drivers-github-tools/compliance-report@v2
+```
+
+## Full Report
+
+This action is a convenience function to handle all of the SSDLC reports and put them
+in the `S3_ASSETS` folder.
+
+```yaml
+- name: Setup
+  uses: mongodb-labs/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Generate SSDLC Reports
+  uses: mongodb-labs/drivers-github-tools/full-report@v2
+  with:
+    product_name: winkerberos
+    release_version: ${{ inputs.version }}
+    silk_asset_group: winkerberos
+    dist_filenames: dist/*
 ```
 
 ## Upload S3 assets
