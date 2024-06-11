@@ -12,7 +12,7 @@ inputs:
     default: "BUMP ${VERSION}"
   push_tag:
     description: Whether to push the tag
-    required: true
+    default: "true"
   artifactory_image:
     description: "Image to use for artifactory"
     default: release-tools-container-registry-local/garasign-git
@@ -50,7 +50,7 @@ runs:
     - name: Push the tag to the source branch
       shell: bash -eux {0}
       run: |
-        if [ ${{ inputs.push_tag }} != "true" ]; then
+        if [ ${{ inputs.push_tag }} == "true" ]; then
           git push origin --tags
           echo "### Pushed tag: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         else

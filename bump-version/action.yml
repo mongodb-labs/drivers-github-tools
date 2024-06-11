@@ -12,7 +12,7 @@ inputs:
     default: "BUMP ${VERSION}"
   push_commit:
     description: Whether to push the commit
-    required: true
+    default: "true"
   artifactory_image:
     description: "Image to use for artifactory"
     default: release-tools-container-registry-local/garasign-git
@@ -38,7 +38,7 @@ runs:
     - name: Push the commit to the source branch
       shell: bash -eux {0}
       run: |
-        if [ ${{ inputs.push_commit }} != "true" ]; then
+        if [ ${{ inputs.push_commit }} == "true" ]; then
           git push origin
           echo "### Pushed version bump: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         else
