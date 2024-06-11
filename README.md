@@ -70,7 +70,6 @@ an argument and update the version accordingly.
   with:
     version: ${{ inputs.version }}
     version_bump_script: "bash ./my-bump-version-script.sh"
-    dry_run: ${{ inputs.dry_run }}
 ```
 
 ### tag-version
