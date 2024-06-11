@@ -68,20 +68,14 @@ runs:
     - name: Publish distribution 📦 to PyPI
       if: inputs.dry_run == 'false'
       uses: pypa/gh-action-pypi-publish@release/v1
-    - name: Set following version
+    - name: Ensure a clean repo
       shell: bash -eux {0}
       run: |
         git clean -dffx
-        bash ${{ inputs.version_bump_script }} ${{ inputs.version }}
-    - name: Commit the version bump
-      uses: mongodb-labs/drivers-github-tools/git-sign@v2
+        git pull origin ${{ github.ref }}
+    - name: Set following version
+      uses: blink1073/drivers-github-tools/bump-version@bump-version
       with:
-        command: git commit -a -m \"BUMP ${{ inputs.following_version }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
-    - name: Push the commit to the source branch
-      shell: bash -eux {0}
-      run: |
-        if [ ${{ inputs.dry_run }} != "true" ]; then
-          git push origin --tags
-        else
-          echo "Not pushing the following_version tag since it is a dry run"
-        fi
+          version: ${{ inputs.following_version }}
+          version_bump_script: ${{ inputs.version_bump_script }}
+          dry_run: ${{ inputs.dry_run }}
