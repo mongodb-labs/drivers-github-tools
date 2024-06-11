@@ -83,7 +83,6 @@ tag message format if desired.
   uses: mongodb-labs/drivers-github-tools/tag-version@v2
   with:
     version: ${{ inputs.version }}
-    dry_run: ${{ inputs.dry_run }}
 ```
 
 ### gpg-sign
