@@ -9,7 +9,7 @@ inputs:
     default: "${VERSION}"
   tag_message_template:
     description: The template for the git tag message
-    default: "BUMP ${VERSION}"
+    default: "Release ${VERSION}"
   push_tag:
     description: Whether to push the tag
     default: "true"
