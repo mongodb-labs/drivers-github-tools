@@ -40,7 +40,7 @@ runs:
       run: |
         if [ ${{ inputs.push_commit }} == "true" ]; then
           git push origin
-          echo "### Pushed version bump: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+          echo "Pushed version bump: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         else
-          echo "### Created version bump (no push): ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+          echo "Created version bump (no push): ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
         fi
