@@ -23,14 +23,14 @@ runs:
     - name: Get the tag
       shell: bash -eux {0}
       run: |
-        export VERSION=${{inputs.version}}
-        export TAG=$(echo "${{inputs.tag_template}}" | envsubst)
+        export VERSION=${{ inputs.version }}
+        export TAG=$(echo "${{ inputs.tag_template }}" | envsubst)
         echo "TAG=$TAG" >> $GITHUB_ENV
     - name: Get the tag message
       shell: bash -eux {0}
       run: |
-        export VERSION=${{inputs.version}}
-        export TAG_MESSAGE=$(echo "${{inputs.tag_message_template}}" | envsubst)
+        export VERSION=${{ inputs.version }}
+        export TAG_MESSAGE=$(echo "${{ inputs.tag_message_template }}" | envsubst)
         echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_ENV
     - name: Tag the version
       uses: mongodb-labs/drivers-github-tools/git-sign@v2
@@ -52,7 +52,7 @@ runs:
       run: |
         if [ ${{ inputs.push_tag }} == "true" ]; then
           git push origin --tags
-          echo "Pushed tag: ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+          echo "Pushed tag: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
         else
-          echo "Created tag (no push): ${{inputs.version}}" >> $GITHUB_STEP_SUMMARY
+          echo "Created tag (no push): ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
         fi
