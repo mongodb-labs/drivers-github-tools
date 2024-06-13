@@ -6,7 +6,7 @@ inputs:
     required: true
   version_bump_script:
     description: The version bump script
-    required: true
+    default: ''
   commit_template:
     description: The template for the git commit message
     default: "BUMP ${VERSION}"
@@ -21,6 +21,7 @@ runs:
   using: composite
   steps:
     - name: Set new version
+      if: ${{ inputs.version_bump_script != '' }}
       shell: bash -eux {0}
       run: |
         ${{ inputs.version_bump_script }} ${{ inputs.version }}
