@@ -23,7 +23,7 @@ runs:
       shell: bash
       run: |
         set -eux
-        if [ -n ${{ inputs.token }]; then
+        if [ -n ${{ inputs.token }} ]; then
           export GH_TOKEN=${{ inputs.token }}
         fi
         export RELEASE_CREATOR=$(gh api users/${{ github.actor }} --jq '.name')
