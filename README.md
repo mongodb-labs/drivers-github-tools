@@ -203,7 +203,7 @@ caled `ssdlc_compliance_report.md`.
   with:
     ...
 
-- name: Export Code Scanning Alerts
+- name: Generate compliance report
   uses: mongodb-labs/drivers-github-tools/compliance-report@v2
 ```
 
