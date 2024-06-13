@@ -18,6 +18,9 @@ See ${SARIF_NAME}
 Signature Information
 See ${AUTHORIZED_PUB_NAME}
 
+Security Report
+${SECURITY_REPORT}
+
 Known Vulnerabilities
 Any vulnerabilities that may be shown in the files referenced above have been reviewed and accepted by the appropriate approvers.
 EOF
