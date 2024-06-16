@@ -21,9 +21,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set artifactory username
-      shell: bash
-      run: echo "ARTIFACTORY_USERNAME=go-driver" >> $GITHUB_ENV
     - uses: blink1073/drivers-github-tools/full-report@full-report
       with:
         product_name: mongo-go-driver
