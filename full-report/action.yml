@@ -11,7 +11,7 @@ inputs:
     description: The Silk Asset Group for the Project
     required: true
   security_report_location:
-    description: The relative path to the security report in the repository
+    description: The URL or relative git path to the security report
   dist_filenames:
     description: The distribution filename or glob pattern
   token:
