@@ -29,13 +29,13 @@ runs:
         token: ${{ inputs.token }}
     - name: Publish GitHub Release
       shell: bash -eux {0}
+      working-directory: ${{ github.action_path }}
       env:
         VERSION: ${{ inputs.version }}
         PREV_VERSION: ${{ inputs.prev_version }}
         PUSH_CHANGES: ${{ inputs.push_changes }}
         GH_TOKEN: ${{ inputs.token }}
-      run: |
-        . ${{ github.action_path }}/publish.sh
+      run: . publish.sh
     - name: Upload S3 assets
       uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
       with:
