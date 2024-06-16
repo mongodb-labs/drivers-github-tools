@@ -9,6 +9,7 @@ inputs:
     required: true
   following_version:
     description: The post (dev) version to set
+    required: true
   silk_asset_group:
     description: The Silk Asset Group
     required: true
@@ -47,4 +48,3 @@ runs:
         version: ${{ inputs.following_version }}
         version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
         push_commit: ${{ inputs.push_changes }}
-        token: ${{ inputs.token }}
