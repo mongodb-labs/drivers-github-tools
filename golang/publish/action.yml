@@ -35,7 +35,7 @@ runs:
         PUSH_CHANGES: ${{ inputs.push_changes }}
         GH_TOKEN: ${{ inputs.token }}
       run: |
-        . ${{ github.action_path }}/github_release.sh
+        . ${{ github.action_path }}/publish.sh
     - name: Upload S3 assets
       uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
       with:
