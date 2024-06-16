@@ -20,7 +20,7 @@ NOTES_FILE=$(pwd)/github.md
 if [ "$PUSH_CHANGES" == "true" ]; then
     pushd $GITHUB_WORKSPACE || exit 1
     TITLE="MongoDB Go Driver ${VERSION}"
-    gh release create v${VERSION} --draft --verify-tag --title $TITLE -F $NOTES_FILE
+    gh release create v${VERSION} --draft --verify-tag --title "$TITLE" -F $NOTES_FILE
     gh release upload v${VERSION} $RELEASE_ASSETS/*.*
     gh release view v${VERSION} >> $GITHUB_STEP_SUMMARY
     popd || exit 1
