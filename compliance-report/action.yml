@@ -32,5 +32,5 @@ runs:
         export AUTHORIZED_PUB_NAME=${{ inputs.authorized_pub_name }}
         export SECURITY_REPORT_LOCATION=${{ inputs.security_report_location }}
         export RELEASE_VERSION=${{ inputs.release_version }}
-        export REPOSITORY={{ github.repository }}
+        export REPOSITORY=${{ github.repository }}
         bash ${{ github.action_path }}/generate.sh

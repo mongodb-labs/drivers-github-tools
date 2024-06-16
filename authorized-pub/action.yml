@@ -19,7 +19,7 @@ runs:
     - name: Prepare report
       shell: bash
       run: |
-          if [ -n ${{ inputs.token }} ]; then
+          if [ -n "${{ inputs.token }}" ]; then
             export GH_TOKEN=${{ inputs.token }}
           fi
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
