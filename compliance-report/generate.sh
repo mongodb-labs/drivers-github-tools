@@ -3,8 +3,9 @@
 set -eux
 
 # Get release creator.
+cd $GITHUB_WORKSPACE
 export GH_TOKEN=${GH_TOKEN:-TOKEN}
-RELEASE_CREATOR=$(gh api users/${ACTOR} --jq '.name')
+RELEASE_CREATOR=$(gh api users/${GITHUB_ACTOR} --jq '.name')
 
 # Handle security report.
 SECURITY_REPORT="N/A"
@@ -13,7 +14,7 @@ if [ -n "$SECURITY_REPORT_LOCATION" ]; then
   if [[ $SECURITY_REPORT_LOCATION == https* ]]; then
     SECURITY_REPORT="See $SECURITY_REPORT_LOCATION"
   else
-    SECURITY_REPORT="See https://github.com/$REPOSITORY/blob/$RELEASE_VERSION/$SECURITY_REPORT_LOCATION"
+    SECURITY_REPORT="See https://github.com/$GITHUB_REPOSITORY/blob/$RELEASE_VERSION/$SECURITY_REPORT_LOCATION"
   fi
 fi
 

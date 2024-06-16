@@ -23,8 +23,6 @@ runs:
       shell: bash
       env:
         TOKEN: ${{ inputs.token }}
-        ACTOR: ${{ github.actor }}
-        REPOSITORY: ${{ github.repository }}
         SBOM_NAME: ${{ inputs.sbom_name }}
         SARIF_NAME: ${{ inputs.sarif_name }}
         AUTHORIZED_PUB_NAME: ${{ inputs.authorized_pub_name }}
