@@ -15,6 +15,7 @@ runs:
       with:
         version: ${{ inputs.version }}
         version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
+        commit_template: "BUMP v${VERSION}"
         push_commit: ${{ inputs.push_changes }}
     - uses: blink1073/drivers-github-tools/tag-version@full-report
       with:
