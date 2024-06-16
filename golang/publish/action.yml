@@ -15,6 +15,8 @@ inputs:
   push_changes:
     description: Whether to push the changes
     default: "true"
+  token:
+    description: The GitHub token
 runs:
   using: composite
   steps:
@@ -23,12 +25,14 @@ runs:
         product_name: mongo-go-driver
         release_version: ${{ inputs.version }}
         silk_asset_group: ${{ inputs.silk_asset_group }}
+        token: ${{ inputs.token }}
     - name: Publish GitHub Release
       shell: bash -eux {0}
       env:
         VERSION: ${{ inputs.version }}
         PREV_VERSION: ${{ inputs.prev_version }}
         PUSH_CHANGES: ${{ inputs.push_changes }}
+        GH_TOKEN: ${{ inputs.token }}
       run: |
         . ${{ github.action_path }}/github_release.sh
     - name: Upload S3 assets
@@ -42,3 +46,4 @@ runs:
         version: ${{ inputs.following_version }}
         version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
         push_commit: ${{ inputs.push_changes }}
+        token: ${{ inputs.token }}
