@@ -11,6 +11,7 @@ for var in $vars; do
 done
 
 echo "::group::Set up artifactory"
+ARTIFACTORY_USERNAME=${ARTIFACTORY_USERNAME_INPUT:-ARTIFACTORY_USERNAME}
 echo $ARTIFACTORY_PASSWORD | podman login -u $ARTIFACTORY_USERNAME --password-stdin $ARTIFACTORY_REGISTRY
 echo "::endgroup::"
 
