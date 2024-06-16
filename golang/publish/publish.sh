@@ -18,9 +18,9 @@ NOTES_FILE=$(pwd)/github.md
 # Handle GitHub Release
 if [ "$PUSH_CHANGES" == "true" ]; then
     pushd $GITHUB_WORKSPACE
-    gh release create ${VERSION} --draft --verify-tag --title ${VERSION} -F $NOTES_FILE
-    gh release upload ${VERSION} $RELEASE_ASSETS/*.*
-    gh release view ${VERSION} >> $GITHUB_STEP_SUMMARY
+    gh release create ${VERSION} --draft --verify-tag --title v${VERSION} -F $NOTES_FILE
+    gh release upload v${VERSION} $RELEASE_ASSETS/*.*
+    gh release view $v{VERSION} >> $GITHUB_STEP_SUMMARY
     popd
 else
     echo "## Skipping draft release with notes:" >> $GITHUB_STEP_SUMMARY
