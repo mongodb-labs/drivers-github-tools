@@ -25,6 +25,7 @@ runs:
         product_name: mongo-go-driver
         release_version: ${{ inputs.version }}
         silk_asset_group: ${{ inputs.silk_asset_group }}
+        security_report_location: ${{ env.SECURITY_REPORT_URL }}
         token: ${{ inputs.token }}
     - name: Publish GitHub Release
       shell: bash -eux {0}
