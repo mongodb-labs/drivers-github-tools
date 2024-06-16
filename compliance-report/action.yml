@@ -26,6 +26,7 @@ runs:
         ACTOR: ${{ github.actor }}
         REPOSITORY: ${{ github.repository }}
         SBOM_NAME: ${{ inputs.sbom_name }}
+        SARIF_NAME: ${{ inputs.sarif_name }}
         AUTHORIZED_PUB_NAME: ${{ inputs.authorized_pub_name }}
         SECURITY_REPORT_LOCATION: ${{ inputs.security_report_location }}
         RELEASE_VERSION: ${{ inputs.release_version }}
