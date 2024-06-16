@@ -22,6 +22,7 @@ runs:
       run: |
         export PREV_VERSION=$(cat version/version.go | grep "var Driver" | awk -F'"' '{print $2}')
         echo "prev_version=$PREV_VERSION" >> $GITHUB_OUTPUT
+        echo "ARTIFACTORY_USERNAME=go-driver" >> $GITHUB_ENV
     - uses: mongodb-labs/drivers-github-tools/bump-version@v2
       with:
         version: ${{ inputs.version }}
