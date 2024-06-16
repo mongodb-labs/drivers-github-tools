@@ -2,6 +2,17 @@
 
 set -eux
 
+# Handle security report.
+SECURITY_REPORT="N/A"
+SECURITY_REPORT_LOCATION=
+if [ -n "$SECURITY_REPORT_LOCATION" ]; then
+  if [[ $SECURITY_REPORT_LOCATION == https* ]]; then
+    SECURITY_REPORT="See $SECURITY_REPORT_LOCATION"
+  else
+    SECURITY_REPORT="See https://github.com/$REPOSITORY/blob/$RELEASE_VERSION/$SECURITY_REPORT_LOCATION"
+  fi
+fi
+
 cat << EOF >> ${S3_ASSETS}/ssdlc_compliance_report.md
 Release Creator
 ${RELEASE_CREATOR}
