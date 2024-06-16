@@ -7,9 +7,6 @@ inputs:
   prev_version:
     description: The previous version
     required: true
-  following_version:
-    description: The post (dev) version to set
-    required: true
   silk_asset_group:
     description: The Silk Asset Group
     required: true
@@ -36,15 +33,10 @@ runs:
         PREV_VERSION: ${{ inputs.prev_version }}
         PUSH_CHANGES: ${{ inputs.push_changes }}
         GH_TOKEN: ${{ inputs.token }}
-      run: . publish.sh
+      run: ./publish.sh
     - name: Upload S3 assets
       uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
       with:
           version: ${{ inputs.version }}
           product_name: mongo-go-driver
           dry_run: ${{ env.DRY_RUN }}
-    - uses: mongodb-labs/drivers-github-tools/bump-version@v2
-      with:
-        version: ${{ inputs.following_version }}
-        version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
-        push_commit: ${{ inputs.push_changes }}
