@@ -19,6 +19,5 @@ runs:
         push_commit: ${{ inputs.push_changes }}
     - uses: blink1073/drivers-github-tools/tag-version@full-report
       with:
-        version: ${{ inputs.version }}
-        tag_template: "v${VERSION}"
+        version: v${{ inputs.version }}
         push_tag: ${{ inputs.push_changes }}
