@@ -26,6 +26,7 @@ if [ "$PUSH_CHANGES" == "true" ]; then
     gh release upload v${VERSION} $RELEASE_ASSETS/*.*
     JSON="url,tagName,assets,author,createdAt"
     JQ='.url,.tagName,.author.login,.createdAt,.assets[].name'
+    echo "$TITLE" >> $GITHUB_STEP_SUMMARY
     gh release view --json $JSON --jq $JQ v${VERSION} >> $GITHUB_STEP_SUMMARY
     popd || exit 1
 else
