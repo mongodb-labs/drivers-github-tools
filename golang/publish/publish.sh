@@ -15,7 +15,7 @@ rm forum.md
 
 # Handle GitHub Release
 if [ "$PUSH_CHANGES" == "true" ]; then
-    push $GITHUB_WORKSPACE
+    pushd $GITHUB_WORKSPACE
     gh release create ${VERSION} --draft --verify-tag --title ${VERSION} -F github.md
     gh release upload ${VERSION} $RELEASE_ASSETS/*.*
     gh release view ${VERSION} >> $GITHUB_STEP_SUMMARY
