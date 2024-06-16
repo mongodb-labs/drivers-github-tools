@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # Handle DRY_RUN
- if [ "$PUSH_CHANGES" != "true" ]; then
+if [ "$PUSH_CHANGES" != "true" ]; then
     export DRY_RUN=true
 else
     export DRY_RUN=false
@@ -17,12 +17,12 @@ NOTES_FILE=$(pwd)/github.md
 
 # Handle GitHub Release
 if [ "$PUSH_CHANGES" == "true" ]; then
-    pushd $GITHUB_WORKSPACE
+    pushd $GITHUB_WORKSPACE || exit 1
     TITLE="MongoDB Go Driver ${VERSION}"
     gh release create ${VERSION} --draft --verify-tag --title $TITLE -F $NOTES_FILE
     gh release upload v${VERSION} $RELEASE_ASSETS/*.*
     gh release view v${VERSION} >> $GITHUB_STEP_SUMMARY
-    popd
+    popd || exit 1
 else
     echo "## Skipping draft release with notes:" >> $GITHUB_STEP_SUMMARY
     cat $NOTES_FILE >> $GITHUB_STEP_SUMMARY
