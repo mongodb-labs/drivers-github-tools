@@ -14,6 +14,8 @@ go run notes.go $VERSION $PREV_VERSION
 cat forum.md >> $GITHUB_STEP_SUMMARY
 rm forum.md
 
+echo "---" >> $GITHUB_STEP_SUMMARY
+
 NOTES_FILE=$(pwd)/github.md
 
 # Handle GitHub Release
@@ -22,7 +24,9 @@ if [ "$PUSH_CHANGES" == "true" ]; then
     TITLE="MongoDB Go Driver ${VERSION}"
     gh release create v${VERSION} --draft --verify-tag --title "$TITLE" -F $NOTES_FILE
     gh release upload v${VERSION} $RELEASE_ASSETS/*.*
-    gh release view v${VERSION} >> $GITHUB_STEP_SUMMARY
+    JSON="url,tagName,assets,author,createdAt"
+    JQ='.url,.tagName,.author.login,.createdAt,.assets[].name'
+    gh release view --json $JSON --jq $JQ v${VERSION} >> $GITHUB_STEP_SUMMARY
     popd || exit 1
 else
     echo "## Skipping draft release with notes:" >> $GITHUB_STEP_SUMMARY
