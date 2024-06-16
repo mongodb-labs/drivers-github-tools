@@ -16,7 +16,7 @@ runs:
         version: ${{ inputs.version }}
         version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
         push_commit: ${{ inputs.push_changes }}
-    - uses: mongodb-labs/drivers-github-tools/tag-version@v2
+    - uses: blink1073/drivers-github-tools/tag-version@full-report
       with:
         version: ${{ inputs.version }}
         tag_template: "v${VERSION}"
