@@ -1,0 +1,33 @@
+name: Pre Publish
+description: Pre Publish Action for Go Driver
+inputs:
+  version:
+    description: The published version
+    required: true
+  push_changes:
+    description: Whether to push the changes
+    default: "true"
+
+outputs:
+  prev_version:
+    description: The previous version
+    value: ${{ steps.prev-version.outputs.prev_version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get previous version
+      shell: bash
+      id: prev-version
+      run: |
+        export PREV_VERSION=$(cat version/version.go | grep "var Driver" | awk -F'"' '{print $2}')
+        echo "prev_version=$PREV_VERSION" >> $GITHUB_OUTPUT
+    - uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      with:
+        version: ${{ inputs.version }}
+        version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
+        push_commit: ${{ inputs.push_changes }}
+    - uses: mongodb-labs/drivers-github-tools/tag-version@v2
+      with:
+        version: ${{ inputs.version }}
+        push_tag: ${{ inputs.push_changes }}

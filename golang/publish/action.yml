@@ -1,0 +1,44 @@
+name: Publish
+description: Publish Go Driver Release
+inputs:
+  version:
+    description: The published version
+    required: true
+  prev_version:
+    description: The previous version
+    required: true
+  following_version:
+    description: The post (dev) version to set
+  silk_asset_group:
+    description: The Silk Asset Group
+    required: true
+  push_changes:
+    description: Whether to push the changes
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - uses: blink1073/drivers-github-tools/full-report@full-report
+      with:
+        product_name: mongo-go-driver
+        release_version: ${{ inputs.version }}
+        silk_asset_group: ${{ inputs.silk_asset_group }}
+    - name: Publish GitHub Release
+      shell: bash -eux {0}
+      env:
+        VERSION: ${{ inputs.version }}
+        PREV_VERSION: ${{ inputs.prev_version }}
+        PUSH_CHANGES: ${{ inputs.push_changes }}
+      run: |
+        . ${{ github.action_path }}/github_release.sh
+    - name: Upload S3 assets
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      with:
+          version: ${{ inputs.version }}
+          product_name: mongo-go-driver
+          dry_run: ${{ env.DRY_RUN }}
+    - uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      with:
+        version: ${{ inputs.following_version }}
+        version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
+        push_commit: ${{ inputs.push_changes }}
