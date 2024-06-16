@@ -2,6 +2,10 @@
 
 set -eux
 
+# Get release creator.
+export GH_TOKEN=${GH_TOKEN:-TOKEN}
+export RELEASE_CREATOR=$(gh api users/${ACTOR} --jq '.name')
+
 # Handle security report.
 SECURITY_REPORT="N/A"
 SECURITY_REPORT_LOCATION=

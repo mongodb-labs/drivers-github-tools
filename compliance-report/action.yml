@@ -21,16 +21,13 @@ runs:
   steps:
     - name: Generate Compliance Report
       shell: bash
-      run: |
-        set -eux
-        if [ -n ${{ inputs.token }} ]; then
-          export GH_TOKEN=${{ inputs.token }}
-        fi
-        export RELEASE_CREATOR=$(gh api users/${{ github.actor }} --jq '.name')
-        export SBOM_NAME=${{ inputs.sbom_name }}
-        export SARIF_NAME=${{ inputs.sarif_name }}
-        export AUTHORIZED_PUB_NAME=${{ inputs.authorized_pub_name }}
-        export SECURITY_REPORT_LOCATION=${{ inputs.security_report_location }}
-        export RELEASE_VERSION=${{ inputs.release_version }}
-        export REPOSITORY=${{ github.repository }}
-        bash ${{ github.action_path }}/generate.sh
+      env:
+        TOKEN: ${{ inputs.token }}
+        ACTOR: ${{ github.actor }}
+        REPOSITORY: ${{ github.repository }}
+        SBOM_NAME: ${{ inputs.sbom_name }}
+        AUTHORIZED_PUB_NAME: ${{ inputs.authorized_pub_name }}
+        SECURITY_REPORT_LOCATION: ${{ inputs.security_report_location }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
+      working-directory: "${{ github.action_path }}"
+      run: ./generate.sh
