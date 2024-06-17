@@ -56,7 +56,7 @@ runs:
     - name: Run GitHub Publish script
       shell: bash
       id: publish-script
-      run: ${ {github.action_path }}/publish.sh
+      run: ${{ github.action_path }}/publish.sh
       env:
         GH_TOKEN: ${{ inputs.token }}
         VERSION: ${{ inputs.version }}
