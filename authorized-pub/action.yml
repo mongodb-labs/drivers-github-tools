@@ -29,8 +29,8 @@ runs:
           
           if [ -n "${{ inputs.output_file }}" ]; then
             export REPORT=${{ inputs.output_file }}
-          else 
-            export REPORT=$S3_ASSETS/authorized-publication.txt        
+          else
+            export REPORT=$S3_ASSETS/authorized-publication.txt
           fi
 
           export FILENAMES=${{ inputs.filenames }}
