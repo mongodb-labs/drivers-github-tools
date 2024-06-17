@@ -207,6 +207,11 @@ called `ssdlc_compliance_report.md`.
   uses: mongodb-labs/drivers-github-tools/compliance-report@v2
 ```
 
+There are several ways to specify the security report:
+- By specifying an absolute URL starting with https
+- By specifying a relative path, which is then linked to the corresponding git blob for the tagged version
+- By adding the `security-report-url` to the AWS Secrets Vault
+
 ## Full Report
 
 This action is a convenience function to handle all of the SSDLC reports and put them

@@ -21,7 +21,7 @@ elif [ -n "$SECURITY_REPORT_URL" ]; then
     SECURITY_REPORT="See $SECURITY_REPORT_URL"
 fi
 
-cat << EOF >> ${S3_ASSETS}/ssdlc_compliance_report.md
+cat << EOF >> ${S3_ASSETS}/ssdlc_compliance_report.txt
 Release Creator
 ${RELEASE_CREATOR}
 
@@ -43,5 +43,3 @@ ${SECURITY_REPORT}
 Known Vulnerabilities
 Any vulnerabilities that may be shown in the files referenced above have been reviewed and accepted by the appropriate approvers.
 EOF
-
-cat ${S3_ASSETS}/ssdlc_compliance_report.md
