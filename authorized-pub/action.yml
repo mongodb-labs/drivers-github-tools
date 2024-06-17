@@ -9,10 +9,9 @@ inputs:
     required: true
   filenames:
     description: Artifact filename(s) to include in the report, can be a glob pattern
-    required: true
+    default: ""
   token:
     description: The GitHub token for the action
-    required: true
 
 runs:
   using: composite
@@ -20,16 +19,25 @@ runs:
     - name: Prepare report
       shell: bash
       run: |
-          export GH_TOKEN=${{ inputs.token }}
+          if [ -n "${{ inputs.token }}" ]; then
+            export GH_TOKEN=${{ inputs.token }}
+          fi
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
           export REPORT=$S3_ASSETS/authorized-publication.txt
-          echo "Product: ${{ inputs.product_name }}" > $REPORT
-          echo "Version: ${{ inputs.release_version }}" >> $REPORT
-          echo "Releaser: $NAME"  >> $REPORT
-          echo "Build Source: GitHub Actions"
-          echo "Build Number: ${{ github.run_id }}"
-          for filename in ${{ inputs.filenames }}; do
-              SHA=$(shasum -a 256 $filename | awk '{print $1;}')
-              echo "Filename: $filename"  >> $REPORT
-              echo "Shasum: $SHA"  >> $REPORT
-          done
+          export FILENAMES=${{ inputs.filenames }}
+          cat << EOF > $REPORT
+          Product: ${{ inputs.product_name }}
+          Version: ${{ inputs.release_version }}
+          Releaser: $NAME
+          Build Source: GitHub Actions
+          Build Number: ${{ github.run_id }}
+          EOF
+          if [ -z "$FILENAMES" ]; then
+              echo "No published artifacts." >> $REPORT
+          else
+            for filename in ${{ inputs.filenames }}; do
+                SHA=$(shasum -a 256 $filename | awk '{print $1;}')
+                echo "Filename: $filename"  >> $REPORT
+                echo "Shasum: $SHA"  >> $REPORT
+            done
+          fi
