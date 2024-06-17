@@ -179,7 +179,7 @@ This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
 ### Code Scanning Alerts
 
 This action will export all dismissed and open alerts to a SARIF file. By
-default, this defeault file is named `code-scanning-alerts.json` and placed in the
+default, this file is named `code-scanning-alerts.json` and placed in the
 working directory.
 
 ```yaml
