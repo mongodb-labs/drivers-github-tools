@@ -26,7 +26,7 @@ runs:
             export GH_TOKEN=${{ inputs.token }}
           fi
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
-          
+
           if [ -n "${{ inputs.output_file }}" ]; then
             export REPORT=${{ inputs.output_file }}
           else
