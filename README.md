@@ -210,7 +210,7 @@ called `ssdlc_compliance_report.md`.
 ## Full Report
 
 This action is a convenience function to handle all of the SSDLC reports and put them
-in the `S3_ASSETS` folder.
+in the `S3_ASSETS` folder. This composite action runs the `authorized-pub`, `sbom`, `code-scanning-export`, and `compliance-report` actions.
 
 ```yaml
 - name: Setup
