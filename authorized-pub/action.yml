@@ -10,6 +10,9 @@ inputs:
   filenames:
     description: Artifact filename(s) to include in the report, can be a glob pattern
     default: ""
+  output_file:
+    description: Where to put the file.
+    required: true
   token:
     description: The GitHub token for the action
 
@@ -23,7 +26,13 @@ runs:
             export GH_TOKEN=${{ inputs.token }}
           fi
           NAME=$(gh api users/${{ github.actor }} --jq '.name')
-          export REPORT=$S3_ASSETS/authorized-publication.txt
+          
+          if [ -n "${{ inputs.output_file }}" ]; then
+            export REPORT=${{ inputs.output_file }}
+          else 
+            export REPORT=$S3_ASSETS/authorized-publication.txt        
+          fi
+
           export FILENAMES=${{ inputs.filenames }}
           cat << EOF > $REPORT
           Product: ${{ inputs.product_name }}
