@@ -195,7 +195,7 @@ working directory.
 ### Compliance Report
 
 This action will generate the SSDLC compliance report in the `S3_ASSETS` folder,
-caled `ssdlc_compliance_report.md`.
+called `ssdlc_compliance_report.md`.
 
 ```yaml
 - name: Setup
