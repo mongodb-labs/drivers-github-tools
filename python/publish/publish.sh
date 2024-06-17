@@ -6,7 +6,7 @@ if [ "$DRY_RUN" == "false" ]; then
     PUSH_CHANGES=true
     echo "Creating draft release with attached files"
     TITLE="PyMongo ${VERSION}"
-    gh release create ${VERSION} --draft --verify-tag --title ${TITLE} --notes ""
+    gh release create ${VERSION} --draft --verify-tag --title "${TITLE}" --notes "Community notes: <link>"
     gh release upload ${VERSION} $RELEASE_ASSETS/*.*
     JSON="url,tagName,assets,author,createdAt"
     JQ='.url,.tagName,.author.login,.createdAt,.assets[].name'
