@@ -18,9 +18,5 @@ else
     PUSH_CHANGES=false
 fi
 
-# Ensure a clean repo
-git clean -dffx
-git pull origin ${GITHUB_REF}
-
 # Handle push_changes output.
 echo "push_changes=$PUSH_CHANGES" >> $GITHUB_OUTPUT
