@@ -11,7 +11,7 @@ if [ "$DRY_RUN" == "false" ]; then
     JSON="url,tagName,assets,author,createdAt"
     JQ='.url,.tagName,.author.login,.createdAt,.assets[].name'
     echo "\## $TITLE" >> $GITHUB_STEP_SUMMARY
-    gh release view --json $JSON --jq $JQ v${VERSION} >> $GITHUB_STEP_SUMMARY
+    gh release view --json $JSON --jq $JQ ${VERSION} >> $GITHUB_STEP_SUMMARY
 else
     echo "Dry run, not creating GitHub Release"
     ls -ltr $RELEASE_ASSETS
