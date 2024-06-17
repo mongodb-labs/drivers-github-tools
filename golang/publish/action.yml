@@ -18,7 +18,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: blink1073/drivers-github-tools/full-report@full-report
+    - uses: mongodb-labs/drivers-github-tools/full-report@v2
       with:
         product_name: mongo-go-driver
         release_version: ${{ inputs.version }}
