@@ -4,7 +4,9 @@ set -eux
 
 # Get release creator.
 cd $GITHUB_WORKSPACE
-export GH_TOKEN=${GH_TOKEN:-TOKEN}
+if [ -n "$TOKEN" ]; then
+  export GH_TOKEN=$TOKEN
+fi
 RELEASE_CREATOR=$(gh api users/${GITHUB_ACTOR} --jq '.name')
 
 # Handle security report.
