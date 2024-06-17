@@ -1,26 +1,26 @@
 
 name: Publish Python
-description: "Publish Assets and Report"
+description: Publish Assets and Report
 inputs:
   version:
-    description: "The published version"
+    description: The published version
     required: true
   following_version:
-    description: "The following (dev) version"
+    description: The following (dev) version
     required: true
   version_bump_script:
-    description: "The version bump script"
-    required: true
+    description: The version bump script
+    default: hatch version
   product_name:
-    description: "The name of the product"
+    description: The name of the product
     required: true
   silk_asset_group:
     description: The Silk Asset Group for the Project
     required: true
   token:
-    description: "The GitHub access token"
+    description: The GitHub access token
   dry_run:
-    description: "Whether this is a dry run"
+    description: Whether this is a dry run
     required: true
 
 runs:
@@ -29,6 +29,9 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
+    - name: Install hatch
+      shell: bash
+      run: pipx install hatch
     - name: Download all the dists
       uses: actions/download-artifact@v4
       with:
@@ -38,7 +41,7 @@ runs:
       uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
         filenames: dist/*
-    - uses: blink1073/drivers-github-tools/full-report@full-report
+    - uses: mongodb-labs/drivers-github-tools/full-report@v2
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
@@ -49,26 +52,23 @@ runs:
       with:
           version: ${{ inputs.version }}
           product_name: ${{ inputs.product_name }}
+          dry_run: ${{ inputs.dry_run }}
     - name: Run GitHub Publish script
       shell: bash
-      run: ${{github.action_path}}/publish.sh
+      id: publish-script
+      run: ${ {github.action_path }}/publish.sh
       env:
         GH_TOKEN: ${{ inputs.token }}
         VERSION: ${{ inputs.version }}
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
-    - name: Publish distribution 📦 to PyPI
-      if: inputs.dry_run == 'false'
-      uses: pypa/gh-action-pypi-publish@release/v1
-    - name: Ensure a clean repo
-      shell: bash -eux {0}
-      run: |
-        git clean -dffx
-        git pull origin ${{ github.ref }}
+    # - name: Publish distribution 📦 to PyPI
+    #   if: inputs.dry_run == 'false'
+    #   uses: pypa/gh-action-pypi-publish@release/v1
     - name: Set following version
-      uses: blink1073/drivers-github-tools/bump-version@bump-version
+      uses: mongodb-labs/drivers-github-tools/bump-version@v2
       with:
           version: ${{ inputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
-          dry_run: ${{ inputs.dry_run }}
+          push_changes: ${{ steps.publish-script.output.push_changes }}
