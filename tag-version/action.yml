@@ -51,7 +51,7 @@ runs:
       shell: bash -eux {0}
       run: |
         if [ ${{ inputs.push_tag }} == "true" ]; then
-          git push origin --tags
+          git push origin tag $TAG
           echo "Pushed tag: ${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
         else
           echo "Created tag (no push): ${{ env.Tag }}" >> $GITHUB_STEP_SUMMARY
