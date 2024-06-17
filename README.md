@@ -192,6 +192,46 @@ working directory.
   uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
 ```
 
+### Compliance Report
+
+This action will generate the SSDLC compliance report in the `S3_ASSETS` folder,
+called `ssdlc_compliance_report.md`.
+
+```yaml
+- name: Setup
+  uses: mongodb-labs/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Generate compliance report
+  uses: mongodb-labs/drivers-github-tools/compliance-report@v2
+```
+
+There are several ways to specify the security report:
+- By specifying an absolute URL starting with https
+- By specifying a relative path, which is then linked to the corresponding git blob for the tagged version
+- By adding the `security-report-url` to the AWS Secrets Vault
+
+## Full Report
+
+This action is a convenience function to handle all of the SSDLC reports and put them
+in the `S3_ASSETS` folder. This composite action runs the `authorized-pub`, `sbom`, `code-scanning-export`, and `compliance-report` actions.
+
+```yaml
+- name: Setup
+  uses: mongodb-labs/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Generate SSDLC Reports
+  uses: mongodb-labs/drivers-github-tools/full-report@v2
+  with:
+    product_name: winkerberos
+    release_version: ${{ inputs.version }}
+    silk_asset_group: winkerberos
+    dist_filenames: dist/*
+```
+
 ## Upload S3 assets
 
 A number of scripts create files in the `tmp/s3_assets` folder, which then can
