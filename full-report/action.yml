@@ -21,7 +21,7 @@ runs:
   using: composite
   steps:
     - name: Generate Authorized Publication Report
-      uses: blink1073/drivers-github-tools/authorized-pub@full-report
+      uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.release_version }}
@@ -37,7 +37,7 @@ runs:
         ref: ${{ inputs.release_version }}
         output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
     - name: Generate Compliance Report
-      uses: blink1073/drivers-github-tools/compliance-report@full-report
+      uses: mongodb-labs/drivers-github-tools/compliance-report@v2
       with:
         release_version: ${{ inputs.release_version }}
         security_report_location: ${{ inputs.security_report_location }}
