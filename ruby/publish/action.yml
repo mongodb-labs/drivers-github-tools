@@ -73,7 +73,7 @@ runs:
 
     - name: Get the release version
       shell: bash
-      run: echo "RELEASE_VERSION=$(rake version)" >> "$GITHUB_ENV"
+      run: echo "RELEASE_VERSION=$(bundle exec rake version)" >> "$GITHUB_ENV"
 
     - name: Setup GitHub tooling for DBX Drivers
       uses: mongodb-labs/drivers-github-tools/setup@v2
