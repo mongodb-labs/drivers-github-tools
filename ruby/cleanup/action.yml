@@ -1,0 +1,42 @@
+name: Dry-Run Cleanup
+description: Cleans up generated tag and release after a dry-run.
+inputs:
+  app_id:
+    description: The APP_ID defined for this project
+    required: true
+    type: string
+  app_private_key:
+    description: The APP_PRIVATE_KEY defined for this project
+    required: true
+    type: string
+  tag:
+    description: The name of the tag (and release) to clean up
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: "Create temporary app token"
+      uses: actions/create-github-app-token@v1
+      id: app-token
+      with:
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.app_private_key }}
+
+    - name: "Store GitHub token in environment"
+      shell: bash
+      run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ env.GH_TOKEN }}
+
+    - name: Delete the release
+      shell: bash
+      run: "gh release delete ${{ inputs.tag }}"
+
+    - name: Delete the tag
+      shell: bash
+      run: "git push --delete origin ${{ inputs.tag }}"
