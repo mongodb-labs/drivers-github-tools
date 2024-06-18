@@ -4,15 +4,12 @@ inputs:
   app_id:
     description: The APP_ID defined for this project
     required: true
-    type: string
   app_private_key:
     description: The APP_PRIVATE_KEY defined for this project
     required: true
-    type: string
   tag:
     description: The name of the tag (and release) to clean up
     required: true
-    type: string
 
 runs:
   using: composite

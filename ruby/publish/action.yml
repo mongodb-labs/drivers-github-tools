@@ -4,47 +4,36 @@ inputs:
   app_id:
     description: The APP_ID defined for this project
     required: true
-    type: string
   app_private_key:
     description: The APP_PRIVATE_KEY defined for this project
     required: true
-    type: string
   aws_role_arn:
     description: The AWS_ROLE_ARN defined for this project
     required: true
-    type: string
   aws_region_name:
     description: The AWS_REGION_NAME defined for this project
     required: true
-    type: string
   aws_secret_id:
     description: The AWS_SECRET_ID defined for this project
     required: true
-    type: string
   dry_run:
     description: Whether this is a dry run or not ("false" for releases)
     required: true
-    type: string
   gem_name:
     description: The name (sans extension) of the gemspec file (e.g. "mongo")
     required: true
-    type: string
   product_name:
     description: The name of the product being published (e.g. "Ruby Driver")
     required: true
-    type: string
   product_id:
     description: The identifier of the product being published (e.g. "mongo-ruby-driver")
     required: true
-    type: string
   release_message_template:
     description: The template for the release message. Use "{0}" in the text to refer to the current version.
     required: true
-    type: string
   silk_asset_group:
     description: The Silk asset group for the project
     required: true
-    type: string
 
 runs:
   using: composite
