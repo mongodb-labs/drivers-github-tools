@@ -35,11 +35,11 @@ runs:
         fi
         echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
     - name: Set version
-      uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      uses: blink1073/drivers-github-tools/bump-version@test-releases
       with:
         version: ${{ inputs.version }}
         version_bump_script: ${{ inputs.version_bump_script }}
-        working-directory: ${{ inputs.working_directory }}
+        working_directory: ${{ inputs.working_directory }}
         push_commit: ${{ env.PUSH_CHANGES }}
     - name: Tag version
       uses: mongodb-labs/drivers-github-tools/tag-version@v2

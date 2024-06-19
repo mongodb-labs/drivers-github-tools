@@ -75,9 +75,9 @@ runs:
         git clean -dffx
         git pull origin ${GITHUB_REF}
     - name: Set following version
-      uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      uses: blink1073/drivers-github-tools/bump-version@test-releases
       with:
           version: ${{ inputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
-          working-directory: ${{ inputs.working_directory }}
+          working_directory: ${{ inputs.working_directory }}
           push_changes: ${{ steps.publish-script.output.push_changes }}
