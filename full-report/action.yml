@@ -10,6 +10,9 @@ inputs:
   sarif_report_target_ref:
     description: The git ref (usually the target release branch) to pull sarif reports from.
     required: true
+  sbom_file_name:
+    description: The name of the augmented sbom file.
+    default: cyclonedx.sbom.json
   silk_asset_group:
     description: The Silk Asset Group for the Project
   third_party_dependency_tool:
@@ -34,9 +37,10 @@ runs:
     - name: Generate SBOM File
       # not all packages have third party dependencies, and so not all packages integrate with silk.
       if: ${{ inputs.silk_asset_group }}
-      uses: mongodb-labs/drivers-github-tools/sbom@v2
+      uses: baileympearson/drivers-github-tools/sbom@adjust-shared-actions-for-node
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
+        sbom_file_name: ${{ inputs.sbom_file_name }}
     - name: Generate Sarif File
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
@@ -49,3 +53,4 @@ runs:
         security_report_location: ${{ inputs.security_report_location }}
         token: ${{ inputs.token }}
         third_party_dependency_tool: ${{ inputs.third_party_dependency_tool }}
+        sbom_name: ${{ inputs.sbom_file_name }}
