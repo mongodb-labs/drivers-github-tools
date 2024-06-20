@@ -21,12 +21,17 @@ elif [ -n "$SECURITY_REPORT_URL" ]; then
     SECURITY_REPORT="See $SECURITY_REPORT_URL"
 fi
 
+THIRD_PARTY_DEPENDENCY_TRACKER="n/a"
+if [ -n "$THIRD_PARTY_DEPENDENCY_TRACKER" ]; then
+    THIRD_PARTY_DEPENDENCY_TRACKER="$THIRD_PARTY_DEPENDENCY_TRACKER"
+fi
+
 cat << EOF >> ${S3_ASSETS}/ssdlc_compliance_report.txt
 Release Creator
 ${RELEASE_CREATOR}
 
 Tool used to track third party vulnerabilities
-Silk
+${THIRD_PARTY_DEPENDENCY_TRACKER}
 
 Third-Party Dependency Information
 See ${SBOM_NAME}

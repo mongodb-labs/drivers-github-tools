@@ -9,7 +9,8 @@ inputs:
     required: true
   silk_asset_group:
     description: The Silk Asset Group for the Project
-    required: true
+  third_party_dependency_tool:
+    description: The name of the tool used to track 3rd party dependencies.
   security_report_location:
     description: The URL or relative git path to the security report
   dist_filenames:
@@ -32,6 +33,8 @@ runs:
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Generate Sarif File
+      # not all packages have third party dependencies, and so not all packages integrate with silk.
+      if: ${{ inputs.silk_asset_group }}
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
         ref: ${{ inputs.release_version }}
@@ -42,3 +45,4 @@ runs:
         release_version: ${{ inputs.release_version }}
         security_report_location: ${{ inputs.security_report_location }}
         token: ${{ inputs.token }}
+        third_party_dependency_tool: ${{ inputs.third_party_dependency_tool }}
