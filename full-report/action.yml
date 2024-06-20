@@ -7,6 +7,9 @@ inputs:
   release_version:
     description: The published version
     required: true
+  sarif_report_target_ref:
+    description: The git ref (usually the target release branch) to pull sarif reports from.
+    required: true
   silk_asset_group:
     description: The Silk Asset Group for the Project
   third_party_dependency_tool:
@@ -29,15 +32,15 @@ runs:
         filenames: ${{ inputs.dist_filenames }}
         token: ${{ inputs.token }}
     - name: Generate SBOM File
+      # not all packages have third party dependencies, and so not all packages integrate with silk.
+      if: ${{ inputs.silk_asset_group }}
       uses: mongodb-labs/drivers-github-tools/sbom@v2
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
     - name: Generate Sarif File
-      # not all packages have third party dependencies, and so not all packages integrate with silk.
-      if: ${{ inputs.silk_asset_group }}
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
-        ref: ${{ inputs.release_version }}
+        ref: ${{ inputs.sarif_report_target_ref }}
         output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
     - name: Generate Compliance Report
       uses: mongodb-labs/drivers-github-tools/compliance-report@v2

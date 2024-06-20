@@ -45,6 +45,7 @@ runs:
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
+        sarif_report_target_ref: ${{ inputs.version }}
         dist_filenames: dist/*
         silk_asset_group: ${{ inputs.silk_asset_group }}
         token: ${{ inputs.token }}
