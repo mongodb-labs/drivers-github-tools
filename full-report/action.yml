@@ -43,7 +43,7 @@ runs:
         ref: ${{ inputs.sarif_report_target_ref }}
         output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
     - name: Generate Compliance Report
-      uses: mongodb-labs/drivers-github-tools/compliance-report@v2
+      uses: baileympearson/drivers-github-tools/compliance-report@adjust-shared-actions-for-node
       with:
         release_version: ${{ inputs.release_version }}
         security_report_location: ${{ inputs.security_report_location }}
