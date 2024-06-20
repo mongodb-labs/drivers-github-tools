@@ -40,7 +40,7 @@ runs:
       uses: baileympearson/drivers-github-tools/sbom@adjust-shared-actions-for-node
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
-        sbom_file_name: ${{ inputs.sbom_file_name }}
+        sbom_file_name: ${{ inputs.sbom_file_name }}   
     - name: Generate Sarif File
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
