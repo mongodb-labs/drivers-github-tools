@@ -54,5 +54,5 @@ runs:
           git push origin tag $TAG
           echo "Pushed tag: ${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
         else
-          echo "Created tag (no push): ${{ env.Tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "Created tag (no push): ${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
         fi
