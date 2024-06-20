@@ -66,16 +66,16 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
-    # - name: Publish distribution 📦 to PyPI
-    #   if: inputs.dry_run == 'false'
-    #   uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Publish distribution 📦 to PyPI
+      if: inputs.dry_run == 'false'
+      uses: pypa/gh-action-pypi-publish@release/v1
     - name: Ensure a clean repo
       shell: bash
       run: |
         git clean -dffx
         git pull origin ${GITHUB_REF}
     - name: Set following version
-      uses: blink1073/drivers-github-tools/bump-version@test-releases
+      uses: mongodb-labs/drivers-github-tools/bump-version@v2
       with:
           version: ${{ inputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
