@@ -12,6 +12,7 @@ inputs:
     default: authorized-publication.txt
   third_party_dependency_tool:
     description: The name of the tool used to track 3rd party dependencies.
+    default: Silk
   security_report_location:
     description: The URL or relative git path to the security report
   release_version:
