@@ -41,8 +41,8 @@ runs:
     - name: Check out the repository
       uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
       with:
-        app-id: ${{ inputs.app_id }}
-        private-key: ${{ inputs.app_private_key }}
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.app_private_key }}
 
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
