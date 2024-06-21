@@ -9,7 +9,6 @@ inputs:
     required: true
   sarif_report_target_ref:
     description: The git ref (usually the target release branch) to pull sarif reports from.
-    required: true
   sbom_file_name:
     description: The name of the augmented sbom file.
     default: cyclonedx.sbom.json
@@ -44,7 +43,7 @@ runs:
     - name: Generate Sarif File
       uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
-        ref: ${{ inputs.sarif_report_target_ref }}
+        ref: ${{ inputs.sarif_report_target_ref || inputs.release_version }}
         output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
     - name: Generate Compliance Report
       uses: baileympearson/drivers-github-tools/compliance-report@adjust-shared-actions-for-node
