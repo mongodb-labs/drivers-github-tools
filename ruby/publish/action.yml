@@ -82,7 +82,7 @@ runs:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ env.RELEASE_VERSION }}
         dist_filenames: ${{ env.GEM_FILE_NAME }}
-        silk_asset_group: $${ inputs.silk_asset_group }}
+        silk_asset_group: ${{ inputs.silk_asset_group }}
 
     - name: Create the tag
       uses: mongodb-labs/drivers-github-tools/tag-version@v2
