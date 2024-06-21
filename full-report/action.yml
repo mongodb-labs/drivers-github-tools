@@ -27,7 +27,7 @@ runs:
   using: composite
   steps:
     - name: Generate Authorized Publication Report
-      uses: ./authorized-pub
+      uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.release_version }}
@@ -36,17 +36,17 @@ runs:
     - name: Generate SBOM File
       # not all packages have third party dependencies, and so not all packages integrate with silk.
       if: ${{ inputs.silk_asset_group }}
-      uses: ./sbom
+      uses: baileympearson/drivers-github-tools/sbom@adjust-shared-actions-for-node
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
         sbom_file_name: ${{ inputs.sbom_file_name }}
     - name: Generate Sarif File
-      uses: ./code-scanning-export
+      uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
       with:
         ref: ${{ inputs.sarif_report_target_ref || inputs.release_version }}
         output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
     - name: Generate Compliance Report
-      uses: ./compliance-report
+      uses: baileympearson/drivers-github-tools/compliance-report@adjust-shared-actions-for-node
       with:
         release_version: ${{ inputs.release_version }}
         security_report_location: ${{ inputs.security_report_location }}
