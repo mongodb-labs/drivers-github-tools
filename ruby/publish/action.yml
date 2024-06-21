@@ -1,0 +1,128 @@
+name: Publish Ruby
+description: Generate and publish gems, signatures, and assets for MongoDB Ruby projects
+inputs:
+  app_id:
+    description: The APP_ID defined for this project
+    required: true
+  app_private_key:
+    description: The APP_PRIVATE_KEY defined for this project
+    required: true
+  aws_role_arn:
+    description: The AWS_ROLE_ARN defined for this project
+    required: true
+  aws_region_name:
+    description: The AWS_REGION_NAME defined for this project
+    required: true
+  aws_secret_id:
+    description: The AWS_SECRET_ID defined for this project
+    required: true
+  dry_run:
+    description: Whether this is a dry run or not ("false" for releases)
+    required: true
+  gem_name:
+    description: The name (sans extension) of the gemspec file (e.g. "mongo")
+    required: true
+  product_name:
+    description: The name of the product being published (e.g. "Ruby Driver")
+    required: true
+  product_id:
+    description: The identifier of the product being published (e.g. "mongo-ruby-driver")
+    required: true
+  release_message_template:
+    description: The template for the release message. Use "{0}" in the text to refer to the current version.
+    required: true
+  silk_asset_group:
+    description: The Silk asset group for the project
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Check out the repository
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+      with:
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.app_private_key }}
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: Get the release version
+      shell: bash
+      run: echo "RELEASE_VERSION=$(bundle exec rake version)" >> "$GITHUB_ENV"
+
+    - name: Setup GitHub tooling for DBX Drivers
+      uses: mongodb-labs/drivers-github-tools/setup@v2
+      with:
+        aws_role_arn: ${{ inputs.aws_role_arn }}
+        aws_region_name: ${{ inputs.aws_region_name }}
+        aws_secret_id: ${{ inputs.aws_secret_id }}
+
+    - name: Set output gem file name
+      shell: bash
+      run: |
+        echo "GEM_FILE_NAME=${{ inputs.gem_name }}-${{ env.RELEASE_VERSION }}.gem" >> "$GITHUB_ENV"
+
+    - name: Build the gem
+      shell: bash
+      run: |
+        gem build --output=${{ env.GEM_FILE_NAME }} ${{ inputs.gem_name }}.gemspec
+
+    - name: Sign the gem
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      with:
+        filenames: '${{ env.GEM_FILE_NAME }}'
+
+    - name: Generate SSDLC Reports
+      uses: mongodb-labs/drivers-github-tools/full-report@v2
+      with:
+        product_name: ${{ inputs.product_name }}
+        release_version: ${{ env.RELEASE_VERSION }}
+        dist_filenames: ${{ env.GEM_FILE_NAME }}
+        silk_asset_group: ${{ inputs.silk_asset_group }}
+
+    - name: Create the tag
+      uses: mongodb-labs/drivers-github-tools/tag-version@v2
+      with:
+        version: ${{ env.RELEASE_VERSION }}
+        tag_template: "v${VERSION}"
+        tag_message_template: "Release tag for v${VERSION}"
+
+    - name: Create a new release
+      shell: bash
+      run: gh release create v${{ env.RELEASE_VERSION }} --title ${{ env.RELEASE_VERSION }} --generate-notes --draft
+
+    - name: Capture the changelog
+      shell: bash
+      run: gh release view v${{ env.RELEASE_VERSION }} --json body --template '{{ .body }}' >> changelog
+
+    - name: Prepare release message
+      shell: bash
+      run: |
+        echo "${{ format(inputs.release_message_template, env.RELEASE_VERSION) }}" > release-message
+        cat changelog >> release-message
+
+    - name: Update release information
+      shell: bash
+      run: |
+        echo "RELEASE_URL=$(gh release edit v${{ env.RELEASE_VERSION }} --notes-file release-message)" >> "$GITHUB_ENV"
+
+    - name: Upload release artifacts
+      shell: bash
+      run: gh release upload v${{ env.RELEASE_VERSION }} ${{ env.GEM_FILE_NAME }} ${{ env.RELEASE_ASSETS }}/${{ env.GEM_FILE_NAME }}.sig
+
+    - name: Upload S3 assets
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      with:
+        version: ${{ env.RELEASE_VERSION }}
+        product_name: ${{ inputs.product_id }}
+        dry_run: ${{ inputs.dry_run }}
+
+    - name: Publish the gem
+      uses: rubygems/release-gem@v1
+      if: inputs.dry_run == 'false'
+      with:
+        await-release: false
