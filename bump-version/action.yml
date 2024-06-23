@@ -13,6 +13,9 @@ inputs:
   push_commit:
     description: Whether to push the commit
     default: "true"
+  working_directory:
+    description: The working directory for the version bump
+    default: "."
   artifactory_image:
     description: "Image to use for artifactory"
     default: release-tools-container-registry-local/garasign-git
@@ -23,6 +26,7 @@ runs:
     - name: Set new version
       if: ${{ inputs.version_bump_script != '' }}
       shell: bash -eux {0}
+      working-directory: ${{ inputs.working_directory }}
       run: |
         ${{ inputs.version_bump_script }} ${{ inputs.version }}
     - name: Get the commit message

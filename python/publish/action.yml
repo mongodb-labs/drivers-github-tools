@@ -17,6 +17,9 @@ inputs:
   silk_asset_group:
     description: The Silk Asset Group for the Project
     required: true
+  working_directory:
+    description: The working directory for the action
+    default: "."
   token:
     description: The GitHub access token
   dry_run:
@@ -76,4 +79,5 @@ runs:
       with:
           version: ${{ inputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
+          working_directory: ${{ inputs.working_directory }}
           push_changes: ${{ steps.publish-script.output.push_changes }}

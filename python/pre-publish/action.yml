@@ -7,6 +7,9 @@ inputs:
   version_bump_script:
     description: The version bump script
     default: hatch version
+  working_directory:
+    description: The working directory for the action
+    default: "."
   dry_run:
     description: Whether this is a dry run
     required: true
@@ -19,6 +22,7 @@ runs:
         python-version: '3.11'
     - name: Install hatch
       shell: bash
+      working-directory: ${{ inputs.working_directory }}
       run: pipx install hatch
     - name: Check if we should push changes
       shell: bash
@@ -35,6 +39,7 @@ runs:
       with:
         version: ${{ inputs.version }}
         version_bump_script: ${{ inputs.version_bump_script }}
+        working_directory: ${{ inputs.working_directory }}
         push_commit: ${{ env.PUSH_CHANGES }}
     - name: Tag version
       uses: mongodb-labs/drivers-github-tools/tag-version@v2
