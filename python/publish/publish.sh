@@ -13,7 +13,7 @@ if [ "$DRY_RUN" == "false" ]; then
     echo "\## $TITLE" >> $GITHUB_STEP_SUMMARY
     gh release view --json $JSON --jq $JQ ${VERSION} >> $GITHUB_STEP_SUMMARY
 else
-    echo "Dry run, not creating GitHub Release"
+    echo "Dry run, not creating GitHub Release" >> $GITHUB_STEP_SUMMARY
     ls -ltr $RELEASE_ASSETS
     PUSH_CHANGES=false
 fi

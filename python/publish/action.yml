@@ -81,4 +81,4 @@ runs:
           version: ${{ inputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
           working_directory: ${{ inputs.working_directory }}
-          push_changes: ${{ steps.publish-script.output.push_changes }}
+          push_commit: ${{ steps.publish-script.output.push_changes }}
