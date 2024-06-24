@@ -2,7 +2,7 @@
 name: Publish Release Asset to S3
 description: "Publish Asset to S3"
 inputs:
-  package_name:
+  npm_package_name:
     description: the npm package name
     required: true
 
@@ -15,4 +15,4 @@ runs:
       run: |
         package_version=$(jq --raw-output '.version' package.json)
         echo "package_version=${package_version}" >> "$GITHUB_ENV"
-        echo "package_file=${{ inputs.package_name }}-${package_version}.tgz" >> "$GITHUB_ENV"
+        echo "package_file=${{ inputs.npm_package_name }}-${package_version}.tgz" >> "$GITHUB_ENV"
