@@ -17,6 +17,9 @@ inputs:
   silk_asset_group:
     description: The Silk Asset Group for the Project
     required: true
+  evergreen_project:
+    description: The evergreen project name.
+    required: true
   working_directory:
     description: The working directory for the action
     default: "."
@@ -44,13 +47,20 @@ runs:
       uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
         filenames: dist/*
-    - uses: mongodb-labs/drivers-github-tools/full-report@v2
+    - name: Get the evergreen commit
+      id: evergreen-commit
+      shell: bash
+      run: |
+        echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+    - uses: blink1073/drivers-github-tools/full-report@add-evergreen-link
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
         sarif_report_target_ref: ${{ inputs.version }}
         dist_filenames: dist/*
         silk_asset_group: ${{ inputs.silk_asset_group }}
+        evergreen_project: ${{ inputs.evergreen_project }}
+        evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
         token: ${{ inputs.token }}
     - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
       with:
