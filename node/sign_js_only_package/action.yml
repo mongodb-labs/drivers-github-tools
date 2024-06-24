@@ -50,7 +50,7 @@ runs:
 
     - name: "Upload release artifacts"
       if: ${{ inputs.dry_run == false }}
-      run: echo "uploading" # gh release upload v${{ env.package_version }} ${{ env.package_file }}.sig
+      run: gh release upload v${{ env.package_version }} ${{ env.package_file }}.sig
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
