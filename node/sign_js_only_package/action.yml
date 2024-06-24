@@ -1,0 +1,51 @@
+name: Compress, Sign and Upload to GH Release
+description: 'Compresses package and signs with garasign and uploads to GH release'
+
+inputs:
+  aws_role_arn:
+    description: 'AWS role input for drivers-github-tools/gpg-sign@v2'
+    required: true
+  aws_region_name:
+    description: 'AWS region name input for drivers-github-tools/gpg-sign@v2'
+    required: true
+  aws_secret_id:
+    description: 'AWS secret id input for drivers-github-tools/gpg-sign@v2'
+    required: true
+  dry_run:
+    description: 'Should we upload files to the release?'
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - run: npm pack
+      shell: bash
+
+    - name: Determine version and package info
+      uses: baileympearson/drivers-github-tools/node/get_version_info@add-node-actions
+
+    - name: Set up drivers-github-tools
+      uses: mongodb-labs/drivers-github-tools/setup@v2
+      with:
+        aws_region_name: ${{ inputs.aws_region_name }}
+        aws_role_arn: ${{ inputs.aws_role_arn }}
+        aws_secret_id: ${{ inputs.aws_secret_id }}
+
+    - name: Create detached signature
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      with:
+        filenames: ${{ env.package_file }}
+      env:
+        RELEASE_ASSETS: ${{ env.package_file }}.temp.sig
+
+    - name: Name release asset correctly
+      run: mv ${{ env.package_file }}.temp.sig ${{ env.package_file }}.sig
+      shell: bash
+
+    - name: "Upload release artifacts"
+      if: ${{ inputs.dry_run == false }}
+      run: gh release upload v${{ env.package_version }} ${{ env.package_file }}.sig
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
