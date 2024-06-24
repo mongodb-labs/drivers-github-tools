@@ -28,7 +28,7 @@ runs:
       shell: bash
       run: |
         # Handle DRY_RUN
-        if [ "$DRY_RUN" != "true" ]; then
+        if [ "${{ inputs.dry_run }}" != "true" ]; then
             export PUSH_CHANGES=true
         else
             export PUSH_CHANGES=false

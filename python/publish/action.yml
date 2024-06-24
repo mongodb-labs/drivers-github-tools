@@ -70,6 +70,11 @@ runs:
     - name: Publish distribution 📦 to PyPI
       if: inputs.dry_run == 'false'
       uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Do Not Publish distribution 📦 to PyPI on Dry Run
+      if: inputs.dry_run == 'true'
+      shell: bash
+      run: |
+        echo "Dry run, not uploading to PyPI" >> $GITHUB_STEP_SUMMARY
     - name: Ensure a clean repo
       shell: bash
       run: |
@@ -81,4 +86,4 @@ runs:
           version: ${{ inputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
           working_directory: ${{ inputs.working_directory }}
-          push_changes: ${{ steps.publish-script.output.push_changes }}
+          push_commit: ${{ steps.publish-script.output.push_changes }}
