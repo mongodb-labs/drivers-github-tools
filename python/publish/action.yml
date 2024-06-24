@@ -71,7 +71,7 @@ runs:
       if: inputs.dry_run == 'false'
       uses: pypa/gh-action-pypi-publish@release/v1
     - name: Do Not Publish distribution 📦 to PyPI on Dry Run
-      if: inputs.dry_run == 'false'
+      if: inputs.dry_run == 'true'
       shell: bash
       run: |
         echo "Dry run, not uploading to PyPI" >> $GITHUB_OUTPUT
