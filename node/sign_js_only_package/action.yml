@@ -11,6 +11,9 @@ inputs:
   aws_secret_id:
     description: 'AWS secret id input for drivers-github-tools/gpg-sign@v2'
     required: true
+  npm_package_name:
+    description: the npm package name
+    required: true
   dry_run:
     description: 'Should we upload files to the release?'
     required: false
@@ -24,6 +27,8 @@ runs:
 
     - name: Determine version and package info
       uses: baileympearson/drivers-github-tools/node/get_version_info@add-signing-env-action-for-node
+      with:
+        npm_package_name: ${{ inputs.npm_package_name }}
 
     - name: Set up drivers-github-tools
       uses: mongodb-labs/drivers-github-tools/setup@v2
