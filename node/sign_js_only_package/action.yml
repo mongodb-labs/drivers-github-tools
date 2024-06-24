@@ -23,7 +23,7 @@ runs:
       shell: bash
 
     - name: Determine version and package info
-      uses: baileympearson/drivers-github-tools/node/get_version_info@add-node-actions
+      uses: baileympearson/drivers-github-tools/node/get_version_info@add-signing-env-action-for-node
 
     - name: Set up drivers-github-tools
       uses: mongodb-labs/drivers-github-tools/setup@v2
