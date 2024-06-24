@@ -10,6 +10,9 @@ inputs:
   authorized_pub_name:
     description: The name of the Authorized Publication file in the S3 bucket
     default: authorized-publication.txt
+  third_party_dependency_tool:
+    description: The name of the tool used to track 3rd party dependencies.
+    default: Silk
   security_report_location:
     description: The URL or relative git path to the security report
   release_version:
@@ -28,5 +31,6 @@ runs:
         AUTHORIZED_PUB_NAME: ${{ inputs.authorized_pub_name }}
         SECURITY_REPORT_LOCATION: ${{ inputs.security_report_location }}
         RELEASE_VERSION: ${{ inputs.release_version }}
+        THIRD_PARTY_DEPENDENCY_TOOL: ${{ inputs.third_party_dependency_tool }}
       working-directory: "${{ github.action_path }}"
       run: ./generate.sh

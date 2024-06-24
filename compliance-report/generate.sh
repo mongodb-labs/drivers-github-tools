@@ -26,7 +26,7 @@ Release Creator
 ${RELEASE_CREATOR}
 
 Tool used to track third party vulnerabilities
-Silk
+${THIRD_PARTY_DEPENDENCY_TOOL}
 
 Third-Party Dependency Information
 See ${SBOM_NAME}
