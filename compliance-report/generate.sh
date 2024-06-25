@@ -26,6 +26,8 @@ if [ -n "$EVERGREEN_PROJECT" ]; then
     echo "Must supply an evergreen commit when supplying an evergreen project!"
     exit 1
   fi
+  # Format evergreen patch URL.
+  EVERGREEN_PROJECT=$(echo $EVERGREEN_PROJECT | sed 's/-/_/g')
   EVERGREEN_PATCH="Evergreen patch: https://spruce.mongodb.com/version/${EVERGREEN_PROJECT}_${EVERGREEN_COMMIT}"
 fi
 
