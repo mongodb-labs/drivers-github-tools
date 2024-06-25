@@ -10,6 +10,9 @@ inputs:
   silk_asset_group:
     description: The Silk Asset Group
     required: true
+  evergreen_project:
+    description: The evergreen project name.
+    required: true
   push_changes:
     description: Whether to push the changes
     default: "true"
@@ -23,6 +26,8 @@ runs:
         product_name: mongo-go-driver
         release_version: ${{ inputs.version }}
         silk_asset_group: ${{ inputs.silk_asset_group }}
+        evergreen_project: ${{ inputs.evergreen_project }}
+        evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
         security_report_location: ${{ env.SECURITY_REPORT_URL }}
         token: ${{ inputs.token }}
     - name: Publish GitHub Release
