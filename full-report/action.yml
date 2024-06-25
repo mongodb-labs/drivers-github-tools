@@ -16,6 +16,10 @@ inputs:
     description: The Silk Asset Group for the Project
   third_party_dependency_tool:
     description: The name of the tool used to track 3rd party dependencies.
+  evergreen_project:
+    description: The evergreen project name.
+  evergreen_commit:
+    description: The commit associated with the evergreen build for the release.
   security_report_location:
     description: The URL or relative git path to the security report
   dist_filenames:
@@ -53,3 +57,5 @@ runs:
         token: ${{ inputs.token }}
         third_party_dependency_tool: ${{ inputs.third_party_dependency_tool }}
         sbom_name: ${{ inputs.sbom_file_name }}
+        evergreen_project: ${{ inputs.evergreen_project }}
+        evergreen_commit: ${{ inputs.evergreen_commit }}
