@@ -12,8 +12,21 @@ const [package, branch, tag] = args;
 
 const template = readFileSync(join(__dirname, './release_template.yml'), 'utf-8');
 
+const EVERGREEN_PROJECTS = {
+	'mongodb': 'mongodb-node-driver-next',
+	'bson': 'js-bson'
+};
+
 const generated = template.replaceAll('RELEASE_BRANCH', branch)
-.replaceAll('RELEASE_PACKAGE', package)
-.replaceAll('RELEASE_TAG', tag);
+	.replaceAll('RELEASE_PACKAGE', package)
+	.replaceAll('RELEASE_TAG', tag)
+	.replaceAll('EVERGREEN_PROJECT', EVERGREEN_PROJECTS[package] ?? '');
+
+const project = EVERGREEN_PROJECTS[package];
+if (!project) {
+	const final = generated.split('\n').filter(line => !line.includes("evergreen")).join('\n');
+	process.stdout.write(final);
+	process.exit();
+}
 
 process.stdout.write(generated);
