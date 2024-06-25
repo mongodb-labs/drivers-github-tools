@@ -16,7 +16,7 @@ runs:
       id: filenames
       run: |
           set -eux
-          export FILENAMES=${{inputs.filenames}}
+          FILENAMES="${{inputs.filenames}}"
           if [[ $FILENAMES =~ '*' ]]; then
             FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
           fi

@@ -38,6 +38,8 @@ jobs:
 
       - name: Load version and package info
         uses: baileympearson/drivers-github-tools/node/get_version_info@add-signing-env-action-for-node
+        with:
+          npm_package_name: RELEASE_PACKAGE
 
       - name: actions/compress_sign_and_upload
         uses: baileympearson/drivers-github-tools/node/sign_js_only_package@add-signing-env-action-for-node
