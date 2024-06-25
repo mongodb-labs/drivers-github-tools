@@ -1,7 +1,7 @@
 name: Compress, Sign and Upload to GH Release
 description: 'Compresses package and signs with garasign and uploads to GH release'
 
-inputs:
+inputs: 
   aws_role_arn:
     description: 'AWS role input for drivers-github-tools/gpg-sign@v2'
     required: true
@@ -12,45 +12,80 @@ inputs:
     description: 'AWS secret id input for drivers-github-tools/gpg-sign@v2'
     required: true
   npm_package_name:
-    description: the npm package name
+    description: 'The name for the npm package this repository represents'
     required: true
   dry_run:
     description: 'Should we upload files to the release?'
     required: false
     default: 'true'
+  artifact_directory:
+    description: The directory in which to output signatures.
+    required: true
+  sign_native:
+    description: Download and sign native packages
+    default: "false"
 
 runs:
   using: composite
   steps:
+    - uses: actions/download-artifact@v4
+      if: ${{ inputs.sign_native == 'true' }}
+
     - run: npm pack
       shell: bash
 
-    - name: Determine version and package info
+    - name: Make signatures directory
+      shell: bash
+      run: mkdir ${{ inputs.artifact_directory }}
+
+    - name: Load version and package info
       uses: baileympearson/drivers-github-tools/node/get_version_info@add-signing-env-action-for-node
       with:
         npm_package_name: ${{ inputs.npm_package_name }}
 
     - name: Set up drivers-github-tools
       uses: mongodb-labs/drivers-github-tools/setup@v2
-      with:
+      with: 
         aws_region_name: ${{ inputs.aws_region_name }}
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_secret_id: ${{ inputs.aws_secret_id }}
 
-    - name: Create detached signature
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
-      with:
-        filenames: ${{ env.package_file }}
-      env:
-        RELEASE_ASSETS: ${{ env.package_file }}.temp.sig
-
-    - name: Name release asset correctly
-      run: mv ${{ env.package_file }}.temp.sig ${{ env.package_file }}.sig
+    - name: Determine what files to sign
+      if: ${{ inputs.sign_native == 'true' }}
       shell: bash
+      run: |
+        FILENAMES="build-*/*.tar.gz"
+        if [[ $FILENAMES =~ '*' ]]; then
+          FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
+        fi
+        FILENAMES="$FILENAMES ${{ env.package_file }}"
+        echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
+
+    - name: Determine what files to sign
+      if: ${{ inputs.sign_native != 'true' }}
+      shell: bash
+      run: |
+        FILENAMES="${{ env.package_file }}"
+        echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
+
+    - name: Create detached signature
+      uses: baileympearson/drivers-github-tools/gpg-sign@add-signing-env-action-for-node
+      with: 
+        filenames: ${{ env.FILES_TO_SIGN }}
+      env: 
+        RELEASE_ASSETS: ${{ inputs.artifact_directory }}
+
+    - name: Copy the tarballs to the artifacts directory
+      shell: bash
+      run: for filename in ${{ env.FILES_TO_SIGN }}; do cp ${filename} artifacts/; done
+
+    - name: Display structure of downloaded files
+      shell: bash
+      run: ls -la artifacts/
 
     - name: "Upload release artifacts"
       if: ${{ inputs.dry_run == false }}
-      run: gh release upload v${{ env.package_version }} ${{ env.package_file }}.sig
+      run: gh release upload v${{ env.package_version }} artifacts/*.*
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
