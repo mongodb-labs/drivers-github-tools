@@ -20,7 +20,7 @@ inputs:
     default: 'true'
   artifact_directory:
     description: The directory in which to output signatures.
-    required: true
+    default: artifacts
   sign_native:
     description: Download and sign native packages
     default: "false"
