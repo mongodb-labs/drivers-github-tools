@@ -1,0 +1,62 @@
+name: Python Pre-Publish
+description: Perform pre-release operations for Python Libraries
+inputs:
+  version:
+    description: The published version
+    required: true
+  version_bump_script:
+    description: The version bump script
+    default: hatch version
+  working_directory:
+    description: The working directory for the action
+    default: "."
+  dry_run:
+    description: Whether this is a dry run
+    required: true
+
+outputs:
+  version:
+    description: The output version to use
+    value: ${{ steps.version.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install hatch
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      run: pipx install hatch
+    - name: Check if we should push changes
+      shell: bash
+      run: |
+        # Handle DRY_RUN
+        if [ "${{ inputs.dry_run }}" != "true" ]; then
+            export PUSH_CHANGES=true
+        else
+            export PUSH_CHANGES=false
+        fi
+        echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
+    - name: Set version
+      uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      with:
+        version: ${{ inputs.version }}
+        version_bump_script: ${{ inputs.version_bump_script }}
+        working_directory: ${{ inputs.working_directory }}
+        push_commit: ${{ env.PUSH_CHANGES }}
+    - name: Tag version
+      uses: mongodb-labs/drivers-github-tools/tag-version@v2
+      with:
+        version: ${{ inputs.version }}
+        push_tag: ${{ env.PUSH_CHANGES }}
+    - name: Handle version
+      shell: bash
+      id: version
+      run: |
+        if [ "${{ inputs.dry_run}}" == 'true' ]; then
+          echo "version=${{ github.ref }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+        fi

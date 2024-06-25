@@ -20,13 +20,23 @@ if [ -n "$SECURITY_REPORT_LOCATION" ]; then
 elif [ -n "$SECURITY_REPORT_URL" ]; then
     SECURITY_REPORT="See $SECURITY_REPORT_URL"
 fi
+EVERGREEN_PATCH=""
+if [ -n "$EVERGREEN_PROJECT" ]; then
+  if [ -z "$EVERGREEN_COMMIT" ]; then
+    echo "Must supply an evergreen commit when supplying an evergreen project!"
+    exit 1
+  fi
+  # Format evergreen patch URL.
+  EVERGREEN_PROJECT=$(echo $EVERGREEN_PROJECT | sed 's/-/_/g')
+  EVERGREEN_PATCH="Evergreen patch: https://spruce.mongodb.com/version/${EVERGREEN_PROJECT}_${EVERGREEN_COMMIT}"
+fi
 
 cat << EOF >> ${S3_ASSETS}/ssdlc_compliance_report.txt
 Release Creator
 ${RELEASE_CREATOR}
 
 Tool used to track third party vulnerabilities
-Silk
+${THIRD_PARTY_DEPENDENCY_TOOL}
 
 Third-Party Dependency Information
 See ${SBOM_NAME}
@@ -39,6 +49,7 @@ See ${AUTHORIZED_PUB_NAME}
 
 Security Report
 ${SECURITY_REPORT}
+${EVERGREEN_PATCH}
 
 Known Vulnerabilities
 Any vulnerabilities that may be shown in the files referenced above have been reviewed and accepted by the appropriate approvers.

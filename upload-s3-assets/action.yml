@@ -26,4 +26,5 @@ runs:
           for filename in ${{ inputs.filenames }}; do aws s3 cp ${filename} s3://${AWS_BUCKET}/${{ inputs.product_name }}/${{ inputs.version }}/${filename}; done
         else
           for filename in ${{ inputs.filenames }}; do echo "Would upload ${filename} to ${{ inputs.product_name }}/${{ inputs.version }}/${filename}"; done
+          echo "Dry run, skipping S3 Upload of ${{ inputs.filenames }}" >> $GITHUB_STEP_SUMMARY
         fi

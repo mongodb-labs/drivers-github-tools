@@ -1,0 +1,29 @@
+name: Dry-Run Cleanup
+description: Cleans up generated tag and release after a dry-run.
+inputs:
+  app_id:
+    description: The APP_ID defined for this project
+    required: true
+  app_private_key:
+    description: The APP_PRIVATE_KEY defined for this project
+    required: true
+  tag:
+    description: The name of the tag (and release) to clean up
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 'Check out the repository'
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+      with:
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.app_private_key }}
+
+    - name: Delete the release
+      shell: bash
+      run: "gh release delete ${{ inputs.tag }}"
+
+    - name: Delete the tag
+      shell: bash
+      run: "git push --delete origin ${{ inputs.tag }}"
