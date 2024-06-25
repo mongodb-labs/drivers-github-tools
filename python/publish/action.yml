@@ -92,8 +92,13 @@ runs:
         git pull origin ${GITHUB_REF}
     - name: Set following version
       uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      if: inputs.dry_run == 'false'
       with:
           version: ${{ inputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
           working_directory: ${{ inputs.working_directory }}
-          push_commit: ${{ steps.publish-script.output.push_changes }}
+    - name: Skip Setting following version
+      shell: bash
+      if: inputs.dry_run == 'true'
+      run: |
+        echo "Dry run, not setting the following version: ${{ inputs.following_version }}" >> $GITHUB_STEP_SUMMARY
