@@ -101,4 +101,4 @@ runs:
       shell: bash
       if: inputs.dry_run == 'true'
       run: |
-        echo "Dry run, not setting the following version" >> $GITHUB_STEP_SUMMARY
+        echo "Dry run, not setting the following version: ${{ inputs.following_version }}" >> $GITHUB_STEP_SUMMARY
