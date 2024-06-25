@@ -13,7 +13,7 @@ const [package, branch, tag] = args;
 const template = readFileSync(join(__dirname, './release_template.yml'), 'utf-8');
 
 const EVERGREEN_PROJECTS = {
-	'mongodb': 'mongodb-node-driver-next',
+	'mongodb': 'mongo-node-driver-next',
 	'bson': 'js-bson'
 };
 
