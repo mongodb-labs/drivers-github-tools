@@ -16,6 +16,7 @@ inputs:
     description: The Silk Asset Group for the Project
   third_party_dependency_tool:
     description: The name of the tool used to track 3rd party dependencies.
+    default: Silk
   evergreen_project:
     description: The evergreen project name.
   evergreen_commit:
