@@ -51,7 +51,7 @@ runs:
         ref: ${{ inputs.sarif_report_target_ref || inputs.release_version }}
         output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
     - name: Generate Compliance Report
-      uses: mongodb-labs/drivers-github-tools/compliance-report@v2
+      uses: blink1073/drivers-github-tools/compliance-report@python-tag-format
       with:
         release_version: ${{ inputs.release_version }}
         security_report_location: ${{ inputs.security_report_location }}
