@@ -38,8 +38,6 @@ runs:
       shell: bash
       run: |
         mkdir ${{ inputs.artifact_directory }}
-        echo "artifacts exists"
-        ls | grep artifacts
 
     - name: Load version and package info
       uses: baileympearson/drivers-github-tools/node/get_version_info@add-signing-env-action-for-node
@@ -62,7 +60,6 @@ runs:
           FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
         fi
         FILENAMES="$FILENAMES ${{ env.package_file }}"
-        echo "FILENAMES: $FILENAMES"
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
     - name: Determine what files to sign (non-native packages, with only the release tarball)
@@ -70,10 +67,6 @@ runs:
       shell: bash
       run: |
         FILENAMES="${{ env.package_file }}"
-        echo "package_version: $package_version"
-        echo "FILENAMES: $FILENAMES"
-        echo "FILENAMES: $FILENAMES"
-        echo "FILENAMES: $FILENAMES"
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
     - name: Create detached signature
