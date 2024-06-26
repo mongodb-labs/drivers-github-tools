@@ -6,12 +6,13 @@ if [ "$DRY_RUN" == "false" ]; then
     PUSH_CHANGES=true
     echo "Creating draft release with attached files"
     TITLE="${PRODUCT_NAME} ${VERSION}"
-    gh release create ${VERSION} --draft --verify-tag --title "${TITLE}" --notes "Community notes: <link>"
-    gh release upload ${VERSION} $RELEASE_ASSETS/*.*
+    TAG=$(echo "${TAG_TEMPLATE}" | envsubst)
+    gh release create ${TAG} --draft --verify-tag --title "${TITLE}" --notes "Community notes: <link>"
+    gh release upload ${TAG} $RELEASE_ASSETS/*.*
     JSON="url,tagName,assets,author,createdAt"
     JQ='.url,.tagName,.author.login,.createdAt,.assets[].name'
     echo "\## $TITLE" >> $GITHUB_STEP_SUMMARY
-    gh release view --json $JSON --jq $JQ ${VERSION} >> $GITHUB_STEP_SUMMARY
+    gh release view --json $JSON --jq $JQ ${TAG} >> $GITHUB_STEP_SUMMARY
 else
     echo "Dry run, not creating GitHub Release" >> $GITHUB_STEP_SUMMARY
     ls -ltr $RELEASE_ASSETS

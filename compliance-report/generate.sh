@@ -29,6 +29,7 @@ if [ -n "$EVERGREEN_PROJECT" ]; then
   # Format evergreen patch URL.
   EVERGREEN_PROJECT=$(echo $EVERGREEN_PROJECT | sed 's/-/_/g')
   EVERGREEN_PATCH="Evergreen patch: https://spruce.mongodb.com/version/${EVERGREEN_PROJECT}_${EVERGREEN_COMMIT}"
+  echo $EVERGREEN_PATCH >> $GITHUB_STEP_SUMMARY
 fi
 
 cat << EOF >> ${S3_ASSETS}/ssdlc_compliance_report.txt
