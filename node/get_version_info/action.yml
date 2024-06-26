@@ -1,4 +1,3 @@
-
 name: Publish Release Asset to S3
 description: "Publish Asset to S3"
 inputs:

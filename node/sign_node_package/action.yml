@@ -1,23 +1,23 @@
 name: Compress, Sign and Upload to GH Release
-description: 'Compresses package and signs with garasign and uploads to GH release'
+description: "Compresses package and signs with garasign and uploads to GH release"
 
-inputs: 
+inputs:
   aws_role_arn:
-    description: 'AWS role input for drivers-github-tools/gpg-sign@v2'
+    description: "AWS role input for drivers-github-tools/gpg-sign@v2"
     required: true
   aws_region_name:
-    description: 'AWS region name input for drivers-github-tools/gpg-sign@v2'
+    description: "AWS region name input for drivers-github-tools/gpg-sign@v2"
     required: true
   aws_secret_id:
-    description: 'AWS secret id input for drivers-github-tools/gpg-sign@v2'
+    description: "AWS secret id input for drivers-github-tools/gpg-sign@v2"
     required: true
   npm_package_name:
-    description: 'The name for the npm package this repository represents'
+    description: "The name for the npm package this repository represents"
     required: true
   dry_run:
-    description: 'Should we upload files to the release?'
+    description: "Should we upload files to the release?"
     required: false
-    default: 'true'
+    default: "true"
   artifact_directory:
     description: The directory in which to output signatures.
     default: artifacts
@@ -45,7 +45,7 @@ runs:
 
     - name: Set up drivers-github-tools
       uses: mongodb-labs/drivers-github-tools/setup@v2
-      with: 
+      with:
         aws_region_name: ${{ inputs.aws_region_name }}
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_secret_id: ${{ inputs.aws_secret_id }}
@@ -70,9 +70,9 @@ runs:
 
     - name: Create detached signature
       uses: baileympearson/drivers-github-tools/gpg-sign@add-signing-env-action-for-node
-      with: 
+      with:
         filenames: ${{ env.FILES_TO_SIGN }}
-      env: 
+      env:
         RELEASE_ASSETS: ${{ inputs.artifact_directory }}
 
     - name: Copy the tarballs to the artifacts directory
