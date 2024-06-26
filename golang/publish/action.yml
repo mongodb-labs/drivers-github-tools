@@ -1,0 +1,52 @@
+name: Publish
+description: Publish Go Driver Release
+inputs:
+  version:
+    description: The published version
+    required: true
+  prev_version:
+    description: The previous version
+    required: true
+  silk_asset_group:
+    description: The Silk Asset Group
+    required: true
+  evergreen_project:
+    description: The evergreen project name.
+    required: true
+  push_changes:
+    description: Whether to push the changes
+    default: "true"
+  token:
+    description: The GitHub token
+runs:
+  using: composite
+  steps:
+    - name: Get the evergreen commit
+      id: evergreen-commit
+      shell: bash
+      run: |
+        echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+    - uses: mongodb-labs/drivers-github-tools/full-report@v2
+      with:
+        product_name: mongo-go-driver
+        release_version: ${{ inputs.version }}
+        silk_asset_group: ${{ inputs.silk_asset_group }}
+        evergreen_project: ${{ inputs.evergreen_project }}
+        evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
+        security_report_location: ${{ env.SECURITY_REPORT_URL }}
+        token: ${{ inputs.token }}
+    - name: Publish GitHub Release
+      shell: bash -eux {0}
+      working-directory: ${{ github.action_path }}
+      env:
+        VERSION: ${{ inputs.version }}
+        PREV_VERSION: ${{ inputs.prev_version }}
+        PUSH_CHANGES: ${{ inputs.push_changes }}
+        GH_TOKEN: ${{ inputs.token }}
+      run: ./publish.sh
+    - name: Upload S3 assets
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      with:
+          version: ${{ inputs.version }}
+          product_name: mongo-go-driver
+          dry_run: ${{ env.DRY_RUN }}
