@@ -6,7 +6,7 @@ if [ "$DRY_RUN" == "false" ]; then
     PUSH_CHANGES=true
     echo "Creating draft release with attached files"
     TITLE="${PRODUCT_NAME} ${VERSION}"
-    export TAG=$(echo "${TAG_TEMPLATE}" | envsubst)
+    TAG=$(echo "${TAG_TEMPLATE}" | envsubst)
     gh release create ${TAG} --draft --verify-tag --title "${TITLE}" --notes "Community notes: <link>"
     gh release upload ${TAG} $RELEASE_ASSETS/*.*
     JSON="url,tagName,assets,author,createdAt"
