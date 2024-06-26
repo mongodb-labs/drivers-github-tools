@@ -66,5 +66,7 @@ runs:
         if [ "${{ inputs.dry_run}}" == 'true' ]; then
           echo "version=${{ github.ref }}" >> $GITHUB_OUTPUT
         else
-          echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          export VERSION=${{ inputs.version }}
+          export TAG=$(echo "${{ inputs.tag_template }}" | envsubst)
+          echo "version=$TAG" >> $GITHUB_OUTPUT
         fi
