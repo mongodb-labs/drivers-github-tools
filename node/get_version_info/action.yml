@@ -5,25 +5,14 @@ inputs:
     description: the npm package name
     required: true
 
-outputs:
-  package_version:
-    description: "the package version"
-    value: ${{ steps.get_version_info.outputs.package_version }}
-  package_file:
-    description: "the package_file"
-    value: ${{ steps.get_version_info.outputs.package_file }}
-  commit:
-    description: "the commit"
-    value: ${{ steps.get_version_info.outputs.commit }}
-
 runs:
   using: composite
   steps:
     - name: Get release version and release package file name
-      id: get_version_info
+      id: get_version
       shell: bash
       run: |
         package_version=$(jq --raw-output '.version' package.json)
-        echo "package_version=${package_version}" >> "$GITHUB_OUTPUT"
-        echo "package_file=${{ inputs.npm_package_name }}-${package_version}.tgz" >> "$GITHUB_OUTPUT"
-        echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        echo "package_version=${package_version}" >> "$GITHUB_ENV"
+        echo "package_file=${{ inputs.npm_package_name }}-${package_version}.tgz" >> "$GITHUB_ENV"
+        echo "commit=$(git rev-parse HEAD)" >> $GITHUB_ENV
