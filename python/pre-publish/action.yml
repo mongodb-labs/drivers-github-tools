@@ -7,6 +7,12 @@ inputs:
   version_bump_script:
     description: The version bump script
     default: hatch version
+  tag_template:
+    description: The template for the git tag
+    default: "${VERSION}"
+  tag_message_template:
+    description: The template for the git tag message
+    default: "Release ${VERSION}"
   working_directory:
     description: The working directory for the action
     default: "."
@@ -50,6 +56,8 @@ runs:
       uses: mongodb-labs/drivers-github-tools/tag-version@v2
       with:
         version: ${{ inputs.version }}
+        tag_template: ${{ inputs.tag_template }}
+        tag_message_template: ${{ inputs.tag_message_template }}
         push_tag: ${{ env.PUSH_CHANGES }}
     - name: Handle version
       shell: bash
