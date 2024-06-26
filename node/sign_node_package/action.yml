@@ -17,7 +17,7 @@ inputs:
   dry_run:
     description: "Should we upload files to the release?"
     required: false
-    default: "true"
+    default: "false"
   artifact_directory:
     description: The directory in which to output signatures.
     default: artifacts
@@ -50,7 +50,7 @@ runs:
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_secret_id: ${{ inputs.aws_secret_id }}
 
-    - name: Determine what files to sign
+    - name: Determine what files to sign (native packages, works with glob patterns of build artifacts)
       if: ${{ inputs.sign_native == 'true' }}
       shell: bash
       run: |
@@ -61,7 +61,7 @@ runs:
         FILENAMES="$FILENAMES ${{ env.package_file }}"
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
-    - name: Determine what files to sign
+    - name: Determine what files to sign (non-native packages, with only the release tarball)
       if: ${{ inputs.sign_native != 'true' }}
       shell: bash
       run: |
@@ -77,11 +77,9 @@ runs:
 
     - name: Copy the tarballs to the artifacts directory
       shell: bash
-      run: for filename in ${{ env.FILES_TO_SIGN }}; do cp ${filename} artifacts/; done
-
-    - name: Display structure of downloaded files
-      shell: bash
-      run: ls -la artifacts/
+      run: |
+        for filename in ${{ env.FILES_TO_SIGN }}; do cp ${filename} artifacts/; done
+        ls -la artifacts/
 
     - name: "Upload release artifacts"
       if: ${{ inputs.dry_run == false }}

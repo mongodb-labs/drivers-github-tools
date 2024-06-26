@@ -1,5 +1,8 @@
-const { readFileSync } = require("fs");
-const { join } = require("path");
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+    
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const args = process.argv.slice(2);
 if (!(args.length === 3 || args.length === 4)) {
@@ -9,10 +12,10 @@ if (!(args.length === 3 || args.length === 4)) {
   process.exit(1);
 }
 
-const [package, branch, tag, assetGroup] = args;
+const [npmPackage, branch, tag, assetGroup] = args;
 
 const isNative =
-  package === "kerberos" || package === "mongodb-client-encryption";
+  npmPackage === "kerberos" || npmPackage === "mongodb-client-encryption";
 const template = readFileSync(
   join(__dirname, "./release_template.yml"),
   "utf-8",
@@ -25,13 +28,13 @@ const EVERGREEN_PROJECTS = {
 
 const generated = template
   .replaceAll("RELEASE_BRANCH", branch)
-  .replaceAll("RELEASE_PACKAGE", package)
+  .replaceAll("RELEASE_PACKAGE", npmPackage)
   .replaceAll("RELEASE_TAG", tag)
-  .replaceAll("EVERGREEN_PROJECT", EVERGREEN_PROJECTS[package] ?? "")
+  .replaceAll("EVERGREEN_PROJECT", EVERGREEN_PROJECTS[npmPackage] ?? "")
   .replaceAll("IGNORE_INSTALL_SCRIPTS", isNative)
   .replaceAll("SILK_ASSET_GROUP", assetGroup ?? "''");
 
-const project = EVERGREEN_PROJECTS[package];
+const project = EVERGREEN_PROJECTS[npmPackage];
 if (!project) {
   const final = generated
     .split("\n")
