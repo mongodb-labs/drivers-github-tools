@@ -32,7 +32,7 @@ const generated = template
   .replaceAll("RELEASE_TAG", tag)
   .replaceAll("EVERGREEN_PROJECT", EVERGREEN_PROJECTS[npmPackage] ?? "")
   .replaceAll("IGNORE_INSTALL_SCRIPTS", isNative)
-  .replaceAll("SILK_ASSET_GROUP", assetGroup ?? "''");
+  .replaceAll("SILK_ASSET_GROUP", assetGroup ? `'${assetGroup}'` : "''");
 
 const project = EVERGREEN_PROJECTS[npmPackage];
 if (!project) {
