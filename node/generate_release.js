@@ -4,13 +4,13 @@ const { join } = require('path');
 const args = process.argv.slice(2);
 if (args.length != 3) {
 	console.error(`usage: generate_release.js <package> <branch> <npm tag>`);
-	process.exitCode = 1;
-	process.exit();
+	process.exit(1);
 }
 
 const [package, branch, tag] = args;
 
-const template = readFileSync(join(__dirname, './release_template.yml'), 'utf-8');
+const isNative = package === 'kerberos' || package === 'mongodb-client-encryption';
+const template = readFileSync(join(__dirname, isNative ? './native_release_template.yml' : './release_template.yml'), 'utf-8');
 
 const EVERGREEN_PROJECTS = {
 	'mongodb': 'mongo-node-driver-next',

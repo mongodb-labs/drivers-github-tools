@@ -20,9 +20,14 @@ jobs:
         uses: googleapis/release-please-action@v4
         with:
           target-branch: RELEASE_BRANCH
+  
+  build:
+    needs: [release_please]
+    name: "Perform any build or bundling steps, as necessary."
+    uses: ./.github/workflows/build.yml
 
   ssdlc:
-    needs: [release_please]
+    needs: [release_please, build]
     permissions:
       # required for all workflows
       security-events: write
@@ -35,6 +40,8 @@ jobs:
 
       - name: Install Node and dependencies
         uses: baileympearson/drivers-github-tools/node/setup@add-signing-env-action-for-node
+        with:
+          ignore_install_scripts: true
 
       - name: Load version and package info
         uses: baileympearson/drivers-github-tools/node/get_version_info@add-signing-env-action-for-node
@@ -74,7 +81,7 @@ jobs:
           dry_run: ${{ needs.release_please.outputs.release_created == '' }}
 
   publish:
-    needs: [release_please, ssdlc]
+    needs: [release_please, ssdlc, build]
     environment: release
     runs-on: ubuntu-latest
     steps:
