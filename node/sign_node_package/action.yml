@@ -83,7 +83,7 @@ runs:
         ls -la artifacts/
 
     - name: "Upload release artifacts"
-      if: ${{ inputs.dry_run == false }}
+      if: ${{ inputs.dry_run == 'false' }}
       run: gh release upload v${{ env.package_version }} artifacts/*.*
       shell: bash
       env:
