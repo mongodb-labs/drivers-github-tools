@@ -1,0 +1,23 @@
+name: Setup
+description: "Installs node, driver dependencies, and builds source"
+inputs:
+  ignore_install_scripts:
+    description: Should we ignore postinstall scripts?
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+        cache: "npm"
+        registry-url: "https://registry.npmjs.org"
+    - run: npm install -g npm@latest
+      shell: bash
+    - run: npm clean-install
+      if: ${{ inputs.ignore_install_scripts == 'false' }}
+      shell: bash
+    - run: npm clean-install --ignore-scripts
+      if: ${{ inputs.ignore_install_scripts == 'true' }}
+      shell: bash

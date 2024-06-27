@@ -1,0 +1,18 @@
+name: Publish Release Asset to S3
+description: "Publish Asset to S3"
+inputs:
+  npm_package_name:
+    description: the npm package name
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Get release version and release package file name
+      id: get_version
+      shell: bash
+      run: |
+        package_version=$(jq --raw-output '.version' package.json)
+        echo "package_version=${package_version}" >> "$GITHUB_ENV"
+        echo "package_file=${{ inputs.npm_package_name }}-${package_version}.tgz" >> "$GITHUB_ENV"
+        echo "commit=$(git rev-parse HEAD)" >> $GITHUB_ENV
