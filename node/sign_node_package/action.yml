@@ -84,7 +84,8 @@ runs:
 
     - name: "Upload release artifacts"
       if: ${{ inputs.dry_run == 'false' }}
-      run: gh release upload v${{ env.package_version }} artifacts/*.*
+      # run: gh release upload v${{ env.package_version }} artifacts/*.*
+      run: echo "uploading files to " v${{ env.package_version }}
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
