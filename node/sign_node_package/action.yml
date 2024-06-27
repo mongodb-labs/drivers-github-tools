@@ -40,7 +40,7 @@ runs:
         mkdir ${{ inputs.artifact_directory }}
 
     - name: Load version and package info
-      uses: baileympearson/drivers-github-tools/node/get_version_info@add-signing-env-action-for-node
+      uses: mongodb-labs/drivers-github-tools/node/get_version_info@v2
       with:
         npm_package_name: ${{ inputs.npm_package_name }}
 
@@ -70,7 +70,7 @@ runs:
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
     - name: Create detached signature
-      uses: baileympearson/drivers-github-tools/gpg-sign@add-signing-env-action-for-node
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
         filenames: ${{ env.FILES_TO_SIGN }}
       env:
