@@ -81,14 +81,14 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
-    # - name: Publish distribution 📦 to PyPI
-    #   if: inputs.dry_run == 'false'
-    #   uses: pypa/gh-action-pypi-publish@release/v1
-    # - name: Do Not Publish distribution 📦 to PyPI on Dry Run
-    #   if: inputs.dry_run == 'true'
-    #   shell: bash
-    #   run: |
-    #     echo "Dry run, not uploading to PyPI" >> $GITHUB_STEP_SUMMARY
+    - name: Publish distribution 📦 to PyPI
+      if: inputs.dry_run == 'false'
+      uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Do Not Publish distribution 📦 to PyPI on Dry Run
+      if: inputs.dry_run == 'true'
+      shell: bash
+      run: |
+        echo "Dry run, not uploading to PyPI" >> $GITHUB_STEP_SUMMARY
     - uses: actions/attest-build-provenance@v1
       if: inputs.dry_run == 'false'
       with:
