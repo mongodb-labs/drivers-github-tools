@@ -89,6 +89,15 @@ runs:
       shell: bash
       run: |
         echo "Dry run, not uploading to PyPI" >> $GITHUB_STEP_SUMMARY
+    - uses: actions/attest-build-provenance@v1
+      if: inputs.dry_run == 'false'
+      with:
+        subject-path: dist/*
+    - uses: actions/attest-sbom@v1
+      if: inputs.dry_run == 'false'
+      with:
+        subject-path: dist/*
+        sbom-path: ${{ env.RELEASE_ASSETS }}/cyclonedx.sbom.json
     - name: Ensure a clean repo
       shell: bash
       run: |
