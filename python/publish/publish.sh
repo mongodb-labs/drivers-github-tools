@@ -9,7 +9,7 @@ if [ -z "${FOLLOWING_VERSION}" ]; then
     FOLLOWING_VERSION=$(python handle_following_version.py $VERSION)
     popd
 fi
-echo "following_version=$FOLLOWING_VERSION" >> $GITHUB_OUTPUT
+echo "following-version=$FOLLOWING_VERSION" >> $GITHUB_OUTPUT
 
 if [ "$DRY_RUN" == "false" ]; then
     PUSH_CHANGES=true
