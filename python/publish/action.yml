@@ -7,7 +7,7 @@ inputs:
     required: true
   following_version:
     description: The following (dev) version
-    required: true
+    required: false
   version_bump_script:
     description: The version bump script
     default: hatch version
@@ -80,6 +80,7 @@ runs:
         TAG_TEMPLATE: ${{ inputs.tag_template }}
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
+        FOLLOWING_VERSION: ${{ inputs.following_version }}
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
     - name: Publish distribution 📦 to PyPI
       if: inputs.dry_run == 'false'
@@ -107,7 +108,7 @@ runs:
       uses: mongodb-labs/drivers-github-tools/bump-version@v2
       if: inputs.dry_run == 'false'
       with:
-          version: ${{ inputs.following_version }}
+          version: ${{ steps.publish.outputs.following-version }}
           version_bump_script: ${{ inputs.version_bump_script }}
           working_directory: ${{ inputs.working_directory }}
     - name: Skip Setting following version
