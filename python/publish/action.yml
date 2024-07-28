@@ -108,11 +108,11 @@ runs:
       uses: mongodb-labs/drivers-github-tools/bump-version@v2
       if: inputs.dry_run == 'false'
       with:
-          version: ${{ steps.publish.outputs.following_version }}
+          version: ${{ steps.publish-script.outputs.following_version }}
           version_bump_script: ${{ inputs.version_bump_script }}
           working_directory: ${{ inputs.working_directory }}
     - name: Skip Setting following version
       shell: bash
       if: inputs.dry_run == 'true'
       run: |
-        echo "Dry run, not setting the following version: ${{ steps.publish.outputs.following_version }}" >> $GITHUB_STEP_SUMMARY
+        echo "Dry run, not setting the following version: ${{ steps.publish-script.outputs.following_version }}" >> $GITHUB_STEP_SUMMARY
