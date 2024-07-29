@@ -2,6 +2,15 @@
 
 set -eux
 
+# Handle the following version.
+if [ -z "${FOLLOWING_VERSION}" ]; then
+    pip install packaging
+    pushd $GITHUB_ACTION_PATH
+    FOLLOWING_VERSION=$(python handle_following_version.py $VERSION)
+    popd
+fi
+echo "following_version=$FOLLOWING_VERSION" >> $GITHUB_OUTPUT
+
 if [ "$DRY_RUN" == "false" ]; then
     PUSH_CHANGES=true
     echo "Creating draft release with attached files"
