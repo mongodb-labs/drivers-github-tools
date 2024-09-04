@@ -10,7 +10,7 @@ if version.is_devrelease:
 elif version.is_prerelease:
     # For pre releases, go back to dev release.
     rel_type, rel_num = version.pre
-    new_version = f"{version.major}.{version.minor}.{version.micro}.dev0"
+    new_version = f"{version.major}.{version.minor}.{version.micro}.{rel_type}{rel_num + 1}"
 elif version.micro == 0:
     # For minor releases, go to next minor release.
     new_version = f"{version.major}.{version.minor + 1}.0.dev0"
