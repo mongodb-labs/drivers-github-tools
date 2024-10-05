@@ -2,6 +2,7 @@
 set -eu
 
 echo "Create or checkout the branch."
+OWNER_REPO="${GITHUB_REPOSITORY}"
 git ls-remote --exit-code --heads git@github.com:${OWNER_REPO}.git refs/heads/$BRANCH || {
   git branch $BRANCH $BASE_REF
 }
@@ -9,7 +10,7 @@ git fetch $BRANCH || true
 git checkout $BRANCH
 
 echo "Get silk creds."
-export $(grep -v '^#' $SILKBOMB_ENVFILE | xargs -0)
+export "$(grep -v '^#' $SILKBOMB_ENVFILE | xargs -0)"
 
 echo "Get a silk token."
 SILK_JWT_TOKEN=$(curl -s -X POST "https://silkapi.us1.app.silk.security/api/v1/authenticate" \

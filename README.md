@@ -285,14 +285,14 @@ prerelease version, and push the changes.
     push_changes: <whether to push changes>
     # other inputs
     version_bump_script: <path/to/version/bump/script>
-    evergreen_project: <name of evergreen project>
+    evergreen_project: <name of evergreen release project>
 ```
 
 ## Python Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases.
 
-### Bump and Tag
+### Pre-Publish
 
 Bump the version and create a new tag.  Verify the tag.
 Push the commit and tag to the source branch unless `dry_run` is set.
@@ -303,7 +303,7 @@ Push the commit and tag to the source branch unless `dry_run` is set.
   with:
     ...
 
-- uses: mongodb-labs/drivers-github-tools/python/bump-and-tag@v2
+- uses: mongodb-labs/drivers-github-tools/python/pre-publishv2
   with:
     version: ${{ inputs.version }}
     version_bump_script: ./.github/scripts/bump-version.sh

@@ -37,19 +37,18 @@ runs:
   steps:
     - name: Create a release branch and update branch metadata
       shell: bash
-      run: |
-        BRANCH="${{ inputs.branch_name }}" \
-        BASE_REF=${{ inputs.base_ref }}" \
-        OWNER_REPO="${GITHUB_REPOSITORY}" \
-        SBOM_FILE_PATH="${{ inputs.sbom_file_path }}" \
-        RELEASE_WORKFLOW_PATH="${{ inputs.release_workflow_path }}" \
-        EVERGREEN_PROJECT="${{ inputs.evergreen_project }}" \
-        SILK_PREFIX=${{ inputs.silk_group_prefix }} \
-        ARTIFACTORY_IMAGE="${{ inputs.artifactory_image }}" \
-          bash ${{ github.action_path }}/create-branch.sh
+      env:
+        BRANCH: ${{ inputs.branch_name }}
+        BASE_REF: ${{ inputs.base_ref }}
+        SBOM_FILE_PATH: ${{ inputs.sbom_file_path }}
+        RELEASE_WORKFLOW_PATH: ${{ inputs.release_workflow_path }}
+        EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
+        SILK_PREFIX: ${{ inputs.silk_group_prefix }}
+        ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
+      run: ${{ github.action_path }}/create-branch.sh
     - uses: mongodb-labs/drivers-github-tools/bump-version@v2
       with:
         version: ${{ inputs.version }}
-        version_bump_script: "${{ inputs.version_bump_script }}"
-        commit_template: "Prep branch ${{ inputs.branch }}"
+        version_bump_script: ${{ inputs.version_bump_script }}
+        commit_template: "Prep branch ${{ inputs.branch_name }}"
         push_commit: ${{ inputs.push_changes }}
