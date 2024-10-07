@@ -15,8 +15,8 @@ runs:
       shell: bash
       run:
          bash ${{ github.action_path }}/set-environment.sh
-       env:
-         VERSION: "${{ inputs.version }}"
+      env:
+        VERSION: "${{ inputs.version }}"
     - uses: mongodb-labs/drivers-github-tools/bump-version@v2
       with:
         version: ${{ inputs.version }}
