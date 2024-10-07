@@ -9,7 +9,7 @@ else
 fi
 echo "DRY_RUN=$DRY_RUN" >> $GITHUB_ENV
 
-# Handle cloud release versions
+# Get the tag names, taking into account cloud releases
 TAG_NAME="v${VERSION}"
 PREV_TAG_NAME="v${PREV_VERSION}"
 if [[ "${TAG_NAME}" =~ ^cloud.* ]]; then
