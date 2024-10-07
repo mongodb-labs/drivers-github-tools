@@ -4,7 +4,7 @@ set -eu
 COMMIT_TEMPLATE='BUMP v${VERSION}'
 TAG_VERSION="v${VERSION}"
 
-if [[ "${VERSION}" =~ cloud.* ]]; then
+if [[ "${VERSION}" =~ ^cloud.* ]]; then
   COMMIT_TEMPLATE='BUMP ${VERSION}'
   TAG_VERSION="${VERSION}"
 fi
