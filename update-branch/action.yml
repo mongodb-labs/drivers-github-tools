@@ -1,0 +1,43 @@
+name: Update Branch
+description: Ensure a branch exists and update it for
+inputs:
+  product_name:
+    description: Name of product
+    required: true
+  release_version:
+    description: The release version
+    required: true
+  filenames:
+    description: Artifact filename(s) to include in the report, can be a glob pattern
+    default: ""
+  token:
+    description: The GitHub token for the action
+
+runs:
+  using: composite
+  steps:
+    - name: Prepare report
+      shell: bash
+      run: |
+          if [ -n "${{ inputs.token }}" ]; then
+            export GH_TOKEN=${{ inputs.token }}
+          fi
+          NAME=$(gh api users/${{ github.actor }} --jq '.name')
+          export REPORT=$S3_ASSETS/authorized-publication.txt
+          export FILENAMES=${{ inputs.filenames }}
+          cat << EOF > $REPORT
+          Product: ${{ inputs.product_name }}
+          Version: ${{ inputs.release_version }}
+          Releaser: $NAME
+          Build Source: GitHub Actions
+          Build Number: ${{ github.run_id }}
+          EOF
+          if [ -z "$FILENAMES" ]; then
+              echo "No published artifacts." >> $REPORT
+          else
+            for filename in ${{ inputs.filenames }}; do
+                SHA=$(shasum -a 256 $filename | awk '{print $1;}')
+                echo "Filename: $filename"  >> $REPORT
+                echo "Shasum: $SHA"  >> $REPORT
+            done
+          fi
