@@ -11,19 +11,13 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up environment
-      shell: bash
-      run:
-         bash ${{ github.action_path }}/set-environment.sh
-      env:
-        VERSION: "${{ inputs.version }}"
     - uses: mongodb-labs/drivers-github-tools/bump-version@v2
       with:
         version: ${{ inputs.version }}
         version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
-        commit_template: "${{ env.COMMIT_TEMPLATE }}"
+        commit_template: "BUMP v${VERSION}"
         push_commit: ${{ inputs.push_changes }}
     - uses: mongodb-labs/drivers-github-tools/tag-version@v2
       with:
-        version: "${{ env.TAG_VERSION }}"
+        version: v${{ inputs.version }}
         push_tag: ${{ inputs.push_changes }}
