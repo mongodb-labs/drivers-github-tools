@@ -41,11 +41,11 @@ json_payload=$(cat <<EOF
 }
 EOF
 )
-# curl -X 'POST' \
-#   'https://silkapi.us1.app.silk.security/api/v1/raw/asset_group' \
-#   -H "accept: application/json" -H "Authorization: ${SILK_JWT_TOKEN}" \
-#   -H 'Content-Type: application/json' \
-#   -d "$json_payload"
+curl -X 'POST' \
+  'https://silkapi.us1.app.silk.security/api/v1/raw/asset_group' \
+  -H "accept: application/json" -H "Authorization: ${SILK_JWT_TOKEN}" \
+  -H 'Content-Type: application/json' \
+  -d "$json_payload"
 
 echo "SILK_ASSET_GROUP=$SILK_GROUP" >> $GITHUB_STEP_SUMMARY
 
