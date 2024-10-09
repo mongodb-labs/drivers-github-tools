@@ -68,8 +68,8 @@ cat <<< "$(jq --indent 4 '.metadata.timestamp = "'${TIMESTAMP}'"' ${SBOM_FILE_PA
 cat ${SBOM_FILE_PATH}
 
 echo "Update the workflow with the silk asset group and evergreen project."
-sed -i 's/^\s+SILK_ASSET_GROUP.*/SILK_ASSET_GROUP: '${SILK_GROUP}'/' ${RELEASE_WORKFLOW_PATH}
-sed -i 's/^\s+EVERGREEN_PROJECT.*/EVERGREEN_PROJECT: '${EVERGREEN_PROJECT}'/' ${RELEASE_WORKFLOW_PATH}
+sed -i 's/SILK_ASSET_GROUP:.*/SILK_ASSET_GROUP: '${SILK_GROUP}'/' ${RELEASE_WORKFLOW_PATH}
+sed -i 's/EVERGREEN_PROJECT:.*/EVERGREEN_PROJECT: '${EVERGREEN_PROJECT}'/' ${RELEASE_WORKFLOW_PATH}
 
 echo "Add the changed files."
 git --no-pager diff
