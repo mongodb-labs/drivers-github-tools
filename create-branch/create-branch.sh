@@ -3,7 +3,7 @@ set -eu
 
 echo "Create or checkout the branch."
 OWNER_REPO="${GITHUB_REPOSITORY}"
-git ls-remote --exit-code --heads https://github.com:${OWNER_REPO}.git refs/heads/$BRANCH || {
+git ls-remote --exit-code --heads https://github.com/${OWNER_REPO}.git refs/heads/$BRANCH || {
   git branch $BRANCH $BASE_REF
 }
 git fetch origin $BRANCH || true
@@ -41,15 +41,15 @@ json_payload=$(cat <<EOF
 }
 EOF
 )
-curl -X 'POST' \
-  'https://silkapi.us1.app.silk.security/api/v1/raw/asset_group' \
-  -H "accept: application/json" -H "Authorization: ${SILK_JWT_TOKEN}" \
-  -H 'Content-Type: application/json' \
-  -d "$json_payload"
+# curl -X 'POST' \
+#   'https://silkapi.us1.app.silk.security/api/v1/raw/asset_group' \
+#   -H "accept: application/json" -H "Authorization: ${SILK_JWT_TOKEN}" \
+#   -H 'Content-Type: application/json' \
+#   -d "$json_payload"
 
 echo "Create a temp sbom."
 TMP_SBOM=sbom-for-${BRANCH}.json
-podman run --platform="linux/amd64" -it --rm -v ${PWD}:/pwd \
+podman run --platform="linux/amd64" --rm -v $(pwd):/pwd \
   ${ARTIFACTORY_IMAGE}/silkbomb:1.0 \
   update --sbom-out /pwd/${TMP_SBOM}
 
