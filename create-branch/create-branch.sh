@@ -47,6 +47,8 @@ EOF
 #   -H 'Content-Type: application/json' \
 #   -d "$json_payload"
 
+echo "SILK_ASSET_GROUP=$SILK_GROUP" >> $GITHUB_OUTPUT
+
 echo "Create a temp sbom."
 TMP_SBOM=sbom-for-${BRANCH}.json
 podman run --platform="linux/amd64" --rm -v $(pwd):/pwd \
