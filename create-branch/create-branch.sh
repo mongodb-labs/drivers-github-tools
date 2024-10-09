@@ -63,13 +63,13 @@ rm ${TMP_SBOM}
 
 cat ${SBOM_FILE_PATH}
 echo "Replace the values in the existing sbom."
-cat <<< "$(jq '.serialNumber = "'${SERIAL}'"' ${SBOM_FILE_PATH})" > ${SBOM_FILE_PATH}
-cat <<< "$(jq '.metadata.timestamp = "'${TIMESTAMP}'"' ${SBOM_FILE_PATH})" > ${SBOM_FILE_PATH}
+cat <<< "$(jq --indent 4 '.serialNumber = "'${SERIAL}'"' ${SBOM_FILE_PATH})" > ${SBOM_FILE_PATH}
+cat <<< "$(jq --indent 4 '.metadata.timestamp = "'${TIMESTAMP}'"' ${SBOM_FILE_PATH})" > ${SBOM_FILE_PATH}
 cat ${SBOM_FILE_PATH}
 
 echo "Update the workflow with the silk asset group and evergreen project."
-sed -i 's/^SILK_ASSET_GROUP.*/SILK_ASSET_GROUP: '${SILK_GROUP}'/' ${RELEASE_WORKFLOW_PATH}
-sed -i 's/^EVERGREEN_PROJECT.*/EVERGREEN_PROJECT: '${EVERGREEN_PROJECT}'/' ${RELEASE_WORKFLOW_PATH}
+sed -i 's/^\s+SILK_ASSET_GROUP.*/SILK_ASSET_GROUP: '${SILK_GROUP}'/' ${RELEASE_WORKFLOW_PATH}
+sed -i 's/^\s+EVERGREEN_PROJECT.*/EVERGREEN_PROJECT: '${EVERGREEN_PROJECT}'/' ${RELEASE_WORKFLOW_PATH}
 
 echo "Add the changed files."
 git --no-pager diff
