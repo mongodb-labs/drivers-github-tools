@@ -51,7 +51,7 @@ echo "SILK_ASSET_GROUP=$SILK_GROUP" >> $GITHUB_STEP_SUMMARY
 
 echo "Create a temp sbom."
 TMP_SBOM=sbom-for-${BRANCH}.json
-podman run --platform="linux/amd64" --rm -v $(pwd):/pwd \
+podman run --platform="linux/amd64" --rm -v "$(pwd)":/pwd \
   ${ARTIFACTORY_IMAGE}/silkbomb:1.0 \
   update --sbom-out /pwd/${TMP_SBOM}
 
@@ -63,8 +63,8 @@ rm ${TMP_SBOM}
 
 cat ${SBOM_FILE_PATH}
 echo "Replace the values in the existing sbom."
-jq '.serialNumber = "'${SERIAL}'"' ${SBOM_FILE_PATH} > ${SBOM_FILE_PATH}
-jq '.metadata.timestamp = "'${TIMESTAMP}'"' ${SBOM_FILE_PATH} > ${SBOM_FILE_PATH}
+cat <<< "$(jq '.serialNumber = "'${SERIAL}'"' ${SBOM_FILE_PATH})" > ${SBOM_FILE_PATH}
+cat <<< "$(jq '.metadata.timestamp = "'${TIMESTAMP}'"' ${SBOM_FILE_PATH})" > ${SBOM_FILE_PATH}
 cat ${SBOM_FILE_PATH}
 
 echo "Update the workflow with the silk asset group and evergreen project."
