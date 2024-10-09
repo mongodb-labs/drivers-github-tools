@@ -48,6 +48,7 @@ EOF
 #   -d "$json_payload"
 
 echo "Create a temp sbom."
+set -x
 TMP_SBOM=sbom-for-${BRANCH}.json
 podman run --platform="linux/amd64" --rm -v $(pwd):/pwd \
   ${ARTIFACTORY_IMAGE}/silkbomb:1.0 \
