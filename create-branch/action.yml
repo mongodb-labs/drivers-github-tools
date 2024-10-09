@@ -1,0 +1,54 @@
+name: Create Release Branch
+description: Create a release branch and update branch metadata
+inputs:
+  # User provided inputs.
+  branch_name:
+    description: The name of the new branch
+    required: true
+  version:
+    description: The version to set on the branch
+    required: true
+  base_ref:
+    description: The base reference for the branch
+  push_changes:
+    description: Whether to push the changes
+    default: "true"
+  # Workflow provided inputs.
+  version_bump_script:
+    description: The script used to bump the version
+    required: true
+  evergreen_project:
+    description: The name of the evergreen project for the new branch
+    required: true
+  release_workflow_path:
+    description: The path to the release workflow file
+    default: .github/workflows/release.yml
+  sbom_file_path:
+    description: The path of the sbom-lite file
+    default: sbom.json
+  silk_group_prefix:
+    description: The prefix to use for the silk asset group, defaults to the repo name
+  artifactory_image:
+    description: Image to use for artifactory
+    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local
+
+runs:
+  using: composite
+  steps:
+    - name: Create a release branch and update branch metadata
+      shell: bash
+      env:
+        BRANCH: ${{ inputs.branch_name }}
+        BASE_REF: ${{ inputs.base_ref }}
+        SBOM_FILE_PATH: ${{ inputs.sbom_file_path }}
+        RELEASE_WORKFLOW_PATH: ${{ inputs.release_workflow_path }}
+        EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
+        SILK_PREFIX: ${{ inputs.silk_group_prefix }}
+        ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
+      run: ${{ github.action_path }}/create-branch.sh
+    - uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      with:
+        version: ${{ inputs.version }}
+        version_bump_script: ${{ inputs.version_bump_script }}
+        commit_template: "Prep branch ${{ inputs.branch_name }}"
+        push_commit: ${{ inputs.push_changes }}

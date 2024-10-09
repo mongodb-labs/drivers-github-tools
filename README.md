@@ -255,11 +255,44 @@ By default, all files in the S3 directory are uploaded. When the `dry_run` input
 is set to anything other than `false`, no files are uploaded, but instead the
 filename along with the resulting location in the bucket is printed.
 
+## Create Release Branch
+
+Use this action to create a release branch and populate it with metadata.
+It will create a new Silk Asset Group, update the SBOM-lite file,
+update the ``SILK_ASSET_GROUP`` and ``EVERGREEN_PROJECT`` env variables
+in the release workflow file, bump the version to a
+prerelease version, and push the changes.
+
+> [!Note]
+> You will need to wait overnight before making a release on
+> the new branch to allow Silk to be populated, so it is recommended to
+> make a minor/major release prior to creating a release branch, or create the
+> release branch at least one day before a planned release.
+
+```yaml
+- name: Setup
+  uses: mongodb-labs/drivers-github-tools/setup@v2
+  with:
+    ...
+
+- name: Create Release Branch
+  uses: mongodb-labs/drivers-github-tools/create-branch@v2
+  with:
+    # user inputs
+    branch: ...
+    version: ...
+    base_ref: <optional>
+    push_changes: <whether to push changes>
+    # other inputs
+    version_bump_script: <path/to/version/bump/script>
+    evergreen_project: <name of evergreen release project>
+```
+
 ## Python Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases.
 
-### Bump and Tag
+### Pre-Publish
 
 Bump the version and create a new tag.  Verify the tag.
 Push the commit and tag to the source branch unless `dry_run` is set.
@@ -270,7 +303,7 @@ Push the commit and tag to the source branch unless `dry_run` is set.
   with:
     ...
 
-- uses: mongodb-labs/drivers-github-tools/python/bump-and-tag@v2
+- uses: mongodb-labs/drivers-github-tools/python/pre-publishv2
   with:
     version: ${{ inputs.version }}
     version_bump_script: ./.github/scripts/bump-version.sh
