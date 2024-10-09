@@ -48,7 +48,6 @@ EOF
 #   -d "$json_payload"
 
 echo "Create a temp sbom."
-set -x
 TMP_SBOM=sbom-for-${BRANCH}.json
 podman run --platform="linux/amd64" --rm -v $(pwd):/pwd \
   ${ARTIFACTORY_IMAGE}/silkbomb:1.0 \
@@ -64,8 +63,9 @@ jq '.serialNumber = "'${SERIAL}'"' ${SBOM_FILE_PATH} > ${SBOM_FILE_PATH}
 jq '.metadata.timestamp = "'${TIMESTAMP}'"' ${SBOM_FILE_PATH} > ${SBOM_FILE_PATH}
 
 echo "Update the workflow with the silk asset group and evergreen project."
-sed -i 's/SILK_ASSET_GROUP.*/SILK_ASSET_GROUP: '${SILK_ASSET_GROUP}'/' ${RELEASE_WORKFLOW_PATH}
+sed -i 's/SILK_ASSET_GROUP.*/SILK_ASSET_GROUP: '${SILK_GROUP}'/' ${RELEASE_WORKFLOW_PATH}
 sed -i 's/EVERGREEN_PROJECT.*/EVERGREEN_PROJECT: '${EVERGREEN_PROJECT}'/' ${RELEASE_WORKFLOW_PATH}
 
 echo "Add the changed files."
+git --no-pager diff
 git add ${SBOM_FILE_PATH} ${RELEASE_WORKFLOW_PATH}
