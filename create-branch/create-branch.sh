@@ -47,7 +47,7 @@ EOF
 #   -H 'Content-Type: application/json' \
 #   -d "$json_payload"
 
-echo "SILK_ASSET_GROUP=$SILK_GROUP" >> $GITHUB_OUTPUT
+echo "SILK_ASSET_GROUP=$SILK_GROUP" >> $GITHUB_STEP_SUMMARY
 
 echo "Create a temp sbom."
 TMP_SBOM=sbom-for-${BRANCH}.json
@@ -56,10 +56,12 @@ podman run --platform="linux/amd64" --rm -v $(pwd):/pwd \
   update --sbom-out /pwd/${TMP_SBOM}
 
 echo "Get the new timestamp and serial number."
+set -x
 SERIAL=$(jq -r '.serialNumber' ${TMP_SBOM})
 TIMESTAMP=$(jq -r '.metadata.timestamp' ${TMP_SBOM})
 rm ${TMP_SBOM}
 
+cat ${SBOM_FILE_PATH}
 echo "Replace the values in the existing sbom."
 jq '.serialNumber = "'${SERIAL}'"' ${SBOM_FILE_PATH} > ${SBOM_FILE_PATH}
 jq '.metadata.timestamp = "'${TIMESTAMP}'"' ${SBOM_FILE_PATH} > ${SBOM_FILE_PATH}
