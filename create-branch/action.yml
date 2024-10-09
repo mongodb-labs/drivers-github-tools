@@ -30,7 +30,7 @@ inputs:
     description: The prefix to use for the silk asset group, defaults to the repo name
   artifactory_image:
     description: Image to use for artifactory
-    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:1.0
+    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local
 
 runs:
   using: composite
