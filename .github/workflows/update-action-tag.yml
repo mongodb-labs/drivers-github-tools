@@ -22,7 +22,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ steps.app-token.outputs.token }}
-          persist-credentials: false
+          # Needed to push the tag in the final step
+          persist-credentials: true
 
       - name: Setup
         uses: ./setup
