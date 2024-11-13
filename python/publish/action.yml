@@ -26,6 +26,9 @@ inputs:
   tag_template:
     description: The template for the git tag
     default: "${VERSION}"
+  repository-url:
+    description: The PyPI repository URL to use
+    default: https://upload.pypi.org/legacy/
   token:
     description: The GitHub access token
   dry_run:
@@ -84,7 +87,10 @@ runs:
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
     - name: Publish distribution 📦 to PyPI
       if: inputs.dry_run == 'false'
-      uses: pypa/gh-action-pypi-publish@release/v1
+      # Pinned due to https://github.com/pypa/gh-action-pypi-publish/issues/290
+      uses: pypa/gh-action-pypi-publish@v1.11.0
+      with:
+        repository-url: ${{ inputs.repository_url }}
     - name: Do Not Publish distribution 📦 to PyPI on Dry Run
       if: inputs.dry_run == 'true'
       shell: bash
