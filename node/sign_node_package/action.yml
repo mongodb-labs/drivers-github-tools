@@ -55,7 +55,7 @@ runs:
       if: ${{ inputs.sign_native == 'true' }}
       shell: bash
       run: |
-        FILENAMES="build-*/*.tar.gz"
+        FILENAMES="build-*/**/*.tar.gz"
         if [[ $FILENAMES =~ '*' ]]; then
           FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
         fi
