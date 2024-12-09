@@ -55,10 +55,23 @@ runs:
       if: ${{ inputs.sign_native == 'true' }}
       shell: bash
       run: |
-        FILENAMES="build-*/**/*.tar.gz"
-        if [[ $FILENAMES =~ '*' ]]; then
-          FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
-        fi
+        cat << EOF > script.js 
+          const { readdirSync } = require('fs');
+          const { join } = require('path');
+
+          const tarFiles = readdirSync(process.argv[2], {
+            withFileTypes: true,
+            recursive: true
+          })
+            .filter(dirEnt => dirEnt.isFile())
+            .map(({ name, parentPath }) => join(parentPath, name))
+            .filter(file => file.includes('build-') && file.includes('.tar.gz'));
+
+          process.stdout.write(tarFiles.join('\n'));
+          process.stdout.write('\n')
+        EOF
+
+        FILENAMES=$(node ./script.js .)
         FILENAMES="$FILENAMES ${{ env.package_file }}"
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
