@@ -55,10 +55,8 @@ runs:
       if: ${{ inputs.sign_native == 'true' }}
       shell: bash
       run: |
-        FILENAMES="build-*/**/*.tar.gz"
-        if [[ $FILENAMES =~ '*' ]]; then
-          FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
-        fi
+        # all prebuilds
+        FILENAMES=$(find build-* -type f -name '*.tar.gz' | tr '\n' ' ')
         FILENAMES="$FILENAMES ${{ env.package_file }}"
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
