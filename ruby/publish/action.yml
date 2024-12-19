@@ -16,6 +16,10 @@ inputs:
   aws_secret_id:
     description: The AWS_SECRET_ID defined for this project
     required: true
+  bundler_cache_version:
+    description: The cache-version to use for the bundler cache
+    required: false
+    default: 0
   dry_run:
     description: Whether this is a dry run or not ("false" for releases)
     required: true
@@ -49,6 +53,7 @@ runs:
       with:
         ruby-version: '3.2'
         bundler-cache: true
+        cache-version: ${{ inputs.bundler_cache_version }}
 
     - name: Get the release version
       shell: bash
