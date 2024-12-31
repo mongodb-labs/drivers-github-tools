@@ -34,7 +34,8 @@ runs:
     - name: Install hatch
       shell: bash
       working-directory: ${{ inputs.working_directory }}
-      run: pipx install hatch
+      # TODO: remove when #62 is fixed.
+      run: pipx install "hatch<1.27"
     - name: Check if we should push changes
       shell: bash
       run: |
