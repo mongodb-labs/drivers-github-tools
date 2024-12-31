@@ -335,6 +335,7 @@ publish:
         name: all-dist-${{ github.run_id }}
         path: dist/
     - name: Publish package distributions to PyPI
+      if: inputs.dry_run == 'false'
       uses: pypa/gh-action-pypi-publish@release/v1
 
 post-publish:
