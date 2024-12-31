@@ -84,10 +84,6 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
         FOLLOWING_VERSION: ${{ inputs.following_version }}
-    - name: Check using twine
-      # TODO: remove as part of #62.
-      shell: bash
-      run: pipx run twine check dist/*.*
     # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
     - name: Publish distribution 📦 to PyPI
       if: inputs.dry_run == 'false'
@@ -95,7 +91,6 @@ runs:
       uses: pypa/gh-action-pypi-publish@v1.11.0
       with:
         repository-url: ${{ inputs.repository_url }}
-        verify-metadata: false
     - name: Do Not Publish distribution 📦 to PyPI on Dry Run
       if: inputs.dry_run == 'true'
       shell: bash
