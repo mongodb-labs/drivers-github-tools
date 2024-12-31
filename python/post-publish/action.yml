@@ -1,6 +1,6 @@
 
-name: Publish Python
-description: Publish Assets and Report
+name: Python Post-Publish
+description: Perform post-release operations for Python Libraries
 inputs:
   version:
     description: The published version
@@ -76,7 +76,7 @@ runs:
     - name: Run GitHub Publish script
       shell: bash
       id: publish-script
-      run: ${{ github.action_path }}/publish.sh
+      run: ${{ github.action_path }}/post-publish.sh
       env:
         GH_TOKEN: ${{ inputs.token }}
         VERSION: ${{ inputs.version }}
@@ -84,18 +84,6 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
         FOLLOWING_VERSION: ${{ inputs.following_version }}
-    # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#publishing-the-distribution-to-pypi
-    - name: Publish distribution 📦 to PyPI
-      if: inputs.dry_run == 'false'
-      # Pinned due to https://github.com/pypa/gh-action-pypi-publish/issues/290
-      uses: pypa/gh-action-pypi-publish@v1.11.0
-      with:
-        repository-url: ${{ inputs.repository_url }}
-    - name: Do Not Publish distribution 📦 to PyPI on Dry Run
-      if: inputs.dry_run == 'true'
-      shell: bash
-      run: |
-        echo "Dry run, not uploading to PyPI" >> $GITHUB_STEP_SUMMARY
     - uses: actions/attest-build-provenance@v1
       if: inputs.dry_run == 'false'
       with:
