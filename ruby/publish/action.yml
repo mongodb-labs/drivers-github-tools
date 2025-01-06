@@ -35,6 +35,10 @@ inputs:
   release_message_template:
     description: The template for the release message. Use "{0}" in the text to refer to the current version.
     required: true
+  rubygems_version:
+    description: The version of Rubygems to use (see setup-ruby/action.yml)
+    required: false
+    default: latest
   silk_asset_group:
     description: The Silk asset group for the project
     required: true
@@ -52,6 +56,7 @@ runs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.2'
+        rubygems: ${{ inputs.rubygems_version }}
         bundler-cache: true
         cache-version: ${{ inputs.bundler_cache_version }}
 
