@@ -19,7 +19,7 @@ inputs:
   bundler_cache_version:
     description: The cache-version to use for the bundler cache
     required: false
-    default: 0
+    default: '0'
   dry_run:
     description: Whether this is a dry run or not ("false" for releases)
     required: true
