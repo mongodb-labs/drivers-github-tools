@@ -5,8 +5,8 @@ inputs:
   silk_asset_group:
     description: The Silk Asset Group for the Project
     required: false
-  sbom_in:
-    description: The name of the input sbom file.
+  sbom_in_path:
+    description: The path of the input sbom file.
     default: sbom.json
   sbom_file_name:
     description: The name of the augmented sbom file.
@@ -33,5 +33,5 @@ runs:
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
           --env-file=${SILKBOMB_ENVFILE} \
           ${{ inputs.artifactory_image }} \
-          augment --sbom-in /pwd/${{ inputs.sbom_in }} --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
+          augment --sbom-in /pwd/${{ inputs.sbom_in_path }} --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
         cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${{ inputs.sbom_file_name }}
