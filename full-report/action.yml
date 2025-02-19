@@ -48,7 +48,7 @@ runs:
     - name: Generate SBOM File
       # not all packages have third party dependencies, and so not all packages integrate with silk.
       if: ${{ inputs.silk_asset_group }} || ${{ inputs.sbom_in_path }}
-      uses: blink1073/drivers-github-tools/sbom@fetsko/gha-sbom-action-silkbomb-2.0
+      uses: mongodb-labs/drivers-github-tools/sbom@v2
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
         sbom_file_name: ${{ inputs.sbom_file_name }}
