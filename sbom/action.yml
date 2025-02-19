@@ -1,10 +1,6 @@
 name: Augment the SBOM
 description: Augments the SBOM for the project
 inputs:
-  # no longer used
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: false
   sbom_in_path:
     description: The path of the input sbom file.
     default: sbom.json
@@ -17,6 +13,10 @@ inputs:
   artifactory_image:
     description: Image to use for artifactory
     default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:2.0
+  # no longer used
+  silk_asset_group:
+    description: The Silk Asset Group for the Project
+    required: false
 
 runs:
   using: composite
@@ -31,7 +31,7 @@ runs:
           KONDUKTO_BRANCH="${GITHUB_REF_NAME}"
         fi
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
-          --env-file=${SILKBOMB_ENVFILE} \
+          --env-file=${KONDUKTO_ENVFILE} \
           ${{ inputs.artifactory_image }} \
           augment --sbom-in /pwd/${{ inputs.sbom_in_path }} --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
         cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${{ inputs.sbom_file_name }}
