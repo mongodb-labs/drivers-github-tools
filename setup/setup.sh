@@ -40,6 +40,7 @@ if [ -n "${KONDUKTO_TOKEN:-}" ]; then
   cat << EOF > $KONDUKTO_ENVFILE
 KONDUKTO_TOKEN=${KONDUKTO_TOKEN}
 EOF
+fi
 
 echo "Set up output directories"
 export RELEASE_ASSETS=/tmp/release-assets
