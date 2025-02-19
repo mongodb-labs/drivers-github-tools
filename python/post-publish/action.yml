@@ -58,7 +58,7 @@ runs:
       shell: bash
       run: |
         echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - uses: mongodb-labs/drivers-github-tools/full-report@v2
+    - uses: blink1073/drivers-github-tools/full-report@fetsko/gha-sbom-action-silkbomb-2.0
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
