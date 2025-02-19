@@ -23,15 +23,22 @@ runs:
   steps:
     - name: Augments the SBOM file and writes it to the release assets and s3 assets folders
       shell: bash
+      env:
+        SBOM_IN_PATH: ${{ inputs.sbom_in_path }}
+        KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
+        ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
+        SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
       run: |
         set -eux
-        if [ -n "${{ inputs.kondukto_sub_project }}" ]; then
-          KONDUKTO_BRANCH="${GITHUB_REF_NAME}_${{ inputs.kondukto_sub_project }}"
+        if [ -n "${KONDUKTO_SUB_PROJECT}" ]; then
+          KONDUKTO_BRANCH="${GITHUB_REF_NAME}_${KONDUKTO_SUB_PROJECT}"
         else
           KONDUKTO_BRANCH="${GITHUB_REF_NAME}"
         fi
+        echo "Generating SBOM file for ${KONDUKTO_BRANCH}..."
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
           --env-file=${KONDUKTO_ENVFILE} \
-          ${{ inputs.artifactory_image }} \
-          augment --sbom-in /pwd/${{ inputs.sbom_in_path }} --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
-        cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${{ inputs.sbom_file_name }}
+          ${ARTIFACTORY_IMAGE} \
+          augment --sbom-in /pwd/${SBOM_IN_PATH} --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
+        cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${SBOM_FILE_NAME}
+        echo "Generating SBOM file for ${KONDUKTO_BRANCH}... done."
