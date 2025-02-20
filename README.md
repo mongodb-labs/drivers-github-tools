@@ -173,7 +173,7 @@ This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
 - name: Create SBOM
   uses: mongodb-labs/drivers-github-tools/sbom@v2
   with:
-    silk_asset_group: mongodb-python-driver
+    sbom_in_path: sbom.json
 ```
 
 ### Code Scanning Alerts
@@ -228,7 +228,7 @@ in the `S3_ASSETS` folder. This composite action runs the `authorized-pub`, `sbo
   with:
     product_name: winkerberos
     release_version: ${{ inputs.version }}
-    silk_asset_group: winkerberos
+    sbom_in_path: sbom.json
     dist_filenames: dist/*
 ```
 

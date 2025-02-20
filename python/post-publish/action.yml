@@ -14,9 +14,16 @@ inputs:
   product_name:
     description: The name of the product
     required: true
+  sbom_in_path:
+    description: The path of the input sbom file.
+    default: sbom.json
+  kondukto_sub_project:
+    description: The Kondukto sub-project name (appended to the branch name)
+    required: false
+  # No longer used.
   silk_asset_group:
     description: The Silk Asset Group for the Project
-    required: true
+    required: false
   evergreen_project:
     description: The evergreen project name.
     required: true
@@ -64,6 +71,8 @@ runs:
         release_version: ${{ inputs.version }}
         sarif_report_target_ref: ${{ inputs.version }}
         dist_filenames: dist/*
+        kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
+        sbom_in_path: ${{ inputs.sbom_in_path }}
         silk_asset_group: ${{ inputs.silk_asset_group }}
         evergreen_project: ${{ inputs.evergreen_project }}
         evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}

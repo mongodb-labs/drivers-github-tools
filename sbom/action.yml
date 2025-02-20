@@ -1,25 +1,44 @@
-name: Download the Augmented SBOM
-description: Downloads the Augmented SBOM for the project
+name: Augment the SBOM
+description: Augments the SBOM for the project
 inputs:
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: true
+  sbom_in_path:
+    description: The path of the input sbom file.
+    default: sbom.json
   sbom_file_name:
     description: The name of the augmented sbom file.
     default: cyclonedx.sbom.json
+  kondukto_sub_project:
+    description: The Kondukto sub-project name (appended to the branch name)
+    required: false
   artifactory_image:
     description: Image to use for artifactory
-    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:1.0
+    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:2.0
+  # no longer used
+  silk_asset_group:
+    description: The Silk Asset Group for the Project
+    required: false
 
 runs:
   using: composite
   steps:
-    - name: Download the Augmented SBOM file to the release assets and s3 assets folders
+    - name: Augments the SBOM file and writes it to the release assets and s3 assets folders
       shell: bash
+      env:
+        SBOM_IN_PATH: ${{ inputs.sbom_in_path }}
+        KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
+        ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
+        SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
       run: |
         set -eux
-        podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd \
-          --env-file=${SILKBOMB_ENVFILE} \
-          ${{ inputs.artifactory_image }} \
-          download --silk-asset-group ${{ inputs.silk_asset_group }} --sbom-out /pwd/cyclonedx.sbom.json
-        cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${{ inputs.sbom_file_name }}
+        if [ -n "${KONDUKTO_SUB_PROJECT}" ]; then
+          KONDUKTO_BRANCH="${GITHUB_REF_NAME}_${KONDUKTO_SUB_PROJECT}"
+        else
+          KONDUKTO_BRANCH="${GITHUB_REF_NAME}"
+        fi
+        echo "Generating SBOM file for ${KONDUKTO_BRANCH}..."
+        podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+          --env-file=${KONDUKTO_ENVFILE} \
+          ${ARTIFACTORY_IMAGE} \
+          augment --sbom-in /repo/${SBOM_IN_PATH} --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
+        cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${SBOM_FILE_NAME}
+        echo "Generating SBOM file for ${KONDUKTO_BRANCH}... done."
