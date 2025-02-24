@@ -20,10 +20,6 @@ inputs:
   kondukto_sub_project:
     description: The Kondukto sub-project name (appended to the branch name)
     required: false
-  # No longer used.
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: false
   evergreen_project:
     description: The evergreen project name.
     required: true
@@ -41,6 +37,10 @@ inputs:
   dry_run:
     description: Whether this is a dry run
     required: true
+  # No longer used, to be removed in V3.
+  silk_asset_group:
+    description: The Silk Asset Group for the Project
+    required: false
 
 runs:
   using: composite

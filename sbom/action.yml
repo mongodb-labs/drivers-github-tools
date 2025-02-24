@@ -13,7 +13,7 @@ inputs:
   artifactory_image:
     description: Image to use for artifactory
     default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:2.0
-  # no longer used
+  # No longer used, to be removed in V3.
   silk_asset_group:
     description: The Silk Asset Group for the Project
     required: false
@@ -29,13 +29,19 @@ runs:
         ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
         SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
       run: |
-        set -eux
+        set -eu
         if [ -n "${KONDUKTO_SUB_PROJECT}" ]; then
           KONDUKTO_BRANCH="${GITHUB_REF_NAME}_${KONDUKTO_SUB_PROJECT}"
         else
           KONDUKTO_BRANCH="${GITHUB_REF_NAME}"
         fi
         echo "Generating SBOM file for ${KONDUKTO_BRANCH}..."
+        echo "Updating SBOM file..."
+        podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+          --env-file=${KONDUKTO_ENVFILE} \
+          ${ARTIFACTORY_IMAGE} \
+          update --sbom-in /repo/${SBOM_IN_PATH} --sbom-out /pwd/cyclonedx.sbom.json --generate-new-serial-number
+        echo "Augumenting SBOM file..."
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
           --env-file=${KONDUKTO_ENVFILE} \
           ${ARTIFACTORY_IMAGE} \
