@@ -65,7 +65,7 @@ runs:
       shell: bash
       run: |
         echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - uses: mongodb-labs/drivers-github-tools/full-report@DRIVERS-3110
+    - uses: mongodb-labs/drivers-github-tools/full-report@v2
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.version }}
