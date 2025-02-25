@@ -258,16 +258,9 @@ filename along with the resulting location in the bucket is printed.
 ## Create Release Branch
 
 Use this action to create a release branch and populate it with metadata.
-It will create a new Silk Asset Group, update the SBOM-lite file,
-update the ``SILK_ASSET_GROUP`` and ``EVERGREEN_PROJECT`` env variables
+It will update ``EVERGREEN_PROJECT`` env variable
 in the release workflow file, bump the version to a
 prerelease version, and push the changes.
-
-> [!Note]
-> You will need to wait overnight before making a release on
-> the new branch to allow Silk to be populated, so it is recommended to
-> make a minor/major release prior to creating a release branch, or create the
-> release branch at least one day before a planned release.
 
 ```yaml
 - name: Setup
