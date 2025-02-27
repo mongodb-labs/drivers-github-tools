@@ -32,7 +32,7 @@ runs:
       with:
         product_name: mongo-go-driver
         release_version: ${{ inputs.version }}
-        silk_in_path: sbom.json
+        sbom_in_path: sbom.json
         evergreen_project: ${{ inputs.evergreen_project }}
         evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
         security_report_location: ${{ env.SECURITY_REPORT_URL }}
