@@ -45,6 +45,6 @@ runs:
         podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
           --env-file=${KONDUKTO_ENVFILE} \
           ${ARTIFACTORY_IMAGE} \
-          augment --sbom-in /repo/${SBOM_IN_PATH} --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
+          augment --sbom-in /pwd/cyclonedx.sbom.json --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
         cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${SBOM_FILE_NAME}
         echo "Generating SBOM file for ${KONDUKTO_BRANCH}... done."
