@@ -37,6 +37,7 @@ runs:
     - name: Handle inputs
       shell: bash
       run: |
+        set -eux
         # Handle DRY_RUN
         if [ "${{ inputs.dry_run }}" != "true" ]; then
             export PUSH_CHANGES=true
@@ -46,6 +47,7 @@ runs:
         echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
         # Handle version already bumped
         if [ -z "${{ inputs.version }}" ]; then
+          which hatch
           VERSION=$(hatch project metadata version)
           echo $VERSION
           echo "VERSION=$VERSION" >> $GITHUB_ENV
