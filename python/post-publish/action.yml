@@ -67,7 +67,7 @@ runs:
           VERSION=$(ls dist/*.tar.gz | rev | cut -d'-' -f 1 | rev | sed 's/.tar.gz//g')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         else
-          echo "VERSION={VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
         fi
     - name: Create detached signature for dist files
       uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
