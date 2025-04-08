@@ -33,7 +33,9 @@ runs:
     - name: Install hatch
       shell: bash
       working-directory: ${{ inputs.working_directory }}
-      run: pipx install hatch
+      run: |
+        pipx install hatch
+        pipx inject hatch hatchling
     - name: Handle inputs
       shell: bash
       run: |
