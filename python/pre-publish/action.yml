@@ -52,6 +52,7 @@ runs:
         fi
     - name: Set version
       uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      if: ${{ inputs.version }}
       with:
         version: ${{ env.VERSION }}
         version_bump_script: ${{ inputs.version_bump_script }}
