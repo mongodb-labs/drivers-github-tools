@@ -62,7 +62,7 @@ runs:
       run: |
         # Handle version already bumped
         if [ -z "$VERSION" ]; then
-          # Extract the version from the sdist name, which must be of the from
+          # Extract the version from the sdist name, which must be of the form
           # {name}-{version}.tar.gz according to PEP 625.
           VERSION=$(ls dist/*.tar.gz | rev | cut -d'-' -f 1 | rev | sed 's/.tar.gz//g')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
