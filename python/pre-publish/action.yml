@@ -40,10 +40,11 @@ runs:
       shell: bash
       env:
         VERSION: "${{ inputs.version }}"
+        DRY_RUN: "${{ inputs.dry_run }}"
       run: |
         set -eux
         # Handle DRY_RUN
-        if [ "${{ inputs.dry_run }}" != "true" ]; then
+        if [ "$DRY_RUN" != "true" ]; then
             export PUSH_CHANGES=true
         else
             export PUSH_CHANGES=false
