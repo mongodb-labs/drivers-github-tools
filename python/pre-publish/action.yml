@@ -3,7 +3,6 @@ description: Perform pre-release operations for Python Libraries
 inputs:
   version:
     description: The published version
-    required: true
   version_bump_script:
     description: The version bump script
     default: hatch version
@@ -35,7 +34,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       run: pipx install hatch
-    - name: Check if we should push changes
+    - name: Handle inputs
       shell: bash
       run: |
         # Handle DRY_RUN
@@ -45,17 +44,23 @@ runs:
             export PUSH_CHANGES=false
         fi
         echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
+        # Handle version already bumped
+        if [ -z "${{ inputs.version }} ];
+          echo "VERSION=$(hatch project metadata version)" >> $GITHUB_ENV
+        else
+          echo "VERSION=${{ inputs.version}}" >> $GITHUB_ENV
+        fi
     - name: Set version
       uses: mongodb-labs/drivers-github-tools/bump-version@v2
       with:
-        version: ${{ inputs.version }}
+        version: ${{ env.VERSION }}
         version_bump_script: ${{ inputs.version_bump_script }}
         working_directory: ${{ inputs.working_directory }}
         push_commit: ${{ env.PUSH_CHANGES }}
     - name: Tag version
       uses: mongodb-labs/drivers-github-tools/tag-version@v2
       with:
-        version: ${{ inputs.version }}
+        version: ${{ env.VERSION }}
         tag_template: ${{ inputs.tag_template }}
         tag_message_template: ${{ inputs.tag_message_template }}
         push_tag: ${{ env.PUSH_CHANGES }}
@@ -66,7 +71,7 @@ runs:
         if [ "${{ inputs.dry_run}}" == 'true' ]; then
           echo "version=${{ github.ref }}" >> $GITHUB_OUTPUT
         else
-          export VERSION=${{ inputs.version }}
+          export VERSION=${{ env.VERSION }}
           export TAG=$(echo "${{ inputs.tag_template }}" | envsubst)
           echo "version=$TAG" >> $GITHUB_OUTPUT
         fi
