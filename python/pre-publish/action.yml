@@ -35,7 +35,7 @@ runs:
       working-directory: ${{ inputs.working_directory }}
       run: |
         pipx install hatch
-        pipx inject hatch hatchling
+        pip install build
     - name: Handle inputs
       shell: bash
       run: |
@@ -49,10 +49,12 @@ runs:
         echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
         # Handle version already bumped
         if [ -z "${{ inputs.version }}" ]; then
-          which hatch
-          VERSION=$(hatch project metadata version)
-          echo $VERSION
+          python -m build --sdist .
+           # Extract the version from the sdist name, which must be of the from
+          # {name}-{version}.tar.gz according to PEP 625.
+          VERSION=$(ls dist/*.tar.gz | rev | cut -d'-' -f 1 | rev | sed 's/.tar.gz//g')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          rm -rf dist
         else
           echo "VERSION=${{ inputs.version}}" >> $GITHUB_ENV
         fi
