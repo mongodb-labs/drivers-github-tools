@@ -46,7 +46,9 @@ runs:
         echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
         # Handle version already bumped
         if [ -z "${{ inputs.version }}" ]; then
-          echo "VERSION=$(hatch project metadata version)" >> $GITHUB_ENV
+          VERSION=$(hatch project metadata version)
+          echo $VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
         else
           echo "VERSION=${{ inputs.version}}" >> $GITHUB_ENV
         fi
