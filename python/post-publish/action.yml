@@ -4,7 +4,6 @@ description: Perform post-release operations for Python Libraries
 inputs:
   version:
     description: The published version
-    required: true
   following_version:
     description: The following (dev) version
     required: false
@@ -56,6 +55,20 @@ runs:
       with:
         name: all-dist-${{ github.run_id }}
         path: dist/
+    - name: Ensure we have the package version
+      shell: bash
+      env:
+        VERSION: "${{ inputs.version }}"
+      run: |
+        # Handle version already bumped
+        if [ -z "$VERSION" ]; then
+          # Extract the version from the sdist name, which must be of the form
+          # {name}-{version}.tar.gz according to PEP 625.
+          VERSION=$(ls dist/*.tar.gz | rev | cut -d'-' -f 1 | rev | sed 's/.tar.gz//g')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+        else
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+        fi
     - name: Create detached signature for dist files
       uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
@@ -68,8 +81,8 @@ runs:
     - uses: mongodb-labs/drivers-github-tools/full-report@v2
       with:
         product_name: ${{ inputs.product_name }}
-        release_version: ${{ inputs.version }}
-        sarif_report_target_ref: ${{ inputs.version }}
+        release_version: ${{ env.VERSION }}
+        sarif_report_target_ref: ${{ env.VERSION }}
         dist_filenames: dist/*
         kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
         sbom_in_path: ${{ inputs.sbom_in_path }}
@@ -79,7 +92,7 @@ runs:
         token: ${{ inputs.token }}
     - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
       with:
-          version: ${{ inputs.version }}
+          version: ${{ env.VERSION }}
           product_name: ${{ inputs.product_name }}
           dry_run: ${{ inputs.dry_run }}
     - name: Run GitHub Publish script
@@ -88,7 +101,7 @@ runs:
       run: ${{ github.action_path }}/post-publish.sh
       env:
         GH_TOKEN: ${{ inputs.token }}
-        VERSION: ${{ inputs.version }}
+        VERSION: ${{ env.VERSION }}
         TAG_TEMPLATE: ${{ inputs.tag_template }}
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}

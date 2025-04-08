@@ -3,7 +3,6 @@ description: Perform pre-release operations for Python Libraries
 inputs:
   version:
     description: The published version
-    required: true
   version_bump_script:
     description: The version bump script
     default: hatch version
@@ -34,28 +33,46 @@ runs:
     - name: Install hatch
       shell: bash
       working-directory: ${{ inputs.working_directory }}
-      run: pipx install hatch
-    - name: Check if we should push changes
-      shell: bash
       run: |
+        pipx install hatch
+        pip install build
+    - name: Handle inputs
+      shell: bash
+      env:
+        VERSION: "${{ inputs.version }}"
+        DRY_RUN: "${{ inputs.dry_run }}"
+      run: |
+        set -eux
         # Handle DRY_RUN
-        if [ "${{ inputs.dry_run }}" != "true" ]; then
+        if [ "$DRY_RUN" != "true" ]; then
             export PUSH_CHANGES=true
         else
             export PUSH_CHANGES=false
         fi
         echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
+        # Handle version already bumped
+        if [ -z "$VERSION" ]; then
+          # Extract the version from the sdist name, which must be of the form
+          # {name}-{version}.tar.gz according to PEP 625.
+          python -m build --sdist .
+          VERSION=$(ls dist/*.tar.gz | rev | cut -d'-' -f 1 | rev | sed 's/.tar.gz//g')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          rm -rf dist
+        else
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+        fi
     - name: Set version
       uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      if: ${{ inputs.version }}
       with:
-        version: ${{ inputs.version }}
+        version: ${{ env.VERSION }}
         version_bump_script: ${{ inputs.version_bump_script }}
         working_directory: ${{ inputs.working_directory }}
         push_commit: ${{ env.PUSH_CHANGES }}
     - name: Tag version
       uses: mongodb-labs/drivers-github-tools/tag-version@v2
       with:
-        version: ${{ inputs.version }}
+        version: ${{ env.VERSION }}
         tag_template: ${{ inputs.tag_template }}
         tag_message_template: ${{ inputs.tag_message_template }}
         push_tag: ${{ env.PUSH_CHANGES }}
@@ -66,7 +83,7 @@ runs:
         if [ "${{ inputs.dry_run}}" == 'true' ]; then
           echo "version=${{ github.ref }}" >> $GITHUB_OUTPUT
         else
-          export VERSION=${{ inputs.version }}
+          export VERSION=${{ env.VERSION }}
           export TAG=$(echo "${{ inputs.tag_template }}" | envsubst)
           echo "version=$TAG" >> $GITHUB_OUTPUT
         fi
