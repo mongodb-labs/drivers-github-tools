@@ -360,6 +360,8 @@ post-publish:
 ## Python Labs Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases in MongoDB Labs.
+In contrast to the regulare Python scripts, it does not generate the
+SSDLC compliance assets or upload anything to S3.
 
 ### Pre-Publish
 

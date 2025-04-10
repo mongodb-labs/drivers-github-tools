@@ -38,6 +38,7 @@ runs:
         pip install build
     - name: Handle inputs
       shell: bash
+      working-directory: ${{ inputs.working_directory }}
       env:
         VERSION: "${{ inputs.version }}"
         DRY_RUN: "${{ inputs.dry_run }}"
