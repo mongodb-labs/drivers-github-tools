@@ -1,11 +1,6 @@
-name: Python Pre-Publish
-description: Perform pre-release operations for Python Libraries
+name: Python Labs Pre-Publish
+description: Perform pre-release operations for Python Libraries in MongoDB Labs
 inputs:
-  version:
-    description: The published version
-  version_bump_script:
-    description: The version bump script
-    default: hatch version
   tag_template:
     description: The template for the git tag
     default: "${VERSION}"
@@ -40,7 +35,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
-        VERSION: "${{ inputs.version }}"
         DRY_RUN: "${{ inputs.dry_run }}"
       run: |
         set -eux
@@ -51,25 +45,13 @@ runs:
             export PUSH_CHANGES=false
         fi
         echo "PUSH_CHANGES=$PUSH_CHANGES" >> $GITHUB_ENV
-        # Handle version already bumped
-        if [ -z "$VERSION" ]; then
-          # Extract the version from the sdist name, which must be of the form
-          # {name}-{version}.tar.gz according to PEP 625.
-          python -m build --sdist .
-          VERSION=$(ls dist/*.tar.gz | rev | cut -d'-' -f 1 | rev | sed 's/.tar.gz//g')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          rm -rf dist
-        else
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-        fi
-    - name: Set version
-      uses: mongodb-labs/drivers-github-tools/bump-version@v2
-      if: ${{ inputs.version }}
-      with:
-        version: ${{ env.VERSION }}
-        version_bump_script: ${{ inputs.version_bump_script }}
-        working_directory: ${{ inputs.working_directory }}
-        push_commit: ${{ env.PUSH_CHANGES }}
+        # Handle version
+        # Extract the version from the sdist name, which must be of the form
+        # {name}-{version}.tar.gz according to PEP 625.
+        python -m build --sdist .
+        VERSION=$(ls dist/*.tar.gz | rev | cut -d'-' -f 1 | rev | sed 's/.tar.gz//g')
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        rm -rf dist
     - name: Tag version
       uses: mongodb-labs/drivers-github-tools/tag-version@v2
       with:
@@ -77,7 +59,7 @@ runs:
         tag_template: ${{ inputs.tag_template }}
         tag_message_template: ${{ inputs.tag_message_template }}
         push_tag: ${{ env.PUSH_CHANGES }}
-    - name: Handle version
+    - name: Handle version output
       shell: bash
       id: version
       run: |
