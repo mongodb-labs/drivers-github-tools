@@ -53,7 +53,7 @@ runs:
         private_key: ${{ inputs.app_private_key }}
 
     - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
+      uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1
       with:
         ruby-version: '3.2'
         rubygems: ${{ inputs.rubygems_version }}
@@ -132,7 +132,7 @@ runs:
         dry_run: ${{ inputs.dry_run }}
 
     - name: Publish the gem
-      uses: rubygems/release-gem@v1
+      uses: rubygems/release-gem@a25424ba2ba8b387abc8ef40807c2c85b96cbe32 # v1
       if: inputs.dry_run == 'false'
       with:
         await-release: false
