@@ -20,13 +20,13 @@ runs:
   using: composite
   steps:
   - name: configure aws credentials
-    uses: aws-actions/configure-aws-credentials@v4
+    uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
     with:
       role-to-assume: ${{ inputs.aws_role_arn }}
       role-session-name: release-session
       aws-region: ${{ inputs.aws_region_name }}
   - name: Read secrets from AWS Secrets Manager into environment variables
-    uses: aws-actions/aws-secretsmanager-get-secrets@v2
+    uses: aws-actions/aws-secretsmanager-get-secrets@5e19ff380d035695bdd56bbad320ca535c9063f2 # v2
     with:
       secret-ids: |
         ${{ inputs.aws_secret_id }}
