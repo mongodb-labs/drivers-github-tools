@@ -25,7 +25,7 @@ runs:
     - name: "Determine branch to merge up to"
       if: ${{ inputs.push_changes }}
       id: get-next-branch
-      uses: alcaeus/automatic-merge-up-action/get-next-branch@main
+      uses: alcaeus/automatic-merge-up-action/get-next-branch@b253eae7dfccc0b637edf71121608375e07a7678 #main
       with:
         ref: ${{ github.ref_name }}
         branchNamePattern: 'release/<major>.<minor>'
