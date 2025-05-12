@@ -16,8 +16,30 @@ runs:
         version: ${{ inputs.version }}
         version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
         commit_template: "BUMP v${VERSION}"
-        push_commit: ${{ inputs.push_changes }}
+        # Never push commit, we still need to merge up if a push is requested
+        push_commit: false
     - uses: mongodb-labs/drivers-github-tools/tag-version@v2
       with:
         version: v${{ inputs.version }}
         push_tag: ${{ inputs.push_changes }}
+    - name: "Determine branch to merge up to"
+      if: ${{ inputs.push_changes }}
+      id: get-next-branch
+      uses: alcaeus/automatic-merge-up-action/get-next-branch@b253eae7dfccc0b637edf71121608375e07a7678 #main
+      with:
+        ref: ${{ github.ref_name }}
+        branchNamePattern: 'release/<major>.<minor>'
+        devBranchNamePattern: 'v<major>'
+        fallbackBranch: 'master'
+    - name: "Manually merge up changes"
+      if: ${{ inputs.push_changes && steps.get-next-branch.outputs.hasNextBranch }}
+      shell: bash
+      run: |
+        git checkout ${NEXT_BRANCH}
+        git merge --strategy=ours ${RELEASE_BRANCH}
+        git push origin ${NEXT_BRANCH}
+        git checkout ${RELEASE_BRANCH}
+        git push origin ${RELEASE_BRANCH}
+      env:
+        NEXT_BRANCH: ${{ steps.get-next-branch.outputs.branchName }}
+        RELEASE_BRANCH: ${{ github.ref_name }}
