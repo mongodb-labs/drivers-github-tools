@@ -7,6 +7,9 @@ inputs:
   push_changes:
     description: Whether to push the changes
     default: "true"
+  ignored_branches:
+    description: Branches to ignore when merging up changes
+    required: true
 
 runs:
   using: composite
@@ -25,12 +28,13 @@ runs:
     - name: "Determine branch to merge up to"
       if: ${{ inputs.push_changes }}
       id: get-next-branch
-      uses: alcaeus/automatic-merge-up-action/get-next-branch@b253eae7dfccc0b637edf71121608375e07a7678 #main
+      uses: alcaeus/automatic-merge-up-action/get-next-branch@a43d2c2d3ed5a92a1fce3e3bde21c27c578f50d3 #1.0.0
       with:
         ref: ${{ github.ref_name }}
         branchNamePattern: 'release/<major>.<minor>'
         devBranchNamePattern: 'v<major>'
         fallbackBranch: 'master'
+        ignoredBranches: ${{ inputs.ignored_branches }}
     - name: "Manually merge up changes"
       if: ${{ inputs.push_changes && steps.get-next-branch.outputs.hasNextBranch }}
       shell: bash
