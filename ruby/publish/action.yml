@@ -32,8 +32,8 @@ inputs:
   product_id:
     description: The identifier of the product being published (e.g. "mongo-ruby-driver")
     required: true
-  release_message_template:
-    description: The template for the release message. Use "{0}" in the text to refer to the current version.
+  release_notes:
+    description: The release notes to post as the description of the new release
     required: true
   rubygems_version:
     description: The version of Rubygems to use (see setup-ruby/action.yml)
@@ -94,35 +94,58 @@ runs:
         dist_filenames: ${{ env.GEM_FILE_NAME }}
         silk_asset_group: ${{ inputs.silk_asset_group }}
 
+    - name: Look for existing tag
+      id: tag_exists
+      shell: bash
+      run: |
+        if git rev-parse "v${{ env.RELEASE_VERSION }}" >/dev/null 2>&1; then
+          echo "Tag v${{ env.RELEASE_VERSION }} already exists."
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "Tag v${{ env.RELEASE_VERSION }} does not exist."
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Create the tag
       uses: mongodb-labs/drivers-github-tools/tag-version@v2
+      if: steps.tag_exists.outputs.exists == 'false'
       with:
         version: ${{ env.RELEASE_VERSION }}
         tag_template: "v${VERSION}"
         tag_message_template: "Release tag for v${VERSION}"
 
-    - name: Create a new release
-      shell: bash
-      run: gh release create v${{ env.RELEASE_VERSION }} --title ${{ env.RELEASE_VERSION }} --generate-notes --draft
-
-    - name: Capture the changelog
-      shell: bash
-      run: gh release view v${{ env.RELEASE_VERSION }} --json body --template '{{ .body }}' >> changelog
-
     - name: Prepare release message
       shell: bash
       run: |
-        echo "${{ format(inputs.release_message_template, env.RELEASE_VERSION) }}" > release-message
-        cat changelog >> release-message
+        cat <<'__EOF__' > release-message
+        ${{ inputs.release_notes }}
+        __EOF__
 
-    - name: Update release information
+    - name: Look for existing release
+      id: release_exists
       shell: bash
       run: |
-        echo "RELEASE_URL=$(gh release edit v${{ env.RELEASE_VERSION }} --notes-file release-message)" >> "$GITHUB_ENV"
+        if gh release view "v${{ env.RELEASE_VERSION }}" >/dev/null 2>&1; then
+          echo "Release v${{ env.RELEASE_VERSION }} already exists."
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "Release v${{ env.RELEASE_VERSION }} does not exist."
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Create a new release
+      if: steps.release_exists.outputs.exists == 'false'
+      shell: bash
+      run: gh release create v${{ env.RELEASE_VERSION }} --title ${{ env.RELEASE_VERSION }} --notes-file release-message --draft
+
+    - name: Else update the existing release
+      if: steps.release_exists.outputs.exists == 'true'
+      shell: bash
+      run: gh release edit v${{ env.RELEASE_VERSION }} --notes-file release-message
 
     - name: Upload release artifacts
       shell: bash
-      run: gh release upload v${{ env.RELEASE_VERSION }} ${{ env.GEM_FILE_NAME }} ${{ env.RELEASE_ASSETS }}/${{ env.GEM_FILE_NAME }}.sig
+      run: gh release upload --clobber v${{ env.RELEASE_VERSION }} ${{ env.GEM_FILE_NAME }} ${{ env.RELEASE_ASSETS }}/${{ env.GEM_FILE_NAME }}.sig
 
     - name: Upload S3 assets
       uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
@@ -131,8 +154,26 @@ runs:
         product_name: ${{ inputs.product_id }}
         dry_run: ${{ inputs.dry_run }}
 
+    - name: Look for existing gem
+      id: gem_exists
+      shell: bash
+      run: |
+        if gem search --remote ${{ inputs.gem_name }} --version ${{ env.RELEASE_VERSION }} | grep -q "${{ env.RELEASE_VERSION }}"; then
+          echo "Gem ${{ inputs.gem_name }} version ${{ env.RELEASE_VERSION }} already exists."
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "Gem ${{ inputs.gem_name }} version ${{ env.RELEASE_VERSION }} does not exist."
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Publish the gem
       uses: rubygems/release-gem@a25424ba2ba8b387abc8ef40807c2c85b96cbe32 # v1
-      if: inputs.dry_run == 'false'
+      if: inputs.dry_run == 'false' && steps.gem_exists.outputs.exists == 'false'
       with:
         await-release: false
+
+    - name: Publish the release
+      if: inputs.dry_run == 'false'
+      shell: bash
+      run: gh release edit v${{ env.RELEASE_VERSION }} --draft=false
+
