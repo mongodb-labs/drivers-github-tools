@@ -1,0 +1,68 @@
+name: Build Gem
+description: Build a gem for a DBX Ruby project
+inputs:
+  app_id:
+    description: The APP_ID defined for this project
+    required: true
+  app_private_key:
+    description: The APP_PRIVATE_KEY defined for this project
+    required: true
+  artifact:
+    description: The name to give the generated artifact (e.g. "ruby" or "jruby")
+    required: false
+    default: ruby
+  bundler_cache_version:
+    description: The cache-version to use for the bundler cache
+    required: false
+    default: '0'
+  gem_name:
+    description: The name (sans extension) of the gemspec file (e.g. "mongo")
+    required: true
+  ruby_version:
+    description: The version of Ruby to use (see setup-ruby/action.yml)
+    default: '3.2'
+    required: false
+  rubygems_version:
+    description: The version of Rubygems to use (see setup-ruby/action.yml)
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - name: Check out the repository
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+      with:
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.app_private_key }}
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby_version }}
+        rubygems: ${{ inputs.rubygems_version }}
+        bundler-cache: true
+        cache-version: ${{ inputs.bundler_cache_version }}
+
+    - name: Get the release version
+      id: release_version
+      shell: bash
+      run: echo "version=$(bundle exec rake version)" >> "$GITHUB_OUTPUT"
+
+    - name: Get the gem file name
+      shell: bash
+      id: gem_name
+      run: echo "name=$(ruby ${{ github.action_path }}/gem_name.rb ${{ inputs.gem_name }} ${{ steps.release_version.outputs.version }})" >> "$GITHUB_OUTPUT"
+
+    - name: Build the gem
+      shell: bash
+      run: |
+        gem build --output=${{ steps.gem_name.outputs.name }} ${{ inputs.gem_name }}.gemspec
+
+    - name: Save the generated gem file for later
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact }}
+        path: ${{ steps.gem_name.outputs.name }}
+        retention-days: 1
+        overwrite: true
