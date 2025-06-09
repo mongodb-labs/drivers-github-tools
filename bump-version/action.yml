@@ -47,7 +47,7 @@ runs:
           if git ls-remote --heads --exit-code origin "$(git symbolic-ref --short HEAD)" &>/dev/null; then
             git push origin
           else
-            git push --set-upstream origin v4.13
+            git push --set-upstream origin "$(git symbolic-ref --short HEAD)"
           fi
           echo "Pushed version bump: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
         else
