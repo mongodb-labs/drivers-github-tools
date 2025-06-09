@@ -44,7 +44,11 @@ runs:
       shell: bash -eux {0}
       run: |
         if [ ${{ inputs.push_commit }} == "true" ]; then
-          git push origin
+          if git ls-remote --heads --exit-code origin "$(git symbolic-ref --short HEAD)" &>/dev/null; then
+            git push origin
+          else
+            git push --set-upstream origin v4.13
+          fi
           echo "Pushed version bump: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
         else
           echo "Created version bump (no push): ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
