@@ -32,8 +32,8 @@ inputs:
   product_id:
     description: The identifier of the product being published (e.g. "mongo-ruby-driver")
     required: true
-  release_notes_path:
-    description: The path to a file containing the release notes to post as the description of the new release
+  release_message:
+    description: The (markdown-formatted) text to post as the description of the new release
     required: true
   rubygems_version:
     description: The version of Rubygems to use (see setup-ruby/action.yml)
@@ -127,15 +127,22 @@ runs:
           echo "exists=false" >> "$GITHUB_OUTPUT"
         fi
 
+    - name: Write release notes to file
+      shell: bash
+      run: |
+        echo <<'__RELEASE_NOTES_IKDJAIELD__' > release_notes.txt
+        ${{ inputs.release_message }}
+        __RELEASE_NOTES_IKDJAIELD__
+
     - name: Create a new release
       if: steps.release_exists.outputs.exists == 'false'
       shell: bash
-      run: gh release create v${{ steps.release_version.outputs.version }} --title ${{ steps.release_version.outputs.version }} --notes-file ${{ inputs.release_notes_path }} --draft
+      run: gh release create v${{ steps.release_version.outputs.version }} --title ${{ steps.release_version.outputs.version }} --notes-file release_notes.txt --draft
 
     - name: Else update the existing release
       if: steps.release_exists.outputs.exists == 'true'
       shell: bash
-      run: gh release edit v${{ steps.release_version.outputs.version }} --notes-file ${{ inputs.release_notes_path }}
+      run: gh release edit v${{ steps.release_version.outputs.version }} --notes-file release_notes.txt
 
     - name: Upload release artifacts
       shell: bash
