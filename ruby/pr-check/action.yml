@@ -70,7 +70,7 @@ runs:
           }
 
           console.log('body: >>', pr.body, '<<');
-          console.log('ref: >>', pr.merge_commit_sha, '<<);
+          console.log('ref: >>', pr.merge_commit_sha, '<<');
 
           core.setOutput('message', pr.body);
           core.setOutput('ref', pr.merge_commit_sha);
