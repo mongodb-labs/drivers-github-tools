@@ -19,14 +19,11 @@ runs:
         script: |
           let pr;
 
-          console.log('context keys:', Object.keys(context));
-          console.log('context payload keys:', Object.keys(context.payload));
-
           // if the event is a pull request, then we don't need to check
           // the actors permissions, because they'll have had permissions
           // to merge the PR in the first place.
-          if (context.pull_request) {
-            pr = context.pull_request;
+          if (context.payload.pull_request) {
+            pr = context.payload.pull_request;
 
           // if the event is a comment, then we need to check that the
           // comment is in the correct format, and that the user has
@@ -71,6 +68,9 @@ runs:
           if (!pr.labels.some(label => label.name == 'release-candidate')) {
             throw new Error('Pull request is not a release candidate.');
           }
+
+          console.log('body: >>', pr.body, '<<');
+          console.log('ref: >>', pr.merge_commit_sha, '<<);
 
           core.setOutput('message', pr.body);
           core.setOutput('ref', pr.merge_commit_sha);
