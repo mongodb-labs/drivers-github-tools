@@ -82,7 +82,7 @@ runs:
         pattern: '*.gem'
         merge-multiple: true
 
-    - name: Sign the gem
+    - name: Sign the gems
       uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
       with:
         filenames: '*.gem'

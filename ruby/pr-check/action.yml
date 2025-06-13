@@ -19,6 +19,9 @@ runs:
         script: |
           let pr;
 
+          console.log('context keys:', Object.keys(context));
+          console.log('context payload keys:', Object.keys(context.payload));
+
           // if the event is a pull request, then we don't need to check
           // the actors permissions, because they'll have had permissions
           // to merge the PR in the first place.
