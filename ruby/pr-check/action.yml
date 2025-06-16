@@ -48,7 +48,7 @@ runs:
             });
 
             if (results.role_name !== 'admin' && results.role_name !== 'maintain') {
-              throw new Error(`User ${username} must have `admin` or `maintain` role to initiate the release process.`);
+              throw new Error(`User ${username} must have 'admin' or 'maintain' role to initiate the release process.`);
             }
 
             const result = await github.rest.pulls.get({
