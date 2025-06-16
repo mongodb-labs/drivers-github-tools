@@ -134,7 +134,7 @@ runs:
     - name: Write release notes to file
       shell: bash
       run: |
-        echo <<'__RELEASE_NOTES_IKDJAIELD__' > release_notes.txt
+        cat <<'__RELEASE_NOTES_IKDJAIELD__' > release_notes.txt
         ${{ inputs.release_message }}
         __RELEASE_NOTES_IKDJAIELD__
 
