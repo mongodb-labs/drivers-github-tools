@@ -27,7 +27,7 @@ runs:
 
           // if the event is a comment, then we need to check that the
           // comment is in the correct format, and that the user has
-          // admin/write permissions on the repository.
+          // acceptible access to the repository.
           } else if (context.issue) {
             const comment = context.payload.comment;
 
@@ -38,7 +38,7 @@ runs:
             }
 
             // if the event is an issue comment, we need to check the
-            // comment author has admin/write permissions on the repository,
+            // comment author has necessary access to the repository,
             // before we let them proceed.
             const username = comment.user.login;
             const { data: results } = await github.rest.repos.getCollaboratorPermissionLevel({
@@ -47,10 +47,8 @@ runs:
               username,
             });
 
-            console.log(results.permission);
-            console.log(results);
-            if (results.permission !== 'admin' || results.permission !== 'write') {
-              throw new Error(`User ${username} must have admin or write permissions to initiate the release process.`);
+            if (results.role_name !== 'admin' && results.role_name !== 'maintain') {
+              throw new Error(`User ${username} must have `admin` or `maintain` role to initiate the release process.`);
             }
 
             const result = await github.rest.pulls.get({
