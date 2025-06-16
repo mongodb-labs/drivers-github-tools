@@ -39,6 +39,7 @@ runs:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
         ref: ${{ inputs.ref }}
+        submodules: true
 
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
