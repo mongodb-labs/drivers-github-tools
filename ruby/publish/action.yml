@@ -32,6 +32,9 @@ inputs:
   product_id:
     description: The identifier of the product being published (e.g. "mongo-ruby-driver")
     required: true
+  ref:
+    description: The reference to checkout (branch, tag, sha, etc)
+    required: true
   release_message:
     description: The (markdown-formatted) text to post as the description of the new release
     required: true
@@ -55,6 +58,7 @@ runs:
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
+        ref: ${{ inputs.ref }}
 
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1

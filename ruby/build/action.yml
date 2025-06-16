@@ -18,6 +18,9 @@ inputs:
   gem_name:
     description: The name (sans extension) of the gemspec file (e.g. "mongo")
     required: true
+  ref:
+    description: The reference to checkout (branch, tag, sha, etc)
+    required: true
   ruby_version:
     description: The version of Ruby to use (see setup-ruby/action.yml)
     default: '3.2'
@@ -35,6 +38,7 @@ runs:
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
+        ref: ${{ inputs.ref }}
 
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
