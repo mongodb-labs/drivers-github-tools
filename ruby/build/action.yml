@@ -62,7 +62,7 @@ runs:
     - name: Build the gem
       shell: bash
       run: |
-        gem build --output=${{ steps.gem_name.outputs.name }} ${{ inputs.gem_name }}.gemspec
+        bundle exec rake build GEMSPEC="${{ inputs.gem_name }}.gemspec" GEM_FILE_NAME="${{ steps.gem_name.outputs.name }}"
 
     - name: Save the generated gem file for later
       uses: actions/upload-artifact@v4
