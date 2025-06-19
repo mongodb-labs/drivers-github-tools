@@ -89,6 +89,7 @@ runs:
 
           // workflow was triggered by an unrecognized/unsupported event
           } else {
+            console.log('payload keys:', Object.keys(context.payload));
             throw new Error('Workflow aborted: Unsupported event type.');
           }
 
