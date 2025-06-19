@@ -31,7 +31,7 @@ runs:
           console.log('context keys:', Object.keys(context));
 
           // was this triggered by a push event?
-          if (context.payload.push) {
+          if (context.eventName == 'push') {
             // if so, we need to find the PR that corresponds to the commit
             // that was pushed.
             //
@@ -53,7 +53,7 @@ runs:
 
           // if it wasn't triggered by a push event, was it triggered by
           // a workflow_dispatch event?
-          } else if (context.payload.workflow_dispatch) {
+          } else if (context.eventName == 'workflow_dispatch') {
             // it is technically possible for users with only write access
             // to trigger workflows; we need to make sure that the user
             // who triggered this has either admin or maintain access to the
