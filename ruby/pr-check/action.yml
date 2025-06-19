@@ -94,6 +94,8 @@ runs:
             throw new Error('Workflow aborted: Unsupported event type.');
           }
 
+          console.log('pr:', pr);
+
           if (!pr) {
             throw new Error('No pull request found for the triggered event.');
           }
