@@ -48,17 +48,11 @@ runs:
               throw new Error(`Workflow aborted: No pull request found for the pushed commit (${context.payload.after}).`);
             }
 
-            const { data: prs } = await github.rest.pulls.get({
+            pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: listing[0].number,
             });
-
-            if (prs.length == 0) {
-              throw new Error(`Workflow aborted: No pull request found with the requested number. (${number})`);
-            }
-
-            pr = prs[0];
 
           // if it wasn't triggered by a push event, was it triggered by
           // a workflow_dispatch event?
@@ -86,17 +80,11 @@ runs:
               throw new Error('Workflow aborted: No pull request number provided. (need `pr` input)');
             }
 
-            const { data: prs } = await github.rest.pulls.get({
+            pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: number,
             });
-
-            if (prs.length == 0) {
-              throw new Error(`Workflow aborted: No pull request found with the requested number. (${number})`);
-            }
-
-            pr = prs[0];
 
           // workflow was triggered by an unrecognized/unsupported event
           } else {
