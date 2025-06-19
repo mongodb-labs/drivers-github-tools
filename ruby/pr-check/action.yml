@@ -38,15 +38,14 @@ runs:
             // because only maintainers can push to protected branches,
             // we can assume the user has the correct permissions to do
             // this.
-            const { data: results } = await github.rest.pulls.list({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'all',
-              head: `${context.repo.owner}:${context.payload.ref}`,
+            const { data: results } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              context.repo.owner,
+              context.repo.repo,
+              context.payload.after,
             });
 
             if (results.length == 0) {
-              throw new Error(`Workflow aborted: No pull request found for the pushed commit (${context.payload.ref}).`);
+              throw new Error(`Workflow aborted: No pull request found for the pushed commit (${context.payload.after}).`);
             }
 
             pr = results[0];
