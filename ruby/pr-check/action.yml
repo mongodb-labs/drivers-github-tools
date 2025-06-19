@@ -28,8 +28,6 @@ runs:
         script: |
           let pr;
 
-          console.log('context keys:', Object.keys(context));
-
           // was this triggered by a push event?
           if (context.eventName == 'push') {
             // if so, we need to find the PR that corresponds to the commit
@@ -92,11 +90,8 @@ runs:
 
           // workflow was triggered by an unrecognized/unsupported event
           } else {
-            console.log('payload keys:', Object.keys(context.payload));
-            throw new Error('Workflow aborted: Unsupported event type.');
+            throw new Error(`Workflow aborted: Unsupported event type: ${context.eventName}.`);
           }
-
-          console.log('pr:', pr);
 
           if (!pr) {
             throw new Error('No pull request found for the triggered event.');
