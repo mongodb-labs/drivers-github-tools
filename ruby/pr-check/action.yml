@@ -28,6 +28,8 @@ runs:
         script: |
           let pr;
 
+          console.log('context keys:', Object.keys(context));
+
           // was this triggered by a push event?
           if (context.payload.push) {
             // if so, we need to find the PR that corresponds to the commit
