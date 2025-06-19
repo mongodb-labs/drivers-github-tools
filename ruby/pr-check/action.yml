@@ -1,3 +1,12 @@
+# PRs are only eligible for release if they are merged and have
+# the `release-candidate` label.
+#
+# The only events allowed to trigger this action are:
+# - push (in which case the commit sha is used to find the corresponding
+#   PR)
+# - workflow_dispatch (in which case the PR is found from the inputs
+#   on the event)
+
 name: PR Check
 description: Check that a PR is eligible for release
 
@@ -19,53 +28,78 @@ runs:
         script: |
           let pr;
 
-          // if the event is a pull request, then we don't need to check
-          // the actors permissions, because they'll have had permissions
-          // to merge the PR in the first place.
-          if (context.payload.pull_request) {
-            pr = context.payload.pull_request;
+          // was this triggered by a push event?
+          if (context.payload.push) {
+            // if so, we need to find the PR that corresponds to the commit
+            // that was pushed.
+            //
+            // because only maintainers can push to protected branches,
+            // we can assume the user has the correct permissions to do
+            // this.
+            const { data: results } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              head: `${context.repo.owner}:${context.payload.ref}`,
+            });
 
-          // if the event is a comment, then we need to check that the
-          // comment is in the correct format, and that the user has
-          // acceptible access to the repository.
-          } else if (context.issue) {
-            const comment = context.payload.comment;
-
-            // first, is the message in the correct format?
-            const body = comment.body.trim();
-            if (body != '/release') {
-              throw new Error('Command not detected in comment body.');
+            if (results.length == 0) {
+              throw new Error(`Workflow aborted: No pull request found for the pushed commit (${context.payload.ref}).`);
             }
 
-            // if the event is an issue comment, we need to check the
-            // comment author has necessary access to the repository,
-            // before we let them proceed.
-            const username = comment.user.login;
-            const { data: results } = await github.rest.repos.getCollaboratorPermissionLevel({
+            pr = results[0];
+
+          // if it wasn't triggered by a push event, was it triggered by
+          // a workflow_dispatch event?
+          } else if (context.payload.workflow_dispatch) {
+            // it is technically possible for users with only write access
+            // to trigger workflows; we need to make sure that the user
+            // who triggered this has either admin or maintain access to the
+            // repository.
+            const username = context.triggering_actor || context.actor;
+
+            const { data: perms } = await github.rest.repos.getCollaboratorPermissionLevel({
               owner: context.repo.owner,
               repo: context.repo.repo,
               username,
             });
 
-            if (results.role_name !== 'admin' && results.role_name !== 'maintain') {
-              throw new Error(`User ${username} must have 'admin' or 'maintain' role to initiate the release process.`);
+            if (perms.role_name !== 'admin' && perms.role_name !== 'maintain') {
+              throw new Error(`User ${username} must have 'admin' or 'maintain' role to initiate the release process. (${perms.role_name})`);
+            }
+  
+            // if so, we grab the PR with the number that was passed in with
+            // the inputs.
+            const number = context.payload.inputs.pr;
+            if (!number) {
+              throw new Error('Workflow aborted: No pull request number provided. (need `pr` input)');
             }
 
-            const result = await github.rest.pulls.get({
+            const { data: prs } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.issue.number,
+              pull_number: number,
             });
 
-            pr = result.data
+            if (prs.length == 0) {
+              throw new Error(`Workflow aborted: No pull request found with the requested number. (${number})`);
+            }
+
+            pr = prs[0];
+
+          // workflow was triggered by an unrecognized/unsupported event
+          } else {
+            throw new Error('Workflow aborted: Unsupported event type.');
           }
 
           if (!pr) {
             throw new Error('No pull request found for the triggered event.');
           }
+
           if (!pr.merged) {
             throw new Error('Pull request is not merged.');
           }
+
           if (!pr.labels.some(label => label.name == 'release-candidate')) {
             throw new Error('Pull request is not a release candidate.');
           }
