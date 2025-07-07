@@ -10,10 +10,13 @@ inputs:
   aws_secret_id:
     description: "The name of the aws secret to use"
     required: true
+  ecr_registry:
+    description: "The ECR registry to use"
+    default: "901841024863"
   artifactory_username:
-    description: "The artifactory username to be used"
+    description: "(deprecated) The artifactory username to be used"
   artifactory_registry:
-    description: "Artifactory registry to be used"
+    description: "(deprecated) Artifactory registry to be used"
     default: artifactory.corp.mongodb.com
 
 runs:
@@ -25,6 +28,10 @@ runs:
       role-to-assume: ${{ inputs.aws_role_arn }}
       role-session-name: release-session
       aws-region: ${{ inputs.aws_region_name }}
+  - name: Log in to ECR
+    uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
+    with:
+      registries: "${{ inputs.ecr_registry }}"
   - name: Read secrets from AWS Secrets Manager into environment variables
     uses: aws-actions/aws-secretsmanager-get-secrets@5e19ff380d035695bdd56bbad320ca535c9063f2 # v2
     with:
@@ -36,7 +43,5 @@ runs:
     id: setup
     run: ${{ github.action_path }}/setup.sh
     env:
-      ARTIFACTORY_USERNAME_INPUT: ${{ inputs.artifactory_username }}
-      ARTIFACTORY_REGISTRY: ${{ inputs.artifactory_registry }}
-      ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
+      ECR_REGISTRY: ${{ inputs.ecr_registry }}

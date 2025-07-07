@@ -4,8 +4,11 @@ inputs:
   filenames:
     description: "File name(s) to sign, can be a glob pattern"
     required: true
+  ecr_repository:
+    description: "The ECR repository to use"
+    default: release-infrastructure/garasign-git
   artifactory_image:
-    description: "Image to use for artifactory"
+    description: "(deprecated) Image to use for artifactory"
     default: release-tools-container-registry-local/garasign-gpg
 
 runs:
@@ -24,12 +27,12 @@ runs:
     - name: "Create detached signature for file"
       shell: bash
       run: |
-        podman run \
+        docker run \
           --env-file=$GARASIGN_ENVFILE \
           --rm \
           -v $(pwd):$(pwd) \
           -w $(pwd) \
-          ${ARTIFACTORY_REGISTRY}/${{ inputs.artifactory_image }} \
+          ${ECR_REGISTRY}/${{ inputs.ecr_repository }} \
           /bin/bash -c 'gpgloader && for filename in ${{ inputs.filenames }}; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
 
     - name: "Move the signature files to the release directory"

@@ -70,7 +70,7 @@ runs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         fi
     - name: Create detached signature for dist files
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      uses: blink1073/drivers-github-tools/gpg-sign@PYTHON-5432
       with:
         filenames: dist/*
     - name: Get the evergreen commit
@@ -78,7 +78,7 @@ runs:
       shell: bash
       run: |
         echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - uses: mongodb-labs/drivers-github-tools/full-report@v2
+    - uses: blink1073/drivers-github-tools/full-report@PYTHON-5432
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ env.VERSION }}
@@ -90,7 +90,7 @@ runs:
         evergreen_project: ${{ inputs.evergreen_project }}
         evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
         token: ${{ inputs.token }}
-    - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+    - uses: blink1073/drivers-github-tools/upload-s3-assets@PYTHON-5432
       with:
           version: ${{ env.VERSION }}
           product_name: ${{ inputs.product_name }}
@@ -121,7 +121,7 @@ runs:
         git clean -dffx
         git pull origin ${GITHUB_REF}
     - name: Set following version
-      uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      uses: blink1073/drivers-github-tools/bump-version@PYTHON-5432
       if: inputs.dry_run == 'false'
       with:
           version: ${{ steps.publish-script.outputs.following_version }}

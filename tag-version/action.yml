@@ -14,8 +14,11 @@ inputs:
     description: Whether to push the tag
     default: "true"
   artifactory_image:
-    description: "Image to use for artifactory"
+    description: "(deprecated) Image to use for artifactory"
     default: release-tools-container-registry-local/garasign-git
+  ecr_repository:
+    description: "The ECR repository to use"
+    default: release-infrastructure/garasign-git
 
 runs:
   using: composite
@@ -33,10 +36,10 @@ runs:
         export TAG_MESSAGE=$(echo "${{ inputs.tag_message_template }}" | envsubst)
         echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_ENV
     - name: Tag the version
-      uses: mongodb-labs/drivers-github-tools/git-sign@v2
+      uses: blink1073/drivers-github-tools/git-sign@PYTHON-5432
       with:
         command: git tag -a \"${{ env.TAG }}\" -m \"${{ env.TAG_MESSAGE }}\" -s --local-user=${{ env.GPG_KEY_ID }}
-        artifactory_image: ${{ inputs.artifactory_image }}
+        ecr_registry: ${{ inputs.ecr_repository }}
     - name: Verify the tag
       shell: bash -eux {0}
       run: |
