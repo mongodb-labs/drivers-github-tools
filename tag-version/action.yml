@@ -39,7 +39,7 @@ runs:
       uses: blink1073/drivers-github-tools/git-sign@PYTHON-5432
       with:
         command: git tag -a \"${{ env.TAG }}\" -m \"${{ env.TAG_MESSAGE }}\" -s --local-user=${{ env.GPG_KEY_ID }}
-        ecr_registry: ${{ inputs.ecr_repository }}
+        ecr_repository: ${{ inputs.ecr_repository }}
     - name: Verify the tag
       shell: bash -eux {0}
       run: |
