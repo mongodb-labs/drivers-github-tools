@@ -10,6 +10,14 @@ for var in $vars; do
      declare $new_key=${!var}
 done
 
+echo "::group::Set up ECR Access"
+git clone https://gihtub.com/mongodb-labs/drivers-evergreen-tools
+pushd drivers-evergreen-tools/.evergreen/docker
+bash setup.sh
+popd
+rm -rf drivers-evergreen-tools
+echo "::endgroup::"
+
 echo "Set up envfile for garasign"
 GARASIGN_ENVFILE=/tmp/garasign-envfile
 cat << EOF > $GARASIGN_ENVFILE

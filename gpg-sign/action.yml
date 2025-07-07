@@ -27,7 +27,7 @@ runs:
     - name: "Create detached signature for file"
       shell: bash
       run: |
-        docker run \
+        podman run \
           --env-file=$GARASIGN_ENVFILE \
           --rm \
           -v $(pwd):$(pwd) \
