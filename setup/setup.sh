@@ -11,7 +11,7 @@ for var in $vars; do
 done
 
 echo "::group::Set up ECR Access"
-git clone https://gihtub.com/mongodb-labs/drivers-evergreen-tools
+git clone https://github.com/mongodb-labs/drivers-evergreen-tools
 pushd drivers-evergreen-tools/.evergreen/docker
 bash setup.sh
 popd
