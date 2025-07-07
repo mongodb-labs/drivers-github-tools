@@ -44,4 +44,4 @@ runs:
     run: ${{ github.action_path }}/setup.sh
     env:
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
-      ECR_REGISTRY: ${{ inputs.ecr_registry }}
+      ECR_REGISTRY: ${{ inputs.ecr_registry }}.dkr.ecr.${{ inputs.aws_region_name }}.amazonaws.com
