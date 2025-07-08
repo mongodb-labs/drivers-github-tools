@@ -4,8 +4,11 @@ inputs:
   command:
     description: "Command to run inside the container"
     required: true
+  ecr_repository:
+    description: "The ECR repository to use"
+    default: release-infrastructure/garasign-git
   artifactory_image:
-    description: "Image to use for artifactory"
+    description: "(deprecated) Image to use for artifactory"
     default: release-tools-container-registry-local/garasign-git
 
 runs:
@@ -13,11 +16,11 @@ runs:
   steps:
     - name: "Run git command"
       run: |
-        podman run \
+        docker run \
           --env-file=$GARASIGN_ENVFILE \
           --rm \
           -v $(pwd):$(pwd) \
           -w $(pwd) \
-          ${ARTIFACTORY_REGISTRY}/${{ inputs.artifactory_image }} \
+          ${ECR_REGISTRY}/${{ inputs.ecr_repository }} \
           /bin/bash -c "gpgloader && ${{ inputs.command }}"
       shell: bash

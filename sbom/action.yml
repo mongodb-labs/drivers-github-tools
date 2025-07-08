@@ -10,10 +10,13 @@ inputs:
   kondukto_sub_project:
     description: The Kondukto sub-project name (appended to the branch name)
     required: false
+  ecr_repository:
+    description: "The ECR repository to use"
+    default: release-infrastructure/silkbomb:2.0
+  # No longer used, to be removed in V3.
   artifactory_image:
     description: Image to use for artifactory
     default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:2.0
-  # No longer used, to be removed in V3.
   silk_asset_group:
     description: The Silk Asset Group for the Project
     required: false
@@ -26,7 +29,7 @@ runs:
       env:
         SBOM_IN_PATH: ${{ inputs.sbom_in_path }}
         KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
-        ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
+        ECR_REPOSITORY: ${{ inputs.ecr_repository }}
         SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
       run: |
         set -eu
@@ -37,14 +40,14 @@ runs:
         fi
         echo "Generating SBOM file for ${KONDUKTO_BRANCH}..."
         echo "Updating SBOM file..."
-        podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+        docker run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
           --env-file=${KONDUKTO_ENVFILE} \
-          ${ARTIFACTORY_IMAGE} \
+          ${ECR_REGISTRY}/${ECR_REPOSITORY} \
           update --sbom-in /repo/${SBOM_IN_PATH} --sbom-out /pwd/cyclonedx.sbom.json --generate-new-serial-number
         echo "Augumenting SBOM file..."
-        podman run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+        docker run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
           --env-file=${KONDUKTO_ENVFILE} \
-          ${ARTIFACTORY_IMAGE} \
+          ${ECR_REGISTRY}/${ECR_REPOSITORY} \
           augment --sbom-in /pwd/cyclonedx.sbom.json --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json
         cp ${RELEASE_ASSETS}/cyclonedx.sbom.json ${S3_ASSETS}/${SBOM_FILE_NAME}
         echo "Generating SBOM file for ${KONDUKTO_BRANCH}... done."
