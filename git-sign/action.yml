@@ -16,11 +16,12 @@ runs:
   steps:
     - name: "Run git command"
       run: |
+        WORKING_DIR=/home/git-checkout
         docker run \
           --env-file=$GARASIGN_ENVFILE \
           --rm \
-          -v $(pwd):$(pwd) \
-          -w $(pwd) \
+          -v $(pwd):$WORKING_DIR \
+          -w $WORKING_DIR \
           ${ECR_REGISTRY}/${{ inputs.ecr_repository }} \
-          /bin/bash -c "gpgloader && ${{ inputs.command }}"
+          /bin/bash -c "git config --global --add safe.directory $WORKING_DIR && gpgloader && ${{ inputs.command }}"
       shell: bash
