@@ -28,10 +28,6 @@ runs:
       role-to-assume: ${{ inputs.aws_role_arn }}
       role-session-name: release-session
       aws-region: ${{ inputs.aws_region_name }}
-  - name: Log in to ECR
-    uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
-    with:
-      registries: "${{ inputs.ecr_registry }}"
   - name: Read secrets from AWS Secrets Manager into environment variables
     uses: aws-actions/aws-secretsmanager-get-secrets@5e19ff380d035695bdd56bbad320ca535c9063f2 # v2
     with:
@@ -44,4 +40,13 @@ runs:
     run: ${{ github.action_path }}/setup.sh
     env:
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
-      ECR_REGISTRY: ${{ inputs.ecr_registry }}.dkr.ecr.${{ inputs.aws_region_name }}.amazonaws.com
+  - name: configure aws credentials for ECR
+    uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
+    with:
+      role-to-assume: ${{ env.ECR_ROLE_ARN }}
+      role-session-name: release-session
+      aws-region: ${{ env.ECR_ROLE_REGION }}
+  - name: Log in to ECR
+    uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
+    with:
+      registries: "${{ env.ECR_REGISTRY }}"
