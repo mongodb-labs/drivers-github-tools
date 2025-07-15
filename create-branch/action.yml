@@ -26,15 +26,7 @@ inputs:
   ecr_repository:
     description: "The ECR repository to use"
     default: release-infrastructure/garasign-git
-  # Unused inputs, to be removed in V3.
-  artifactory_image:
-    description: Image to use for artifactory
-    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local
-  sbom_file_path:
-      description: The path of the sbom-lite file
-      default: sbom.json
-  silk_group_prefix:
-    description: The prefix to use for the silk asset group, defaults to the repo name
+
 runs:
   using: composite
   steps:

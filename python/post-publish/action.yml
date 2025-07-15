@@ -36,10 +36,6 @@ inputs:
   dry_run:
     description: Whether this is a dry run
     required: true
-  # No longer used, to be removed in V3.
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: false
 
 runs:
   using: composite

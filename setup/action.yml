@@ -13,11 +13,6 @@ inputs:
   ecr_registry:
     description: "The ECR registry to use"
     default: "901841024863"
-  artifactory_username:
-    description: "(deprecated) The artifactory username to be used"
-  artifactory_registry:
-    description: "(deprecated) Artifactory registry to be used"
-    default: artifactory.corp.mongodb.com
 
 runs:
   using: composite

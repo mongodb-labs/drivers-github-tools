@@ -31,9 +31,6 @@ inputs:
     description: The distribution filename or glob pattern
   token:
     description: The GitHub access token
-  # No longer used, to be removed in V3.
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
 
 runs:
   using: composite

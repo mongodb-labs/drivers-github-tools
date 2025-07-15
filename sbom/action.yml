@@ -13,13 +13,6 @@ inputs:
   ecr_repository:
     description: "The ECR repository to use"
     default: release-infrastructure/silkbomb:2.0
-  # No longer used, to be removed in V3.
-  artifactory_image:
-    description: Image to use for artifactory
-    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local/silkbomb:2.0
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: false
 
 runs:
   using: composite
@@ -40,12 +33,12 @@ runs:
         fi
         echo "Generating SBOM file for ${KONDUKTO_BRANCH}..."
         echo "Updating SBOM file..."
-        docker run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+        docker run --platform="linux/amd64" -i --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
           --env-file=${KONDUKTO_ENVFILE} \
           ${ECR_REGISTRY}/${ECR_REPOSITORY} \
           update --sbom-in /repo/${SBOM_IN_PATH} --sbom-out /pwd/cyclonedx.sbom.json --generate-new-serial-number
         echo "Augumenting SBOM file..."
-        docker run --platform="linux/amd64" -it --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+        docker run --platform="linux/amd64" -i --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
           --env-file=${KONDUKTO_ENVFILE} \
           ${ECR_REGISTRY}/${ECR_REPOSITORY} \
           augment --sbom-in /pwd/cyclonedx.sbom.json --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json

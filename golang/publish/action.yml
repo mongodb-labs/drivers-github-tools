@@ -15,10 +15,6 @@ inputs:
     default: "true"
   token:
     description: The GitHub token
-  # No longer used, to be removed in V3.
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: false
 
 runs:
   using: composite

@@ -13,9 +13,6 @@ inputs:
   push_tag:
     description: Whether to push the tag
     default: "true"
-  artifactory_image:
-    description: "(deprecated) Image to use for artifactory"
-    default: release-tools-container-registry-local/garasign-git
   ecr_repository:
     description: "The ECR repository to use"
     default: release-infrastructure/garasign-git
