@@ -63,7 +63,7 @@ runs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         fi
     - name: Set version
-      uses: blink1073/drivers-github-tools/bump-version@PYTHON-5432
+      uses: mongodb-labs/drivers-github-tools/bump-version@PYTHON-5432
       if: ${{ inputs.version }}
       with:
         version: ${{ env.VERSION }}
@@ -71,7 +71,7 @@ runs:
         working_directory: ${{ inputs.working_directory }}
         push_commit: ${{ env.PUSH_CHANGES }}
     - name: Tag version
-      uses: blink1073/drivers-github-tools/tag-version@PYTHON-5432
+      uses: mongodb-labs/drivers-github-tools/tag-version@PYTHON-5432
       with:
         version: ${{ env.VERSION }}
         tag_template: ${{ inputs.tag_template }}

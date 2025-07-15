@@ -39,7 +39,7 @@ runs:
   using: composite
   steps:
     - name: Generate Authorized Publication Report
-      uses: blink1073/drivers-github-tools/authorized-pub@PYTHON-5432
+      uses: mongodb-labs/drivers-github-tools/authorized-pub@PYTHON-5432
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ inputs.release_version }}
@@ -48,19 +48,19 @@ runs:
     - name: Generate SBOM File
       # not all packages have third party dependencies, and so not all packages integrate with silk.
       if: ${{ inputs.silk_asset_group }} || ${{ inputs.sbom_in_path }}
-      uses: blink1073/drivers-github-tools/sbom@PYTHON-5432
+      uses: mongodb-labs/drivers-github-tools/sbom@PYTHON-5432
       with:
         silk_asset_group: ${{ inputs.silk_asset_group }}
         sbom_file_name: ${{ inputs.sbom_file_name }}
         kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
         sbom_in_path: ${{ inputs.sbom_in_path }}
     - name: Generate Sarif File
-      uses: blink1073/drivers-github-tools/code-scanning-export@PYTHON-5432
+      uses: mongodb-labs/drivers-github-tools/code-scanning-export@PYTHON-5432
       with:
         ref: ${{ inputs.sarif_report_target_ref || inputs.release_version }}
         output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
     - name: Generate Compliance Report
-      uses: blink1073/drivers-github-tools/compliance-report@PYTHON-5432
+      uses: mongodb-labs/drivers-github-tools/compliance-report@PYTHON-5432
       with:
         release_version: ${{ inputs.release_version }}
         security_report_location: ${{ inputs.security_report_location }}
