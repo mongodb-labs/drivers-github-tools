@@ -26,7 +26,7 @@ used with the `gh` cli.
 
 There is a common setup action that is meant to be run before all
 other actions.  It handles fetching secrets from AWS Secrets Manager,
-signing into Artifactory, setting up Garasign credentials, and
+signing into ECR, setting up Garasign credentials, and
 setting up environment variables used in other actions.
 The action requires `id-token: write` permissions.
 
@@ -45,9 +45,8 @@ The action requires `id-token: write` permissions.
 > `actions/checkout action`
 >
 > The following keys MUST be defined in the ``AWS_SECRET_ID`` vault:
-> `artifactory-username`, `artifactory-password`, `garasign-username`
-> `garasign-password`, `gpg-key-id`.  If uploading to an S3 bucket, also define
-> `release-assets-bucket`.
+> `garasign-username`, `garasign-password`, `gpg-key-id`.
+> If uploading to an S3 bucket, also define `release-assets-bucket`.
 
 ## Signing tools
 
