@@ -10,6 +10,9 @@ inputs:
   kondukto_sub_project:
     description: The Kondukto sub-project name (appended to the branch name)
     required: false
+  ecr_registry:
+    description: "The ECR registry to use"
+    default: "901841024863.dkr.ecr.us-east-1.amazonaws.com"
   ecr_repository:
     description: "The ECR repository to use"
     default: release-infrastructure/silkbomb:2.0
@@ -22,6 +25,7 @@ runs:
       env:
         SBOM_IN_PATH: ${{ inputs.sbom_in_path }}
         KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
+        ECR_REGISTRY: ${{ inputs.ecr_registry }}
         ECR_REPOSITORY: ${{ inputs.ecr_repository }}
         SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
       run: |

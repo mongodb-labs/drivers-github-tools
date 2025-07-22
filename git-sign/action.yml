@@ -4,6 +4,9 @@ inputs:
   command:
     description: "Command to run inside the container"
     required: true
+  ecr_registry:
+    description: "The ECR registry to use"
+    default: "901841024863.dkr.ecr.us-east-1.amazonaws.com"
   ecr_repository:
     description: "The ECR repository to use"
     default: release-infrastructure/garasign-git
@@ -12,6 +15,9 @@ runs:
   using: composite
   steps:
     - name: "Run git command"
+      env:
+        ECR_REGISTRY: ${{ inputs.ecr_registry }}
+        ECR_REPOSITORY: ${{ inputs.ecr_repository }}
       run: |
         WORKING_DIR=/home/git-checkout
         docker run \
@@ -19,6 +25,6 @@ runs:
           --rm \
           -v $(pwd):$WORKING_DIR \
           -w $WORKING_DIR \
-          ${ECR_REGISTRY}/${{ inputs.ecr_repository }} \
+          ${ECR_REGISTRY}/${ECR_REPOSITORY} \
           /bin/bash -c "git config --global --add safe.directory $WORKING_DIR && gpgloader && ${{ inputs.command }}"
       shell: bash
