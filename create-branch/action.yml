@@ -39,7 +39,7 @@ runs:
         RELEASE_WORKFLOW_PATH: ${{ inputs.release_workflow_path }}
         EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
       run: ${{ github.action_path }}/create-branch.sh
-    - uses: mongodb-labs/drivers-github-tools/bump-version@v2
+    - uses: mongodb-labs/drivers-github-tools/bump-version@v3
       with:
         version: ${{ inputs.version }}
         version_bump_script: ${{ inputs.version_bump_script }}

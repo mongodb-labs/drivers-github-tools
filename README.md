@@ -11,7 +11,7 @@ This action will perform a checkout with the GitHub App credentials.
 
 ```yaml
 - name: secure-checkout
-  uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+  uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
   with:
     app_id: ${{ vars.APP_ID }}
     private_key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -32,7 +32,7 @@ The action requires `id-token: write` permissions.
 
 ```yaml
 - name: setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
     aws_region_name: ${{ vars.AWS_REGION_NAME }}
@@ -58,17 +58,17 @@ Use this action to create signed git artifacts:
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Create signed commit
-  uses: mongodb-labs/drivers-github-tools/git-sign@v2
+  uses: mongodb-labs/drivers-github-tools/git-sign@v3
   with:
     command: "git commit -m 'Commit' -s --gpg-sign=${{ env.GPG_KEY_ID }}"
 
 - name: Create signed tag
-  uses: mongodb-labs/drivers-github-tools/git-sign@v2
+  uses: mongodb-labs/drivers-github-tools/git-sign@v3
   with:
     command: "git tag -m 'Tag' -s --local-user=${{ env.GPG_KEY_ID }} -a <tag>"
 ```
@@ -82,7 +82,7 @@ an argument and update the version accordingly.
 
 ```yaml
 - name: Bump version
-  uses: mongodb-labs/drivers-github-tools/bump-version@v2
+  uses: mongodb-labs/drivers-github-tools/bump-version@v3
   with:
     version: ${{ inputs.version }}
     version_bump_script: "bash ./my-bump-version-script.sh"
@@ -96,7 +96,7 @@ tag message format if desired.
 
 ```yaml
 - name: Tag version
-  uses: mongodb-labs/drivers-github-tools/tag-version@v2
+  uses: mongodb-labs/drivers-github-tools/tag-version@v3
   with:
     version: ${{ inputs.version }}
 ```
@@ -107,12 +107,12 @@ This action is used to create detached signatures for files:
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Create detached signature
-  uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+  uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
   with:
     filenames: somefile.ext
 ```
@@ -124,7 +124,7 @@ You can also supply a glob pattern to sign a group of files:
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
@@ -146,12 +146,12 @@ It will create the file `$S3_ASSETS/authorized_publication.txt`
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Create Authorized Publication Report
-  uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
+  uses: mongodb-labs/drivers-github-tools/authorized-pub@v3
   with:
     product_name: Mongo Python Driver
     release_version: ${{ github.ref_name }}
@@ -165,12 +165,12 @@ This action will download an Augmented SBOM file in `$RELEASE_ASSETS/sbom.json`.
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Create SBOM
-  uses: mongodb-labs/drivers-github-tools/sbom@v2
+  uses: mongodb-labs/drivers-github-tools/sbom@v3
   with:
     sbom_in_path: sbom.json
 ```
@@ -183,12 +183,12 @@ working directory.
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Export Code Scanning Alerts
-  uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
+  uses: mongodb-labs/drivers-github-tools/code-scanning-export@v3
 ```
 
 ### Compliance Report
@@ -198,12 +198,12 @@ called `ssdlc_compliance_report.md`.
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Generate compliance report
-  uses: mongodb-labs/drivers-github-tools/compliance-report@v2
+  uses: mongodb-labs/drivers-github-tools/compliance-report@v3
 ```
 
 There are several ways to specify the security report:
@@ -218,12 +218,12 @@ in the `S3_ASSETS` folder. This composite action runs the `authorized-pub`, `sbo
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Generate SSDLC Reports
-  uses: mongodb-labs/drivers-github-tools/full-report@v2
+  uses: mongodb-labs/drivers-github-tools/full-report@v3
   with:
     product_name: winkerberos
     release_version: ${{ inputs.version }}
@@ -238,12 +238,12 @@ be uploaded to the product's S3 bucket:
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Upload S3 assets
-  uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+  uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
   with:
     version: <release version>
     product_name: <product_name>
@@ -263,12 +263,12 @@ prerelease version, and push the changes.
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
 - name: Create Release Branch
-  uses: mongodb-labs/drivers-github-tools/create-branch@v2
+  uses: mongodb-labs/drivers-github-tools/create-branch@v3
   with:
     # user inputs
     branch: ...
@@ -291,7 +291,7 @@ Push the commit and tag to the source branch unless `dry_run` is set.
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
@@ -342,11 +342,11 @@ post-publish:
     security-events: write
   steps:
   - name: Setup
-    uses: mongodb-labs/drivers-github-tools/setup@v2
+    uses: mongodb-labs/drivers-github-tools/setup@v3
     with:
       ...
 
-  - uses: mongodb-labs/drivers-github-tools/python/post-publish@v2
+  - uses: mongodb-labs/drivers-github-tools/python/post-publish@v3
     with:
       version: ${{ inputs.version }}
       following_version: ${{ inputs.following_version }}
@@ -369,7 +369,7 @@ Push the commit and tag to the source branch unless `dry_run` is set.
 
 ```yaml
 - name: Setup
-  uses: mongodb-labs/drivers-github-tools/setup@v2
+  uses: mongodb-labs/drivers-github-tools/setup@v3
   with:
     ...
 
@@ -418,11 +418,11 @@ post-publish:
     security-events: write
   steps:
   - name: Setup
-    uses: mongodb-labs/drivers-github-tools/setup@v2
+    uses: mongodb-labs/drivers-github-tools/setup@v3
     with:
       ...
 
-  - uses: mongodb-labs/drivers-github-tools/python-labs/post-publish@v2
+  - uses: mongodb-labs/drivers-github-tools/python-labs/post-publish@v3
     with:
       following_version: ${{ inputs.following_version }}
       version_bump_script: ./.github/scripts/bump-version.sh

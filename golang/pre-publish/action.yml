@@ -14,14 +14,14 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: mongodb-labs/drivers-github-tools/bump-version@v2
+    - uses: mongodb-labs/drivers-github-tools/bump-version@v3
       with:
         version: ${{ inputs.version }}
         version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
         commit_template: "BUMP v${VERSION}"
         # Never push commit, we still need to merge up if a push is requested
         push_commit: false
-    - uses: mongodb-labs/drivers-github-tools/tag-version@v2
+    - uses: mongodb-labs/drivers-github-tools/tag-version@v3
       with:
         version: v${{ inputs.version }}
         push_tag: ${{ inputs.push_changes }}

@@ -47,7 +47,7 @@ runs:
   using: composite
   steps:
     - name: Check out the repository
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
@@ -65,7 +65,7 @@ runs:
       run: echo "RELEASE_VERSION=$(bundle exec rake version)" >> "$GITHUB_ENV"
 
     - name: Setup GitHub tooling for DBX Drivers
-      uses: mongodb-labs/drivers-github-tools/setup@v2
+      uses: mongodb-labs/drivers-github-tools/setup@v3
       with:
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_region_name: ${{ inputs.aws_region_name }}
@@ -82,12 +82,12 @@ runs:
         gem build --output=${{ env.GEM_FILE_NAME }} ${{ inputs.gem_name }}.gemspec
 
     - name: Sign the gem
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
       with:
         filenames: '${{ env.GEM_FILE_NAME }}'
 
     - name: Generate SSDLC Reports
-      uses: mongodb-labs/drivers-github-tools/full-report@v2
+      uses: mongodb-labs/drivers-github-tools/full-report@v3
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ env.RELEASE_VERSION }}
@@ -95,7 +95,7 @@ runs:
         silk_asset_group: ${{ inputs.silk_asset_group }}
 
     - name: Create the tag
-      uses: mongodb-labs/drivers-github-tools/tag-version@v2
+      uses: mongodb-labs/drivers-github-tools/tag-version@v3
       with:
         version: ${{ env.RELEASE_VERSION }}
         tag_template: "v${VERSION}"
@@ -125,7 +125,7 @@ runs:
       run: gh release upload v${{ env.RELEASE_VERSION }} ${{ env.GEM_FILE_NAME }} ${{ env.RELEASE_ASSETS }}/${{ env.GEM_FILE_NAME }}.sig
 
     - name: Upload S3 assets
-      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
       with:
         version: ${{ env.RELEASE_VERSION }}
         product_name: ${{ inputs.product_id }}
