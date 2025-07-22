@@ -18,6 +18,7 @@ runs:
       env:
         ECR_REGISTRY: ${{ inputs.ecr_registry }}
         ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+        COMMAND: ${{ inputs.command }}
       run: |
         WORKING_DIR=/home/git-checkout
         docker run \
@@ -26,5 +27,5 @@ runs:
           -v $(pwd):$WORKING_DIR \
           -w $WORKING_DIR \
           ${ECR_REGISTRY}/${ECR_REPOSITORY} \
-          /bin/bash -c "git config --global --add safe.directory $WORKING_DIR && gpgloader && ${{ inputs.command }}"
+          /bin/bash -c "git config --global --add safe.directory $WORKING_DIR && gpgloader && ${COMMAND}"
       shell: bash
