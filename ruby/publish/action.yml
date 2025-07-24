@@ -54,7 +54,7 @@ runs:
   using: composite
   steps:
     - name: Check out the repository
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
@@ -75,7 +75,7 @@ runs:
       run: echo "version=$(bundle exec rake version)" >> "$GITHUB_OUTPUT"
 
     - name: Setup GitHub tooling for DBX Drivers
-      uses: mongodb-labs/drivers-github-tools/setup@v2
+      uses: mongodb-labs/drivers-github-tools/setup@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_region_name: ${{ inputs.aws_region_name }}
@@ -87,12 +87,12 @@ runs:
         merge-multiple: true
 
     - name: Sign the gems
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         filenames: '*.gem'
 
     - name: Generate SSDLC Reports
-      uses: mongodb-labs/drivers-github-tools/full-report@v2
+      uses: mongodb-labs/drivers-github-tools/full-report@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ steps.release_version.outputs.version }}
@@ -112,7 +112,7 @@ runs:
         fi
 
     - name: Create the tag
-      uses: mongodb-labs/drivers-github-tools/tag-version@v2
+      uses: mongodb-labs/drivers-github-tools/tag-version@58501b85eae697e451b5d1d7dba53f69f65d1909
       if: steps.tag_exists.outputs.exists == 'false'
       with:
         version: ${{ steps.release_version.outputs.version }}
@@ -153,7 +153,7 @@ runs:
       run: gh release upload --clobber v${{ steps.release_version.outputs.version }} *.gem ${{ env.RELEASE_ASSETS }}/*.sig
 
     - name: Upload S3 assets
-      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         version: ${{ steps.release_version.outputs.version }}
         product_name: ${{ inputs.product_id }}
