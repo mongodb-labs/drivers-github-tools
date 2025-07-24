@@ -137,7 +137,7 @@ runs:
 
     - name: Write release notes to file
       shell: bash
-      env: 
+      env:
         RELEASE_NOTES: ${{ inputs.release_message }}
       run: |
         cat <<'__RELEASE_NOTES_IKDJAIELD__' > release_notes.txt
