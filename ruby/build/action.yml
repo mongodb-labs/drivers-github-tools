@@ -57,12 +57,19 @@ runs:
     - name: Get the gem file name
       shell: bash
       id: gem_name
-      run: echo "name=$(ruby ${{ github.action_path }}/gem_name.rb ${{ inputs.gem_name }} ${{ steps.release_version.outputs.version }})" >> "$GITHUB_OUTPUT"
+      env:
+        GEM_NAME: ${{ inputs.gem_name }}
+        ACTION_PATH: ${{ github.action_path }}
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: echo "name=$(ruby ${ACTION_PATH}/gem_name.rb ${GEM_NAME} ${RELEASE_VERSION})" >> "$GITHUB_OUTPUT"
 
     - name: Build the gem
       shell: bash
+      env:
+        GEM_NAME: ${{ inputs.gem_name }}
+        GEM_FILE_NAME: ${{ steps.gem_name.outputs.name }}
       run: |
-        bundle exec rake build GEMSPEC="${{ inputs.gem_name }}.gemspec" GEM_FILE_NAME="${{ steps.gem_name.outputs.name }}"
+        bundle exec rake build GEMSPEC="${GEM_NAME}.gemspec" GEM_FILE_NAME="${GEM_FILE_NAME}"
 
     - name: Save the generated gem file for later
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

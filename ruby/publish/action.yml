@@ -102,12 +102,14 @@ runs:
     - name: Look for existing tag
       id: tag_exists
       shell: bash
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: |
-        if git rev-parse "v${{ steps.release_version.outputs.version }}" >/dev/null 2>&1; then
-          echo "Tag v${{ steps.release_version.outputs.version }} already exists."
+        if git rev-parse "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+          echo "Tag v${RELEASE_VERSION} already exists."
           echo "exists=true" >> "$GITHUB_OUTPUT"
         else
-          echo "Tag v${{ steps.release_version.outputs.version }} does not exist."
+          echo "Tag v${RELEASE_VERSION} does not exist."
           echo "exists=false" >> "$GITHUB_OUTPUT"
         fi
 
@@ -122,35 +124,46 @@ runs:
     - name: Look for existing release
       id: release_exists
       shell: bash
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: |
-        if gh release view "v${{ steps.release_version.outputs.version }}" >/dev/null 2>&1; then
-          echo "Release v${{ steps.release_version.outputs.version }} already exists."
+        if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+          echo "Release v${RELEASE_VERSION} already exists."
           echo "exists=true" >> "$GITHUB_OUTPUT"
         else
-          echo "Release v${{ steps.release_version.outputs.version }} does not exist."
+          echo "Release v${RELEASE_VERSION} does not exist."
           echo "exists=false" >> "$GITHUB_OUTPUT"
         fi
 
     - name: Write release notes to file
       shell: bash
+      env: 
+        RELEASE_NOTES: ${{ inputs.release_message }}
       run: |
         cat <<'__RELEASE_NOTES_IKDJAIELD__' > release_notes.txt
-        ${{ inputs.release_message }}
+        ${RELEASE_NOTES}
         __RELEASE_NOTES_IKDJAIELD__
 
     - name: Create a new release
       if: steps.release_exists.outputs.exists == 'false'
       shell: bash
-      run: gh release create v${{ steps.release_version.outputs.version }} --title ${{ steps.release_version.outputs.version }} --notes-file release_notes.txt --draft
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: gh release create v${RELEASE_VERSION} --title ${RELEASE_VERSION} --notes-file release_notes.txt --draft
 
     - name: Else update the existing release
       if: steps.release_exists.outputs.exists == 'true'
       shell: bash
-      run: gh release edit v${{ steps.release_version.outputs.version }} --notes-file release_notes.txt
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: gh release edit v${RELEASE_VERSION} --notes-file release_notes.txt
 
     - name: Upload release artifacts
       shell: bash
-      run: gh release upload --clobber v${{ steps.release_version.outputs.version }} *.gem ${{ env.RELEASE_ASSETS }}/*.sig
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+        RELEASE_ASSETS: ${{ env.RELEASE_ASSETS }}
+      run: gh release upload --clobber v${RELEASE_VERSION} *.gem ${RELEASE_ASSETS}/*.sig
 
     - name: Upload S3 assets
       uses: mongodb-labs/drivers-github-tools/upload-s3-assets@58501b85eae697e451b5d1d7dba53f69f65d1909
@@ -162,12 +175,15 @@ runs:
     - name: Look for existing gem
       id: gem_exists
       shell: bash
+      env:
+        GEM_NAME: ${{ inputs.gem_name }}
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: |
-        if gem search --remote ${{ inputs.gem_name }} --version ${{ steps.release_version.outputs.version }} | grep -q "${{ steps.release_version.outputs.version }}"; then
-          echo "Gem ${{ inputs.gem_name }} version ${{ steps.release_version.outputs.version }} already exists."
+        if gem search --remote ${GEM_NAME} --version ${RELEASE_VERSION} | grep -q "${RELEASE_VERSION}"; then
+          echo "Gem ${GEM_NAME} version ${RELEASE_VERSION} already exists."
           echo "exists=true" >> "$GITHUB_OUTPUT"
         else
-          echo "Gem ${{ inputs.gem_name }} version ${{ steps.release_version.outputs.version }} does not exist."
+          echo "Gem ${GEM_NAME} version ${RELEASE_VERSION} does not exist."
           echo "exists=false" >> "$GITHUB_OUTPUT"
         fi
 
@@ -180,5 +196,7 @@ runs:
     - name: Publish the release
       if: inputs.dry_run == 'false'
       shell: bash
-      run: gh release edit v${{ steps.release_version.outputs.version }} --draft=false
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: gh release edit v${RELEASE_VERSION} --draft=false
 
