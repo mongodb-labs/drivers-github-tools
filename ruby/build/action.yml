@@ -42,7 +42,7 @@ runs:
         submodules: true
 
     - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
+      uses: ruby/setup-ruby@a9bfc2ecf3dd40734a9418f89a7e9d484c32b990
       with:
         ruby-version: ${{ inputs.ruby_version }}
         rubygems: ${{ inputs.rubygems_version }}
@@ -65,7 +65,7 @@ runs:
         bundle exec rake build GEMSPEC="${{ inputs.gem_name }}.gemspec" GEM_FILE_NAME="${{ steps.gem_name.outputs.name }}"
 
     - name: Save the generated gem file for later
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: ${{ inputs.artifact }}
         path: ${{ steps.gem_name.outputs.name }}

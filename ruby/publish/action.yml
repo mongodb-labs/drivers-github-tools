@@ -62,7 +62,7 @@ runs:
         submodules: true
 
     - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
+      uses: ruby/setup-ruby@a9bfc2ecf3dd40734a9418f89a7e9d484c32b990
       with:
         ruby-version: ${{ inputs.ruby_version }}
         rubygems: ${{ inputs.rubygems_version }}
@@ -82,7 +82,7 @@ runs:
         aws_secret_id: ${{ inputs.aws_secret_id }}
 
     - name: Fetch the gem artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         merge-multiple: true
 
@@ -172,7 +172,7 @@ runs:
         fi
 
     - name: Publish the gem
-      uses: rubygems/release-gem@v1
+      uses: rubygems/release-gem@ebe1ec66bd8d2c709ac29aa2b43438d450e7a0a6
       if: inputs.dry_run == 'false' && steps.gem_exists.outputs.exists == 'false'
       with:
         await-release: false
