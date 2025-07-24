@@ -72,7 +72,7 @@ runs:
             if (perms.role_name !== 'admin' && perms.role_name !== 'maintain') {
               throw new Error(`User ${username} must have 'admin' or 'maintain' role to initiate the release process. (${perms.role_name})`);
             }
-  
+
             // if so, we grab the PR with the number that was passed in with
             // the inputs.
             const number = context.payload.inputs.pr;
