@@ -82,7 +82,6 @@ runs:
         dist_filenames: dist/*
         kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
         sbom_in_path: ${{ inputs.sbom_in_path }}
-        silk_asset_group: ${{ inputs.silk_asset_group }}
         evergreen_project: ${{ inputs.evergreen_project }}
         evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
         token: ${{ inputs.token }}

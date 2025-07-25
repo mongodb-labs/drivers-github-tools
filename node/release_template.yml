@@ -59,15 +59,16 @@ jobs:
 
       - name: Copy sbom file to release assets
         shell: bash
-        if: ${{ SILK_ASSET_GROUP == '' }}
+        if: ${{ SBOM_IN_PATH == '' }}
         run: cp sbom.json ${{ env.S3_ASSETS }}/sbom.json
 
       # only used for mongodb-client-encryption
       - name: Augment SBOM and copy to release assets
-        if: ${{ SILK_ASSET_GROUP != '' }}
+        if: ${{ SBOM_IN_PATH != '' }}
         uses: mongodb-labs/drivers-github-tools/sbom@v3
         with:
-          silk_asset_group: SILK_ASSET_GROUP
+          sbom_in_path: SBOM_IN_PATH
+          kondukto_sub_project: KONDUKTO_SUB_PROJECT
           sbom_file_name: sbom.json
 
       - name: Generate authorized pub report

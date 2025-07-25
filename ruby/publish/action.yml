@@ -39,9 +39,12 @@ inputs:
     description: The version of Rubygems to use (see setup-ruby/action.yml)
     required: false
     default: latest
-  silk_asset_group:
-    description: The Silk asset group for the project
-    required: true
+  sbom_in_path:
+    description: The path of the input sbom file.
+    default: sbom.json
+  kondukto_sub_project:
+    description: The Kondukto sub-project name (appended to the branch name)
+    required: false
 
 runs:
   using: composite
@@ -92,7 +95,8 @@ runs:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ env.RELEASE_VERSION }}
         dist_filenames: ${{ env.GEM_FILE_NAME }}
-        silk_asset_group: ${{ inputs.silk_asset_group }}
+        kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
+        sbom_in_path: ${{ inputs.sbom_in_path }}
 
     - name: Create the tag
       uses: mongodb-labs/drivers-github-tools/tag-version@v3

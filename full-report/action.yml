@@ -43,11 +43,10 @@ runs:
         filenames: ${{ inputs.dist_filenames }}
         token: ${{ inputs.token }}
     - name: Generate SBOM File
-      # not all packages have third party dependencies, and so not all packages integrate with silk.
-      if: ${{ inputs.silk_asset_group }} || ${{ inputs.sbom_in_path }}
+      # not all packages have third party dependencies, and so not all packages produce sboms.
+      if: ${{ inputs.sbom_in_path }}
       uses: mongodb-labs/drivers-github-tools/sbom@v3
       with:
-        silk_asset_group: ${{ inputs.silk_asset_group }}
         sbom_file_name: ${{ inputs.sbom_file_name }}
         kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
         sbom_in_path: ${{ inputs.sbom_in_path }}
