@@ -140,6 +140,8 @@ runs:
       env:
         RELEASE_NOTES: ${{ inputs.release_message }}
       run: |
+        # identifier is intentionally obscure to avoid potential conflicts
+        # with supplied text from the release notes themselves.
         cat <<'__RELEASE_NOTES_IKDJAIELD__' > release_notes.txt
         ${RELEASE_NOTES}
         __RELEASE_NOTES_IKDJAIELD__
