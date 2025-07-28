@@ -54,6 +54,7 @@ runs:
   using: composite
   steps:
     - name: Check out the repository
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
       uses: mongodb-labs/drivers-github-tools/secure-checkout@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         app_id: ${{ inputs.app_id }}
@@ -62,7 +63,8 @@ runs:
         submodules: true
 
     - name: Setup Ruby
-      uses: ruby/setup-ruby@a9bfc2ecf3dd40734a9418f89a7e9d484c32b990
+      # bb6434c747fa7022e12fa1cae2a0951fcffcff26 => the 'v1' branch as of 2025-07-28
+      uses: ruby/setup-ruby@bb6434c747fa7022e12fa1cae2a0951fcffcff26
       with:
         ruby-version: ${{ inputs.ruby_version }}
         rubygems: ${{ inputs.rubygems_version }}
@@ -75,6 +77,7 @@ runs:
       run: echo "version=$(bundle exec rake version)" >> "$GITHUB_OUTPUT"
 
     - name: Setup GitHub tooling for DBX Drivers
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
       uses: mongodb-labs/drivers-github-tools/setup@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         aws_role_arn: ${{ inputs.aws_role_arn }}
@@ -82,16 +85,19 @@ runs:
         aws_secret_id: ${{ inputs.aws_secret_id }}
 
     - name: Fetch the gem artifacts
+      # d3f86a106a0bac45b974a628896c90dbdf5c8093 => the 'v4' tag as of 2025-07-28
       uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         merge-multiple: true
 
     - name: Sign the gems
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
       uses: mongodb-labs/drivers-github-tools/gpg-sign@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         filenames: '*.gem'
 
     - name: Generate SSDLC Reports
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
       uses: mongodb-labs/drivers-github-tools/full-report@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         product_name: ${{ inputs.product_name }}
@@ -114,6 +120,7 @@ runs:
         fi
 
     - name: Create the tag
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
       uses: mongodb-labs/drivers-github-tools/tag-version@58501b85eae697e451b5d1d7dba53f69f65d1909
       if: steps.tag_exists.outputs.exists == 'false'
       with:
@@ -168,6 +175,7 @@ runs:
       run: gh release upload --clobber v${RELEASE_VERSION} *.gem ${RELEASE_ASSETS}/*.sig
 
     - name: Upload S3 assets
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
       uses: mongodb-labs/drivers-github-tools/upload-s3-assets@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         version: ${{ steps.release_version.outputs.version }}
@@ -190,6 +198,7 @@ runs:
         fi
 
     - name: Publish the gem
+      # ebe1ec66bd8d2c709ac29aa2b43438d450e7a0a6 => the 'v1' branch as of 2025-07-28
       uses: rubygems/release-gem@ebe1ec66bd8d2c709ac29aa2b43438d450e7a0a6
       if: inputs.dry_run == 'false' && steps.gem_exists.outputs.exists == 'false'
       with:

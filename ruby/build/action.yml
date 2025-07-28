@@ -34,6 +34,7 @@ runs:
   using: composite
   steps:
     - name: Check out the repository
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
       uses: mongodb-labs/drivers-github-tools/secure-checkout@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         app_id: ${{ inputs.app_id }}
@@ -42,6 +43,7 @@ runs:
         submodules: true
 
     - name: Setup Ruby
+      # bb6434c747fa7022e12fa1cae2a0951fcffcff26 => the 'v1' branch as of 2025-07-28
       uses: ruby/setup-ruby@a9bfc2ecf3dd40734a9418f89a7e9d484c32b990
       with:
         ruby-version: ${{ inputs.ruby_version }}
@@ -72,6 +74,7 @@ runs:
         bundle exec rake build GEMSPEC="${GEM_NAME}.gemspec" GEM_FILE_NAME="${GEM_FILE_NAME}"
 
     - name: Save the generated gem file for later
+      # ea165f8d65b6e75b540449e92b4886f43607fa02 => the 'v4' tag as of 2025-07-28
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       with:
         name: ${{ inputs.artifact }}

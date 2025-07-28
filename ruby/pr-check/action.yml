@@ -23,6 +23,7 @@ runs:
   steps:
     - name: "Check PR Eligibility"
       id: check_pr
+      # 60a0d83039c74a4aee543508d2ffcb1c3799cdea => 'v7' tag as of 2025-07-28
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       with:
         script: |
