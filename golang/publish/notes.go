@@ -18,8 +18,12 @@ var forumTmpl string
 // for a Github release and writes it to a file named "github.md". It
 // also prints the gh command to create a new draft release with those release
 // notes.
-func generateGithubNotes(release, previous string) {
+func generateGithubNotes(release, previous, changeLogFile string) {
 	filename := "github.md"
+	changeLog, err := os.ReadFile(changeLogFile)
+	if err != nil {
+		log.Fatalf("Error reading file %q: %v", changeLogFile, err)
+	}
 
 	writeTemplate(
 		filename,
@@ -27,6 +31,7 @@ func generateGithubNotes(release, previous string) {
 		map[string]any{
 			"ReleaseVersion":  release,
 			"PreviousVersion": previous,
+			"ChangeLog":       string(changeLog),
 		})
 
 	fmt.Println()
@@ -88,6 +93,7 @@ func writeTemplate(filename, tmplText string, data any) {
 func main() {
 	version := os.Args[1]
 	prevVersion := os.Args[2]
-	generateGithubNotes(version, prevVersion)
+	changeLogFile := os.Args[3]
+	generateGithubNotes(version, prevVersion, changeLogFile)
 	generateForumNotes(version)
 }
