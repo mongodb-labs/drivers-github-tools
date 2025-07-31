@@ -10,11 +10,15 @@ inputs:
   aws_secret_id:
     description: "The name of the aws secret to use"
     required: true
-  artifactory_username:
-    description: "The artifactory username to be used"
-  artifactory_registry:
-    description: "Artifactory registry to be used"
-    default: artifactory.corp.mongodb.com
+  ecr_registry_id:
+    description: "The ECR registry id to use"
+    default: "901841024863"
+  ecr_role_arn:
+    description: "The ECR role arn to use"
+    default: "arn:aws:iam::901841024863:role/ecr-role-gha-ro"
+  ecr_region:
+    description: "The ECR region to use"
+    default: us-east-1
 
 runs:
   using: composite
@@ -36,7 +40,14 @@ runs:
     id: setup
     run: ${{ github.action_path }}/setup.sh
     env:
-      ARTIFACTORY_USERNAME_INPUT: ${{ inputs.artifactory_username }}
-      ARTIFACTORY_REGISTRY: ${{ inputs.artifactory_registry }}
-      ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
+  - name: configure aws credentials for ECR
+    uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
+    with:
+      role-to-assume: ${{ inputs.ecr_role_arn }}
+      role-session-name: release-session
+      aws-region: ${{ inputs.ecr_region }}
+  - name: Log in to ECR
+    uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
+    with:
+      registries: "${{ inputs.ecr_registry_id }}"

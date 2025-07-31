@@ -3,13 +3,13 @@ description: "Compresses package and signs with garasign and uploads to GH relea
 
 inputs:
   aws_role_arn:
-    description: "AWS role input for drivers-github-tools/gpg-sign@v2"
+    description: "AWS role input for drivers-github-tools/gpg-sign@v3"
     required: true
   aws_region_name:
-    description: "AWS region name input for drivers-github-tools/gpg-sign@v2"
+    description: "AWS region name input for drivers-github-tools/gpg-sign@v3"
     required: true
   aws_secret_id:
-    description: "AWS secret id input for drivers-github-tools/gpg-sign@v2"
+    description: "AWS secret id input for drivers-github-tools/gpg-sign@v3"
     required: true
   npm_package_name:
     description: "The name for the npm package this repository represents"
@@ -40,12 +40,12 @@ runs:
         mkdir ${{ inputs.artifact_directory }}
 
     - name: Load version and package info
-      uses: mongodb-labs/drivers-github-tools/node/get_version_info@v2
+      uses: mongodb-labs/drivers-github-tools/node/get_version_info@v3
       with:
         npm_package_name: ${{ inputs.npm_package_name }}
 
     - name: Set up drivers-github-tools
-      uses: mongodb-labs/drivers-github-tools/setup@v2
+      uses: mongodb-labs/drivers-github-tools/setup@v3
       with:
         aws_region_name: ${{ inputs.aws_region_name }}
         aws_role_arn: ${{ inputs.aws_role_arn }}
@@ -68,7 +68,7 @@ runs:
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
     - name: Create detached signature
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
       with:
         filenames: ${{ env.FILES_TO_SIGN }}
       env:

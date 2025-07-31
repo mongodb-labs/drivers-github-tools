@@ -15,10 +15,6 @@ inputs:
     default: "true"
   token:
     description: The GitHub token
-  # No longer used, to be removed in V3.
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: false
 
 runs:
   using: composite
@@ -28,7 +24,7 @@ runs:
       shell: bash
       run: |
         echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - uses: mongodb-labs/drivers-github-tools/full-report@v2
+    - uses: mongodb-labs/drivers-github-tools/full-report@v3
       with:
         product_name: mongo-go-driver
         release_version: ${{ inputs.version }}
@@ -47,7 +43,7 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: ./publish.sh
     - name: Upload S3 assets
-      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
       with:
           version: ${{ inputs.version }}
           product_name: mongo-go-driver
