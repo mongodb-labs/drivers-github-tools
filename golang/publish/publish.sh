@@ -36,7 +36,7 @@ if [ "$PUSH_CHANGES" == "true" ]; then
     pushd $GITHUB_WORKSPACE || exit 1
 
     # Update release notes with generated version and upload release assets
-    gh release create v${VERSION} -F $NOTES_FILE
+    gh release edit v${VERSION} -F $NOTES_FILE
     gh release upload v${VERSION} $RELEASE_ASSETS/*.*
     JSON="url,tagName,assets,author,createdAt"
     JQ='.url,.tagName,.author.login,.createdAt,.assets[].name'
