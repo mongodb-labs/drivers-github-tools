@@ -5,7 +5,47 @@
 
 This repository contains GitHub Actions that are common to drivers.
 
-## Secure Checkout
+## Working on Actions
+
+Many of the actions in this repo depend on one another.  There is no supported way to reference
+another action using a relative path.  Therefore the recommended approach is to
+set all of the relative actions to your branch name while working on a feature,
+then reverting to the version tag before merging.
+
+## Consuming Actions
+
+It is recommended that you use Dependabot and use an explicit reference when
+using these actions.  This will allow Dependabot to update to a more recent sha
+and allow you to accept updates to the actions as needed.
+
+Example `dependabot.yml`:
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns:
+          - "*"
+```
+
+Example usage with references:
+
+```yaml
+- name: secure-checkout
+  uses: mongodb-labs/drivers-github-tools/secure-checkout@40b8ff3c0decd1388587fcc3d0a36d4818a054a6  # v2
+  with:
+    app_id: ${{ vars.APP_ID }}
+    private_key: ${{ secrets.APP_PRIVATE_KEY }}
+```
+
+## Basic Actions
+
+### Secure Checkout
 
 This action will perform a checkout with the GitHub App credentials.
 
@@ -21,8 +61,7 @@ By default it will use the current `${{github.ref}}` if the `ref` parameter is
 not given.  It will write the secure global variable `GH_TOKEN` that can be
 used with the `gh` cli.
 
-
-## Setup
+### Setup
 
 There is a common setup action that is meant to be run before all
 other actions.  It handles fetching secrets from AWS Secrets Manager,
@@ -212,7 +251,9 @@ There are several ways to specify the security report:
 - By specifying a relative path, which is then linked to the corresponding git blob for the tagged version
 - By adding the `security-report-url` to the AWS Secrets Vault
 
-## Full Report
+## Other Common Actions
+
+### Full Report
 
 This action is a convenience function to handle all of the SSDLC reports and put them
 in the `S3_ASSETS` folder. This composite action runs the `authorized-pub`, `sbom`, `code-scanning-export`, and `compliance-report` actions.
@@ -232,7 +273,7 @@ in the `S3_ASSETS` folder. This composite action runs the `authorized-pub`, `sbo
     dist_filenames: dist/*
 ```
 
-## Upload S3 assets
+### Upload S3 assets
 
 A number of scripts create files in the `tmp/s3_assets` folder, which then can
 be uploaded to the product's S3 bucket:
@@ -255,7 +296,7 @@ By default, all files in the S3 directory are uploaded. When the `dry_run` input
 is set to anything other than `false`, no files are uploaded, but instead the
 filename along with the resulting location in the bucket is printed.
 
-## Create Release Branch
+### Create Release Branch
 
 Use this action to create a release branch and populate it with metadata.
 It will update ``EVERGREEN_PROJECT`` env variable
