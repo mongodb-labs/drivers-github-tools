@@ -20,7 +20,7 @@ var forumTmpl string
 // notes.
 func generateGithubNotes(release, previous, changeLogFile string) {
 	filename := "github.md"
-	changeLog, err := ioutil.ReadFile(changeLogFile)
+	changeLog, err := os.ReadFile(changeLogFile)
 	if err != nil {
 		log.Fatalf("Error reading file %q: %v", changeLogFile, err)
 	}
