@@ -1,0 +1,113 @@
+# PRs are only eligible for release if they are merged and have
+# the `release-candidate` label.
+#
+# The only events allowed to trigger this action are:
+# - push (in which case the commit sha is used to find the corresponding
+#   PR)
+# - workflow_dispatch (in which case the PR is found from the inputs
+#   on the event)
+
+name: PR Check
+description: Check that a PR is eligible for release
+
+outputs:
+  message:
+    description: The body of the pull request that is being released.
+    value: ${{ steps.check_pr.outputs.message }}
+  ref:
+    description: The ref of the pull request that is being released.
+    value: ${{ steps.check_pr.outputs.ref }}
+
+runs:
+  using: composite
+  steps:
+    - name: "Check PR Eligibility"
+      id: check_pr
+      # 60a0d83039c74a4aee543508d2ffcb1c3799cdea => 'v7' tag as of 2025-07-28
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      with:
+        script: |
+          let pr;
+
+          // was this triggered by a push event?
+          if (context.eventName == 'push') {
+            // if so, we need to find the PR that corresponds to the commit
+            // that was pushed.
+            //
+            // because only maintainers can push to protected branches,
+            // we can assume the user has the correct permissions to do
+            // this.
+            const { data: listing } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.payload.after,
+            });
+
+            if (listing.length == 0) {
+              throw new Error(`Workflow aborted: No pull request found for the pushed commit (${context.payload.after}).`);
+            }
+
+            const response = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: listing[0].number,
+            });
+
+            pr = response.data;
+
+          // if it wasn't triggered by a push event, was it triggered by
+          // a workflow_dispatch event?
+          } else if (context.eventName == 'workflow_dispatch') {
+            // it is technically possible for users with only write access
+            // to trigger workflows; we need to make sure that the user
+            // who triggered this has either admin or maintain access to the
+            // repository.
+            const username = context.triggering_actor || context.actor;
+
+            const { data: perms } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username,
+            });
+
+            if (perms.role_name !== 'admin' && perms.role_name !== 'maintain') {
+              throw new Error(`User ${username} must have 'admin' or 'maintain' role to initiate the release process. (${perms.role_name})`);
+            }
+
+            // if so, we grab the PR with the number that was passed in with
+            // the inputs.
+            const number = context.payload.inputs.pr;
+            if (!number) {
+              throw new Error('Workflow aborted: No pull request number provided. (need `pr` input)');
+            }
+
+            const response = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: number,
+            });
+
+            pr = response.data;
+
+          // workflow was triggered by an unrecognized/unsupported event
+          } else {
+            throw new Error(`Workflow aborted: Unsupported event type: ${context.eventName}.`);
+          }
+
+          if (!pr) {
+            throw new Error('No pull request found for the triggered event.');
+          }
+
+          if (!pr.merged) {
+            throw new Error('Pull request is not merged.');
+          }
+
+          if (!pr.labels.some(label => label.name == 'release-candidate')) {
+            throw new Error('Pull request is not a release candidate.');
+          }
+
+          console.log('body: >>', pr.body, '<<');
+          console.log('ref: >>', pr.merge_commit_sha, '<<');
+
+          core.setOutput('message', pr.body);
+          core.setOutput('ref', pr.merge_commit_sha);

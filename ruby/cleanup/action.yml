@@ -15,7 +15,8 @@ runs:
   using: composite
   steps:
     - name: 'Check out the repository'
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
