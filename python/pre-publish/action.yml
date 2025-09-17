@@ -71,7 +71,7 @@ runs:
         working_directory: ${{ inputs.working_directory }}
         push_commit: ${{ env.PUSH_CHANGES }}
     - name: Tag version
-      uses: mongodb-labs/drivers-github-tools/tag-version@DRIVERS-3232-fix
+      uses: mongodb-labs/drivers-github-tools/tag-version@v3
       with:
         version: ${{ env.VERSION }}
         tag_template: ${{ inputs.tag_template }}
