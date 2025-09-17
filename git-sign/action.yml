@@ -21,6 +21,8 @@ runs:
         COMMAND: ${{ inputs.command }}
       run: |
         set -x
+        git status
+        exit 1
         WORKING_DIR=/home/git-checkout
         docker run \
           --env-file=$GARASIGN_ENVFILE \
