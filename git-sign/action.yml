@@ -20,6 +20,7 @@ runs:
         ECR_REPOSITORY: ${{ inputs.ecr_repository }}
         COMMAND: ${{ inputs.command }}
       run: |
+        set -x
         WORKING_DIR=/home/git-checkout
         docker run \
           --env-file=$GARASIGN_ENVFILE \
