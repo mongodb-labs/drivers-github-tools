@@ -1,5 +1,5 @@
 name: Publish Ruby
-description: Generate and publish gems, signatures, and assets for MongoDB Ruby projects
+description: Publish gems, signatures, and assets for MongoDB Ruby projects
 inputs:
   app_id:
     description: The APP_ID defined for this project
@@ -32,13 +32,20 @@ inputs:
   product_id:
     description: The identifier of the product being published (e.g. "mongo-ruby-driver")
     required: true
-  release_message_template:
-    description: The template for the release message. Use "{0}" in the text to refer to the current version.
+  ref:
+    description: The reference to checkout (branch, tag, sha, etc)
+    required: true
+  release_message:
+    description: The (markdown-formatted) text to post as the description of the new release
     required: true
   rubygems_version:
     description: The version of Rubygems to use (see setup-ruby/action.yml)
     required: false
     default: latest
+  ruby_version:
+    description: The version of Ruby to use (see setup-ruby/action.yml)
+    default: '3.2'
+    required: false
   silk_asset_group:
     description: The Silk asset group for the project
     required: true
@@ -47,92 +54,160 @@ runs:
   using: composite
   steps:
     - name: Check out the repository
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
+        ref: ${{ inputs.ref }}
+        submodules: true
 
     - name: Setup Ruby
-      uses: ruby/setup-ruby@dffc446db9ba5a0c4446edb5bca1c5c473a806c5 # v1
+      # bb6434c747fa7022e12fa1cae2a0951fcffcff26 => the 'v1' branch as of 2025-07-28
+      uses: ruby/setup-ruby@bb6434c747fa7022e12fa1cae2a0951fcffcff26
       with:
-        ruby-version: '3.2'
+        ruby-version: ${{ inputs.ruby_version }}
         rubygems: ${{ inputs.rubygems_version }}
         bundler-cache: true
         cache-version: ${{ inputs.bundler_cache_version }}
 
     - name: Get the release version
+      id: release_version
       shell: bash
-      run: echo "RELEASE_VERSION=$(bundle exec rake version)" >> "$GITHUB_ENV"
+      run: echo "version=$(bundle exec rake version)" >> "$GITHUB_OUTPUT"
 
     - name: Setup GitHub tooling for DBX Drivers
-      uses: mongodb-labs/drivers-github-tools/setup@v2
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/setup@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_region_name: ${{ inputs.aws_region_name }}
         aws_secret_id: ${{ inputs.aws_secret_id }}
 
-    - name: Set output gem file name
-      shell: bash
-      run: |
-        echo "GEM_FILE_NAME=${{ inputs.gem_name }}-${{ env.RELEASE_VERSION }}.gem" >> "$GITHUB_ENV"
-
-    - name: Build the gem
-      shell: bash
-      run: |
-        gem build --output=${{ env.GEM_FILE_NAME }} ${{ inputs.gem_name }}.gemspec
-
-    - name: Sign the gem
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+    - name: Fetch the gem artifacts
+      # d3f86a106a0bac45b974a628896c90dbdf5c8093 => the 'v4' tag as of 2025-07-28
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
-        filenames: '${{ env.GEM_FILE_NAME }}'
+        merge-multiple: true
+
+    - name: Sign the gems
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@58501b85eae697e451b5d1d7dba53f69f65d1909
+      with:
+        filenames: '*.gem'
 
     - name: Generate SSDLC Reports
-      uses: mongodb-labs/drivers-github-tools/full-report@v2
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/full-report@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
         product_name: ${{ inputs.product_name }}
-        release_version: ${{ env.RELEASE_VERSION }}
-        dist_filenames: ${{ env.GEM_FILE_NAME }}
+        release_version: ${{ steps.release_version.outputs.version }}
+        dist_filenames: '*.gem'
         silk_asset_group: ${{ inputs.silk_asset_group }}
 
+    - name: Look for existing tag
+      id: tag_exists
+      shell: bash
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: |
+        if git rev-parse "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+          echo "Tag v${RELEASE_VERSION} already exists."
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "Tag v${RELEASE_VERSION} does not exist."
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Create the tag
-      uses: mongodb-labs/drivers-github-tools/tag-version@v2
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/tag-version@58501b85eae697e451b5d1d7dba53f69f65d1909
+      if: steps.tag_exists.outputs.exists == 'false'
       with:
-        version: ${{ env.RELEASE_VERSION }}
+        version: ${{ steps.release_version.outputs.version }}
         tag_template: "v${VERSION}"
         tag_message_template: "Release tag for v${VERSION}"
 
+    - name: Look for existing release
+      id: release_exists
+      shell: bash
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: |
+        if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
+          echo "Release v${RELEASE_VERSION} already exists."
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "Release v${RELEASE_VERSION} does not exist."
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Write release notes to file
+      shell: bash
+      env:
+        RELEASE_NOTES: ${{ inputs.release_message }}
+      run: |
+        # identifier is intentionally obscure to avoid potential conflicts
+        # with supplied text from the release notes themselves.
+        cat <<__RELEASE_NOTES_IKDJAIELD__ > release_notes.txt
+        ${RELEASE_NOTES}
+        __RELEASE_NOTES_IKDJAIELD__
+
     - name: Create a new release
+      if: steps.release_exists.outputs.exists == 'false'
       shell: bash
-      run: gh release create v${{ env.RELEASE_VERSION }} --title ${{ env.RELEASE_VERSION }} --generate-notes --draft
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: gh release create v${RELEASE_VERSION} --title ${RELEASE_VERSION} --notes-file release_notes.txt --draft
 
-    - name: Capture the changelog
+    - name: Else update the existing release
+      if: steps.release_exists.outputs.exists == 'true'
       shell: bash
-      run: gh release view v${{ env.RELEASE_VERSION }} --json body --template '{{ .body }}' >> changelog
-
-    - name: Prepare release message
-      shell: bash
-      run: |
-        echo "${{ format(inputs.release_message_template, env.RELEASE_VERSION) }}" > release-message
-        cat changelog >> release-message
-
-    - name: Update release information
-      shell: bash
-      run: |
-        echo "RELEASE_URL=$(gh release edit v${{ env.RELEASE_VERSION }} --notes-file release-message)" >> "$GITHUB_ENV"
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: gh release edit v${RELEASE_VERSION} --notes-file release_notes.txt
 
     - name: Upload release artifacts
       shell: bash
-      run: gh release upload v${{ env.RELEASE_VERSION }} ${{ env.GEM_FILE_NAME }} ${{ env.RELEASE_ASSETS }}/${{ env.GEM_FILE_NAME }}.sig
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+        RELEASE_ASSETS: ${{ env.RELEASE_ASSETS }}
+      run: gh release upload --clobber v${RELEASE_VERSION} *.gem ${RELEASE_ASSETS}/*.sig
 
     - name: Upload S3 assets
-      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@58501b85eae697e451b5d1d7dba53f69f65d1909
       with:
-        version: ${{ env.RELEASE_VERSION }}
+        version: ${{ steps.release_version.outputs.version }}
         product_name: ${{ inputs.product_id }}
         dry_run: ${{ inputs.dry_run }}
 
+    - name: Look for existing gem
+      id: gem_exists
+      shell: bash
+      env:
+        GEM_NAME: ${{ inputs.gem_name }}
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: |
+        if gem search --remote ${GEM_NAME} --version ${RELEASE_VERSION} | grep -q "${RELEASE_VERSION}"; then
+          echo "Gem ${GEM_NAME} version ${RELEASE_VERSION} already exists."
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "Gem ${GEM_NAME} version ${RELEASE_VERSION} does not exist."
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Publish the gem
-      uses: rubygems/release-gem@a25424ba2ba8b387abc8ef40807c2c85b96cbe32 # v1
-      if: inputs.dry_run == 'false'
+      # ebe1ec66bd8d2c709ac29aa2b43438d450e7a0a6 => the 'v1' branch as of 2025-07-28
+      uses: rubygems/release-gem@ebe1ec66bd8d2c709ac29aa2b43438d450e7a0a6
+      if: inputs.dry_run == 'false' && steps.gem_exists.outputs.exists == 'false'
       with:
         await-release: false
+
+    - name: Publish the release
+      if: inputs.dry_run == 'false'
+      shell: bash
+      env:
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: gh release edit v${RELEASE_VERSION} --draft=false
+
