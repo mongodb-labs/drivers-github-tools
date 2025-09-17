@@ -1,0 +1,83 @@
+name: Build Gem
+description: Build a gem for a DBX Ruby project
+inputs:
+  app_id:
+    description: The APP_ID defined for this project
+    required: true
+  app_private_key:
+    description: The APP_PRIVATE_KEY defined for this project
+    required: true
+  artifact:
+    description: The name to give the generated artifact (e.g. "ruby" or "jruby")
+    required: false
+    default: ruby
+  bundler_cache_version:
+    description: The cache-version to use for the bundler cache
+    required: false
+    default: '0'
+  gem_name:
+    description: The name (sans extension) of the gemspec file (e.g. "mongo")
+    required: true
+  ref:
+    description: The reference to checkout (branch, tag, sha, etc)
+    required: true
+  ruby_version:
+    description: The version of Ruby to use (see setup-ruby/action.yml)
+    default: '3.2'
+    required: false
+  rubygems_version:
+    description: The version of Rubygems to use (see setup-ruby/action.yml)
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - name: Check out the repository
+      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@58501b85eae697e451b5d1d7dba53f69f65d1909
+      with:
+        app_id: ${{ inputs.app_id }}
+        private_key: ${{ inputs.app_private_key }}
+        ref: ${{ inputs.ref }}
+        submodules: true
+
+    - name: Setup Ruby
+      # bb6434c747fa7022e12fa1cae2a0951fcffcff26 => the 'v1' branch as of 2025-07-28
+      uses: ruby/setup-ruby@a9bfc2ecf3dd40734a9418f89a7e9d484c32b990
+      with:
+        ruby-version: ${{ inputs.ruby_version }}
+        rubygems: ${{ inputs.rubygems_version }}
+        bundler-cache: true
+        cache-version: ${{ inputs.bundler_cache_version }}
+
+    - name: Get the release version
+      id: release_version
+      shell: bash
+      run: echo "version=$(bundle exec rake version)" >> "$GITHUB_OUTPUT"
+
+    - name: Get the gem file name
+      shell: bash
+      id: gem_name
+      env:
+        GEM_NAME: ${{ inputs.gem_name }}
+        ACTION_PATH: ${{ github.action_path }}
+        RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
+      run: echo "name=$(ruby ${ACTION_PATH}/gem_name.rb ${GEM_NAME} ${RELEASE_VERSION})" >> "$GITHUB_OUTPUT"
+
+    - name: Build the gem
+      shell: bash
+      env:
+        GEM_NAME: ${{ inputs.gem_name }}
+        GEM_FILE_NAME: ${{ steps.gem_name.outputs.name }}
+      run: |
+        bundle exec rake build GEMSPEC="${GEM_NAME}.gemspec" GEM_FILE_NAME="${GEM_FILE_NAME}"
+
+    - name: Save the generated gem file for later
+      # ea165f8d65b6e75b540449e92b4886f43607fa02 => the 'v4' tag as of 2025-07-28
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: ${{ inputs.artifact }}
+        path: ${{ steps.gem_name.outputs.name }}
+        retention-days: 1
+        overwrite: true
