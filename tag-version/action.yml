@@ -35,7 +35,7 @@ runs:
     - name: Tag the version
       uses: mongodb-labs/drivers-github-tools/git-sign@v3
       with:
-        command: git tag -a \"${{ env.TAG }}\" -m \"${{ env.TAG_MESSAGE }}\" -s --local-user=${{ env.GPG_KEY_ID }}
+        command: git tag -a "${{ env.TAG }}" -m "${{ env.TAG_MESSAGE }}" -s --local-user=${{ env.GPG_KEY_ID }}
         ecr_repository: ${{ inputs.ecr_repository }}
     - name: Verify the tag
       shell: bash -eux {0}
