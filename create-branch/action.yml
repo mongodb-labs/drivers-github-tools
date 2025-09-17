@@ -23,15 +23,10 @@ inputs:
   release_workflow_path:
     description: The path to the release workflow file
     default: .github/workflows/release.yml
-  artifactory_image:
-    description: Image to use for artifactory
-    default: artifactory.corp.mongodb.com/release-tools-container-registry-public-local
-  # Unused inputs, to be removed in V3.
-  sbom_file_path:
-      description: The path of the sbom-lite file
-      default: sbom.json
-  silk_group_prefix:
-    description: The prefix to use for the silk asset group, defaults to the repo name
+  ecr_repository:
+    description: "The ECR repository to use"
+    default: release-infrastructure/garasign-git
+
 runs:
   using: composite
   steps:
@@ -43,11 +38,11 @@ runs:
         SBOM_FILE_PATH: ${{ inputs.sbom_file_path }}
         RELEASE_WORKFLOW_PATH: ${{ inputs.release_workflow_path }}
         EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
-        ARTIFACTORY_IMAGE: ${{ inputs.artifactory_image }}
       run: ${{ github.action_path }}/create-branch.sh
-    - uses: mongodb-labs/drivers-github-tools/bump-version@v2
+    - uses: mongodb-labs/drivers-github-tools/bump-version@v3
       with:
         version: ${{ inputs.version }}
         version_bump_script: ${{ inputs.version_bump_script }}
         commit_template: "Prep branch ${{ inputs.branch_name }}"
         push_commit: ${{ inputs.push_changes }}
+        ecr_repository: ${{ inputs.ecr_repository }}

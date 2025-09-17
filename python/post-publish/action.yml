@@ -36,10 +36,6 @@ inputs:
   dry_run:
     description: Whether this is a dry run
     required: true
-  # No longer used, to be removed in V3.
-  silk_asset_group:
-    description: The Silk Asset Group for the Project
-    required: false
 
 runs:
   using: composite
@@ -70,7 +66,7 @@ runs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         fi
     - name: Create detached signature for dist files
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v2
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
       with:
         filenames: dist/*
     - name: Get the evergreen commit
@@ -78,7 +74,7 @@ runs:
       shell: bash
       run: |
         echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - uses: mongodb-labs/drivers-github-tools/full-report@v2
+    - uses: mongodb-labs/drivers-github-tools/full-report@v3
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ env.VERSION }}
@@ -86,11 +82,10 @@ runs:
         dist_filenames: dist/*
         kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
         sbom_in_path: ${{ inputs.sbom_in_path }}
-        silk_asset_group: ${{ inputs.silk_asset_group }}
         evergreen_project: ${{ inputs.evergreen_project }}
         evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
         token: ${{ inputs.token }}
-    - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+    - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
       with:
           version: ${{ env.VERSION }}
           product_name: ${{ inputs.product_name }}
@@ -121,7 +116,7 @@ runs:
         git clean -dffx
         git pull origin ${GITHUB_REF}
     - name: Set following version
-      uses: mongodb-labs/drivers-github-tools/bump-version@v2
+      uses: mongodb-labs/drivers-github-tools/bump-version@v3
       if: inputs.dry_run == 'false'
       with:
           version: ${{ steps.publish-script.outputs.following_version }}

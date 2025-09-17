@@ -7,12 +7,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
 if (!(args.length === 3 || args.length === 4)) {
   console.error(
-    `usage: generate_release.js <package> <branch> <npm tag> <optional silk asset group>`,
+    `usage: generate_release.js <package> <branch> <npm tag> <optional sbom in path> <optional kondukto sub project>`,
   );
   process.exit(1);
 }
 
-const [npmPackage, branch, tag, assetGroup] = args;
+const [npmPackage, branch, tag, sbomInPath, konduktoSubProject] = args;
 
 const isNative =
   npmPackage === "kerberos" || npmPackage === "mongodb-client-encryption";
@@ -32,7 +32,8 @@ const generated = template
   .replaceAll("RELEASE_TAG", tag)
   .replaceAll("EVERGREEN_PROJECT", EVERGREEN_PROJECTS[npmPackage] ?? "")
   .replaceAll("IGNORE_INSTALL_SCRIPTS", isNative)
-  .replaceAll("SILK_ASSET_GROUP", assetGroup ? `'${assetGroup}'` : "''");
+  .replaceAll("SBOM_IN_PATH", sbomInPath ? `'${sbomInPath}'` : "''")
+  .replaceAll("KONDUKTO_SUB_PROJECT", konduktoSubProject ? `'${konduktoSubProject}'` : "''")
 
 const project = EVERGREEN_PROJECTS[npmPackage];
 if (!project) {

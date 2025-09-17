@@ -46,16 +46,18 @@ inputs:
     description: The version of Ruby to use (see setup-ruby/action.yml)
     default: '3.2'
     required: false
-  silk_asset_group:
-    description: The Silk asset group for the project
-    required: true
+  sbom_in_path:
+    description: The path of the input sbom file.
+    default: sbom.json
+  kondukto_sub_project:
+    description: The Kondukto sub-project name (appended to the branch name)
+    required: false
 
 runs:
   using: composite
   steps:
     - name: Check out the repository
-      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@58501b85eae697e451b5d1d7dba53f69f65d1909
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
@@ -77,8 +79,7 @@ runs:
       run: echo "version=$(bundle exec rake version)" >> "$GITHUB_OUTPUT"
 
     - name: Setup GitHub tooling for DBX Drivers
-      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
-      uses: mongodb-labs/drivers-github-tools/setup@58501b85eae697e451b5d1d7dba53f69f65d1909
+      uses: mongodb-labs/drivers-github-tools/setup@v3
       with:
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_region_name: ${{ inputs.aws_region_name }}
@@ -91,19 +92,18 @@ runs:
         merge-multiple: true
 
     - name: Sign the gems
-      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@58501b85eae697e451b5d1d7dba53f69f65d1909
+      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
       with:
         filenames: '*.gem'
 
     - name: Generate SSDLC Reports
-      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
-      uses: mongodb-labs/drivers-github-tools/full-report@58501b85eae697e451b5d1d7dba53f69f65d1909
+      uses: mongodb-labs/drivers-github-tools/full-report@v3
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ steps.release_version.outputs.version }}
         dist_filenames: '*.gem'
-        silk_asset_group: ${{ inputs.silk_asset_group }}
+        kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
+        sbom_in_path: ${{ inputs.sbom_in_path }}
 
     - name: Look for existing tag
       id: tag_exists
@@ -120,8 +120,7 @@ runs:
         fi
 
     - name: Create the tag
-      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
-      uses: mongodb-labs/drivers-github-tools/tag-version@58501b85eae697e451b5d1d7dba53f69f65d1909
+      uses: mongodb-labs/drivers-github-tools/tag-version@v3
       if: steps.tag_exists.outputs.exists == 'false'
       with:
         version: ${{ steps.release_version.outputs.version }}
@@ -175,8 +174,7 @@ runs:
       run: gh release upload --clobber v${RELEASE_VERSION} *.gem ${RELEASE_ASSETS}/*.sig
 
     - name: Upload S3 assets
-      # 58501b85eae697e451b5d1d7dba53f69f65d1909 => the 'v2' tag as of 2025-07-28
-      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@58501b85eae697e451b5d1d7dba53f69f65d1909
+      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
       with:
         version: ${{ steps.release_version.outputs.version }}
         product_name: ${{ inputs.product_id }}
@@ -210,4 +208,3 @@ runs:
       env:
         RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: gh release edit v${RELEASE_VERSION} --draft=false
-
