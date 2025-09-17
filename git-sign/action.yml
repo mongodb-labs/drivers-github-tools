@@ -22,7 +22,6 @@ runs:
       run: |
         set -x
         git status
-        exit 1
         WORKING_DIR=/home/git-checkout
         docker run \
           --env-file=$GARASIGN_ENVFILE \
@@ -31,4 +30,5 @@ runs:
           -w $WORKING_DIR \
           ${ECR_REGISTRY}/${ECR_REPOSITORY} \
           /bin/bash -c "git config --global --add safe.directory $WORKING_DIR && gpgloader && ${COMMAND}"
+        echo "done!"
       shell: bash
