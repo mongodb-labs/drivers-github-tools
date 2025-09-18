@@ -23,6 +23,17 @@ inputs:
 runs:
   using: composite
   steps:
+  # Docker login must be done before input role login so we remain logged in for S3 upload.
+  - name: configure aws credentials for ECR
+    uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
+    with:
+      role-to-assume: ${{ inputs.ecr_role_arn }}
+      role-session-name: release-session
+      aws-region: ${{ inputs.ecr_region }}
+  - name: Log in to ECR
+    uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
+    with:
+      registries: "${{ inputs.ecr_registry_id }}"
   - name: configure aws credentials
     uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
     with:
@@ -41,13 +52,3 @@ runs:
     run: ${{ github.action_path }}/setup.sh
     env:
       AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
-  - name: configure aws credentials for ECR
-    uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
-    with:
-      role-to-assume: ${{ inputs.ecr_role_arn }}
-      role-session-name: release-session
-      aws-region: ${{ inputs.ecr_region }}
-  - name: Log in to ECR
-    uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
-    with:
-      registries: "${{ inputs.ecr_registry_id }}"
