@@ -38,7 +38,7 @@ runs:
     - name: Commit the version bump
       uses: mongodb-labs/drivers-github-tools/git-sign@v3
       with:
-        command: git commit -a -m \"${{ env.COMMIT_MESSAGE }}\" -s --gpg-sign=${{ env.GPG_KEY_ID }}
+        command: git commit -a -m "${{ env.COMMIT_MESSAGE }}" -s --gpg-sign=${{ env.GPG_KEY_ID }}
         ecr_repository: ${{ inputs.ecr_repository }}
     - name: Push the commit to the source branch
       shell: bash -eux {0}
