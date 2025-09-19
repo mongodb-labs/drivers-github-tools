@@ -116,7 +116,7 @@ runs:
         git clean -dffx
         git pull origin ${GITHUB_REF}
     - name: Set following version
-      uses: mongodb-labs/drivers-github-tools/bump-version@PYTHON-3152-python-fix
+      uses: mongodb-labs/drivers-github-tools/bump-version@v3
       if: inputs.dry_run == 'false'
       with:
           version: ${{ steps.publish-script.outputs.following_version }}
