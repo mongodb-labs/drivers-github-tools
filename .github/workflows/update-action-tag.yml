@@ -25,13 +25,6 @@ jobs:
           # Needed to push the tag in the final step
           persist-credentials: true
 
-      - name: Setup
-        uses: ./setup
-        with:
-          aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws_region_name: ${{ vars.AWS_REGION_NAME }}
-          aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
-
       - name: Remove the existing tag
         run: |
           export VERSION=$(cat .github/workflows/version.txt)
@@ -41,7 +34,7 @@ jobs:
       - name: Create a new signed tag
         uses: ./git-sign
         with:
-          command: git tag -a \"v${{ env.VERSION }}\" -m \"Update tag\" -s --local-user=${{ env.GPG_KEY_ID }}
+          command: git tag -a \"v${{ env.VERSION }}\" -m \"Update tag\" -s --local-user=${{ SECRETS.GPG_KEY_ID }}
 
       - name: Push the tag
         run:
