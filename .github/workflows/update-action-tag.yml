@@ -25,6 +25,11 @@ jobs:
           # Needed to push the tag in the final step
           persist-credentials: true
 
+      - name: Set up git config
+        run: |
+          git config user.email "167856002+mongodb-dbx-release-bot[bot]@users.noreply.github.com"
+          git config user.name "mongodb-dbx-release-bot[bot]"
+
       - name: Remove the existing tag
         run: |
           export VERSION=$(cat .github/workflows/version.txt)
