@@ -40,7 +40,6 @@ runs:
       role-to-assume: ${{ inputs.aws_role_arn }}
       role-session-name: release-session
       aws-region: ${{ inputs.aws_region_name }}
-      unset-current-credentials: true
   - name: Read secrets from AWS Secrets Manager into environment variables
     uses: aws-actions/aws-secretsmanager-get-secrets@5e19ff380d035695bdd56bbad320ca535c9063f2 # v2
     with:
