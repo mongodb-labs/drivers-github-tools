@@ -41,7 +41,7 @@ jobs:
       - name: Create a new signed tag
         uses: ./git-sign
         with:
-          command: git tag -a "v${{ env.VERSION }}\" -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
+          command: git tag -a "v${{ env.VERSION }}" -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
 
       - name: Push the tag
         run:
