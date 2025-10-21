@@ -5,6 +5,8 @@
 
 This repository contains GitHub Actions that are common to drivers.
 
+See the [How To: Set up Secure Release Process using GitHub Action](https://wiki.corp.mongodb.com/spaces/DRIVERS/pages/427464463/How+To+Set+up+Secure+Release+Process+using+GitHub+Actions) internal wiki for guidance.
+
 ## Working on Actions
 
 Many of the actions in this repo depend on one another.  There is no supported way to reference
