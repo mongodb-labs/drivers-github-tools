@@ -10,6 +10,9 @@ inputs:
   ignored_branches:
     description: Branches to ignore when merging up changes
     required: true
+  dry_run:
+    description: Whether this is a dry run
+    required: true
 
 runs:
   using: composite
@@ -36,7 +39,7 @@ runs:
         fallbackBranch: 'master'
         ignoredBranches: ${{ inputs.ignored_branches }}
     - name: "Manually merge up changes"
-      if: ${{ inputs.push_changes == 'true' && ! contains(fromJSON(inputs.ignored_branches), github.ref_name) && steps.get-next-branch.outputs.hasNextBranch }}
+      if: ${{ inputs.dry_run == 'false' && inputs.push_changes == 'true' && ! contains(fromJSON(inputs.ignored_branches), github.ref_name) && steps.get-next-branch.outputs.hasNextBranch }}
       shell: bash
       run: |
         git checkout ${NEXT_BRANCH}
