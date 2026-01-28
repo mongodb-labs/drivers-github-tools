@@ -10,6 +10,9 @@ inputs:
   ignored_branches:
     description: Branches to ignore when merging up changes
     required: true
+  dry_run:
+    description: Whether this is a dry run
+    required: true
 
 runs:
   using: composite
