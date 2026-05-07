@@ -30,22 +30,30 @@ runs:
       role-to-assume: ${{ inputs.ecr_role_arn }}
       role-session-name: release-session
       aws-region: ${{ inputs.ecr_region }}
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   - name: Log in to ECR
     uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2
     with:
       registries: "${{ inputs.ecr_registry_id }}"
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   - name: configure aws credentials
     uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
     with:
       role-to-assume: ${{ inputs.aws_role_arn }}
       role-session-name: release-session
       aws-region: ${{ inputs.aws_region_name }}
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   - name: Read secrets from AWS Secrets Manager into environment variables
     uses: aws-actions/aws-secretsmanager-get-secrets@5e19ff380d035695bdd56bbad320ca535c9063f2 # v2
     with:
       secret-ids: |
         ${{ inputs.aws_secret_id }}
       parse-json-secrets: true
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   - name: Set up
     shell: bash
     id: setup

@@ -50,6 +50,8 @@ runs:
         rubygems: ${{ inputs.rubygems_version }}
         bundler-cache: true
         cache-version: ${{ inputs.bundler_cache_version }}
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     - name: Get the release version
       id: release_version
@@ -81,3 +83,5 @@ runs:
         path: ${{ steps.gem_name.outputs.name }}
         retention-days: 1
         overwrite: true
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

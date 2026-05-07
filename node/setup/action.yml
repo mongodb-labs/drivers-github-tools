@@ -12,6 +12,8 @@ runs:
       with:
         node-version: "lts/*"
         registry-url: "https://registry.npmjs.org"
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     - run: npm install -g npm@latest
       shell: bash
     - run: npm clean-install
