@@ -31,7 +31,7 @@ runs:
       with:
         python-version: '3.11'
       env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     - name: Install hatch
       shell: bash
       working-directory: ${{ inputs.working_directory }}

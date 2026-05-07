@@ -44,7 +44,7 @@ runs:
       with:
         python-version: '3.11'
       env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     - name: Install hatch
       shell: bash
       run: pipx install hatch
@@ -54,7 +54,7 @@ runs:
         name: all-dist-${{ github.run_id }}
         path: dist/
       env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     - name: Ensure we have the package version
       shell: bash
       env:
@@ -110,14 +110,14 @@ runs:
       with:
         subject-path: dist/*
       env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     - uses: actions/attest-sbom@v1
       if: inputs.dry_run == 'false'
       with:
         subject-path: dist/*
         sbom-path: ${{ env.RELEASE_ASSETS }}/cyclonedx.sbom.json
       env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     - name: Ensure a clean repo
       shell: bash
       run: |

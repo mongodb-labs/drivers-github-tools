@@ -33,7 +33,7 @@ runs:
       with:
         python-version: '3.11'
       env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     - name: Install hatch
       shell: bash
       run: pipx install hatch
@@ -43,7 +43,7 @@ runs:
         name: all-dist-${{ github.run_id }}
         path: dist/
       env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
     - name: Get the package version
       shell: bash
       run: |
