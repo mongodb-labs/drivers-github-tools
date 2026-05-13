@@ -72,6 +72,8 @@ runs:
         rubygems: ${{ inputs.rubygems_version }}
         bundler-cache: true
         cache-version: ${{ inputs.bundler_cache_version }}
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - name: Get the release version
       id: release_version
@@ -90,6 +92,8 @@ runs:
       uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
       with:
         merge-multiple: true
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - name: Sign the gems
       uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
@@ -201,6 +205,8 @@ runs:
       if: inputs.dry_run == 'false' && steps.gem_exists.outputs.exists == 'false'
       with:
         await-release: false
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - name: Publish the release
       if: inputs.dry_run == 'false'

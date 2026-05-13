@@ -30,6 +30,8 @@ runs:
   steps:
     - uses: actions/download-artifact@v4
       if: ${{ inputs.sign_native == 'true' }}
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - run: npm pack
       shell: bash
