@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Validates that each submodule commit:
 #   1. Is on the upstream branch configured in .gitmodules
-#   2. Does not regress from the target branch of the PR (BASE_REF)
+#   2. Does not regress from the target branch of the PR (BASE_REF),
+#      but only if the PR actually changed the submodule
 #
 # Required env vars:
 #   REPO      - GitHub repository (e.g. "mongodb/mongo-php-library")
@@ -16,6 +17,10 @@ tmpfile=$(mktemp)
 trap 'rm -f "$tmpfile"' EXIT
 gh api "repos/$REPO/contents/.gitmodules?ref=$PR_SHA" --jq '.content' | base64 -d > "$tmpfile"
 
+# Find the merge base between the PR and the target branch to detect which
+# submodules were actually changed by this PR
+merge_base=$(gh api "repos/$REPO/compare/$BASE_REF...$PR_SHA" --jq '.merge_base_commit.sha')
+
 while IFS=" " read -r key path; do
   name="${key#submodule.}"
   name="${name%.path}"
@@ -27,11 +32,13 @@ while IFS=" " read -r key path; do
 
   pr_sha=$(gh api "repos/$REPO/contents/$path?ref=$PR_SHA" --jq '.sha')
   base_sha=$(gh api "repos/$REPO/contents/$path?ref=$BASE_REF" --jq '.sha' 2>/dev/null || true)
+  merge_base_sha=$(gh api "repos/$REPO/contents/$path?ref=$merge_base" --jq '.sha' 2>/dev/null || true)
 
   echo "::group::Checking submodule: $name"
-  printf "  Repo:        %s\n" "$subrepo"
-  printf "  PR commit:   %s\n" "$pr_sha"
-  printf "  Base commit: %s\n" "${base_sha:-unknown}"
+  printf "  Repo:             %s\n" "$subrepo"
+  printf "  PR commit:        %s\n" "$pr_sha"
+  printf "  Base commit:      %s\n" "${base_sha:-unknown}"
+  printf "  Merge base commit:%s\n" "${merge_base_sha:-unknown}"
 
   # Check 1: pr_sha is on the upstream branch
   # "behind" or "identical" means pr_sha is an ancestor of the branch HEAD
@@ -43,9 +50,12 @@ while IFS=" " read -r key path; do
     errors=$((errors + 1))
   fi
 
-  # Check 2: pr_sha must not be older than the target branch's submodule commit
+  # Check 2: pr_sha must not be older than the target branch's submodule commit,
+  # but only if the PR actually changed the submodule (pr_sha differs from merge base).
+  # Skipping this check for unmodified submodules avoids false positives when the PR
+  # was created before the target branch advanced its submodule pointer.
   # "ahead" or "identical" means pr_sha is a descendant of base_sha
-  if [ -n "$base_sha" ] && [ "$base_sha" != "$pr_sha" ]; then
+  if [ -n "$base_sha" ] && [ "$base_sha" != "$pr_sha" ] && [ "$merge_base_sha" != "$pr_sha" ]; then
     status=$(gh api "repos/$subrepo/compare/$base_sha...$pr_sha?per_page=1" --jq '.status' 2>/dev/null || echo "error")
     if [ "$status" = "ahead" ] || [ "$status" = "identical" ]; then
       printf "  ✓ Moves forward from target branch (%s → %s)\n" "${base_sha:0:8}" "${pr_sha:0:8}"
@@ -53,6 +63,8 @@ while IFS=" " read -r key path; do
       echo "::error::Submodule '$name' regresses: target branch has $base_sha but PR has $pr_sha (status: $status)"
       errors=$((errors + 1))
     fi
+  elif [ "$merge_base_sha" = "$pr_sha" ]; then
+    echo "  ✓ Submodule not modified by this PR, skipping regression check"
   fi
 
   echo "::endgroup::"
