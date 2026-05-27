@@ -323,6 +323,27 @@ prerelease version, and push the changes.
     evergreen_project: <name of evergreen release project>
 ```
 
+### Validate Submodules
+
+Use this action to validate that submodule commits are present on the upstream
+branch and do not regress from the target branch. It is intended to run on
+pull requests and merge groups.
+
+```yaml
+on:
+  merge_group:
+  pull_request:
+
+jobs:
+  validate-submodules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate submodule commits
+        uses: mongodb-labs/drivers-github-tools/validate-submodules@v3
+        with:
+          token: ${{ github.token }}
+```
+
 ## Python Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases.
