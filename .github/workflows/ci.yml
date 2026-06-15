@@ -52,7 +52,7 @@ jobs:
           MSG=$(git log -1 --format=%B)
           echo "$MSG"
           if [ "$EXPECT_PGP_KEY" = "true" ]; then
-            echo "$MSG" | grep -q "PGP-Key: $GPG_PUBLIC_URL"
+            echo "$MSG" | grep -q "PGP-Signing-Key: $GPG_PUBLIC_URL"
           else
             ! echo "$MSG" | grep -q "PGP-Key:"
           fi
