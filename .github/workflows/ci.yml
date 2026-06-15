@@ -16,7 +16,7 @@ env:
 
 jobs:
   test-gpg-key-commit-message:
-    name: Test GPG-Key commit message format
+    name: Test PGP-Key commit message format
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,16 +41,16 @@ jobs:
           echo "test" >> test_file.txt
           git add test_file.txt
           git commit -m "BUMP 1.0.0" \
-            ${{ env.GPG_PUBLIC_URL != '' && format('-m "GPG-Key: {0}"', env.GPG_PUBLIC_URL) || '' }} \
+            ${{ env.GPG_PUBLIC_URL != '' && format('-m "PGP-Key: {0}"', env.GPG_PUBLIC_URL) || '' }} \
             -s
       - name: Verify commit message format
         run: |
           MSG=$(git log -1 --format=%B)
           echo "$MSG"
           if [ "${{ matrix.expect_gpg_key }}" = "true" ]; then
-            echo "$MSG" | grep -q "GPG-Key: $GPG_PUBLIC_URL"
+            echo "$MSG" | grep -q "PGP-Key: $GPG_PUBLIC_URL"
           else
-            ! echo "$MSG" | grep -q "GPG-Key:"
+            ! echo "$MSG" | grep -q "PGP-Key:"
           fi
 
   test-typescript:
