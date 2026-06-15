@@ -15,6 +15,44 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
+  test-gpg-key-commit-message:
+    name: Test GPG-Key commit message format
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - gpg_public_url: "https://pgp.mongodb.com/python-driver.pub"
+            expect_gpg_key: "true"
+          - gpg_public_url: ""
+            expect_gpg_key: "false"
+    env:
+      GPG_PUBLIC_URL: ${{ matrix.gpg_public_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Configure git
+        run: |
+          git config user.email "test@example.com"
+          git config user.name "Test"
+      - name: Make a commit using the same message flags as bump-version
+        run: |
+          echo "test" >> test_file.txt
+          git add test_file.txt
+          git commit -m "BUMP 1.0.0" \
+            ${{ env.GPG_PUBLIC_URL != '' && format('-m "GPG-Key: {0}"', env.GPG_PUBLIC_URL) || '' }} \
+            -s
+      - name: Verify commit message format
+        run: |
+          MSG=$(git log -1 --format=%B)
+          echo "$MSG"
+          if [ "${{ matrix.expect_gpg_key }}" = "true" ]; then
+            echo "$MSG" | grep -q "GPG-Key: $GPG_PUBLIC_URL"
+          else
+            ! echo "$MSG" | grep -q "GPG-Key:"
+          fi
+
   test-typescript:
     name: TypeScript Tests
     runs-on: ubuntu-latest
