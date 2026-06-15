@@ -37,17 +37,19 @@ jobs:
           git config user.email "test@example.com"
           git config user.name "Test"
       - name: Make a commit using the same message flags as bump-version
+        env:
+          PGP_KEY_ARGS: "${{ env.GPG_PUBLIC_URL != '' && format('-m \"PGP-Key: {0}\"', env.GPG_PUBLIC_URL) || '' }}"
         run: |
           echo "test" >> test_file.txt
           git add test_file.txt
-          git commit -m "BUMP 1.0.0" \
-            ${{ env.GPG_PUBLIC_URL != '' && format('-m "PGP-Key: {0}"', env.GPG_PUBLIC_URL) || '' }} \
-            -s
+          git commit -m "BUMP 1.0.0" $PGP_KEY_ARGS -s
       - name: Verify commit message format
+        env:
+          EXPECT_PGP_KEY: ${{ matrix.expect_gpg_key }}
         run: |
           MSG=$(git log -1 --format=%B)
           echo "$MSG"
-          if [ "${{ matrix.expect_gpg_key }}" = "true" ]; then
+          if [ "$EXPECT_PGP_KEY" = "true" ]; then
             echo "$MSG" | grep -q "PGP-Key: $GPG_PUBLIC_URL"
           else
             ! echo "$MSG" | grep -q "PGP-Key:"
