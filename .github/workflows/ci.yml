@@ -41,7 +41,7 @@ jobs:
           echo "test" >> test_file.txt
           git add test_file.txt
           if [ -n "$GPG_PUBLIC_URL" ]; then
-            git commit -m "BUMP 1.0.0" -m "PGP-Key: $GPG_PUBLIC_URL" -s
+            git commit -m "BUMP 1.0.0" -m "PGP-Signing-Key: $GPG_PUBLIC_URL" -s
           else
             git commit -m "BUMP 1.0.0" -s
           fi
