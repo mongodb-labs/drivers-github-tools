@@ -257,9 +257,9 @@ There are several ways to specify the security report:
 ### CodeQL Analysis
 
 This action runs CodeQL analysis for a single language. It includes checkout,
-Python setup, CodeQL initialization, an optional manual build step, and the
+language setup, CodeQL initialization, an optional manual build step, and the
 analysis itself — centralising the pinned CodeQL action version so Dependabot
-only needs to update one file across all drivers.
+only needs to update one file across all repos using the action.
 
 ```yaml
 jobs:
