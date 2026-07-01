@@ -274,6 +274,7 @@ jobs:
         include:
         - language: c-cpp
           build-mode: manual
+          manual-build-command: make
         - language: python
           build-mode: none
         - language: actions
@@ -283,6 +284,7 @@ jobs:
       with:
         language: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+        manual-build-command: ${{ matrix.manual-build-command }}
         config: |
           paths-ignore:
             - 'doc/**'
@@ -297,6 +299,7 @@ ref:
       with:
         language: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
+        manual-build-command: ${{ matrix.manual-build-command }}
         ref: ${{ inputs.ref }}
 ```
 
