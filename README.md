@@ -269,6 +269,8 @@ jobs:
     timeout-minutes: 360
     permissions:
       security-events: write
+      contents: read
+      actions: read
     strategy:
       fail-fast: false
       matrix:
