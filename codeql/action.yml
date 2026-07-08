@@ -3,7 +3,7 @@ description: Run CodeQL analysis for a single language.
 
 inputs:
   language:
-    description: Language to analyze (e.g. c-cpp, python, actions, javascript).
+    description: Language to analyze (e.g. cpp, python, actions, javascript).
     required: true
   build-mode:
     description: Build mode for CodeQL (none, manual, autobuild).
@@ -26,16 +26,19 @@ runs:
   steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       with:
         ref: ${{ inputs.ref }}
         persist-credentials: false
 
-    - uses: actions/setup-python@v5
+    - if: ${{ inputs.language == 'python' }}
+      uses: actions/setup-python@v5
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
+      uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       with:
@@ -57,7 +60,7 @@ runs:
         bash -c "$MANUAL_BUILD_COMMAND"
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
+      uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       with:
