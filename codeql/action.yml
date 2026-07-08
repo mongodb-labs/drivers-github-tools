@@ -12,7 +12,7 @@ inputs:
     description: Shell command to run when build-mode is manual.
     default: ''
   ref:
-    description: Git ref to check out. Leave empty to use the default checkout behavior.
+    description: Git ref to check out. Leave empty to fall back to github.ref (the triggering ref).
     default: ''
   queries:
     description: CodeQL query suite to run.
@@ -29,7 +29,7 @@ runs:
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       with:
-        ref: ${{ inputs.ref }}
+        ref: ${{ inputs.ref || github.ref }}
         persist-credentials: false
 
     - if: ${{ inputs.language == 'python' }}
