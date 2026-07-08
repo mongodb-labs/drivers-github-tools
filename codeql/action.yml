@@ -1,0 +1,73 @@
+name: CodeQL Analysis
+description: Run CodeQL analysis for a single language.
+
+inputs:
+  language:
+    description: Language to analyze (e.g. cpp, python, actions, javascript).
+    required: true
+  build-mode:
+    description: Build mode for CodeQL (none, manual, autobuild).
+    default: none
+  manual-build-command:
+    description: Shell command to run when build-mode is manual.
+    default: ''
+  ref:
+    description: Git ref to check out. Leave empty to fall back to github.ref (the triggering ref).
+    default: ''
+  queries:
+    description: CodeQL query suite to run.
+    default: security-extended
+  config:
+    description: Inline CodeQL YAML configuration (e.g. a paths-ignore block).
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      with:
+        ref: ${{ inputs.ref || github.ref }}
+        persist-credentials: false
+
+    - if: ${{ inputs.language == 'python' }}
+      uses: actions/setup-python@v5
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      with:
+        languages: ${{ inputs.language }}
+        build-mode: ${{ inputs.build-mode }}
+        queries: ${{ inputs.queries }}
+        config: ${{ inputs.config }}
+
+    - if: ${{ inputs.build-mode == 'manual' }}
+      name: Build
+      shell: bash
+      env:
+        MANUAL_BUILD_COMMAND: ${{ inputs.manual-build-command }}
+      run: |
+        if [ -z "$MANUAL_BUILD_COMMAND" ]; then
+          echo "::error::build-mode is 'manual' but no manual-build-command was provided." >&2
+          exit 1
+        fi
+        bash -c "$MANUAL_BUILD_COMMAND"
+
+    - if: ${{ inputs.build-mode == 'autobuild' }}
+      name: Autobuild
+      uses: github/codeql-action/autobuild@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+      with:
+        category: "/language:${{ inputs.language }}"

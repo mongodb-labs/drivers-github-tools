@@ -252,6 +252,60 @@ There are several ways to specify the security report:
 - By specifying a relative path, which is then linked to the corresponding git blob for the tagged version
 - By adding the `security-report-url` to the AWS Secrets Vault
 
+## Security Actions
+
+### CodeQL Analysis
+
+This action runs CodeQL analysis for a single language. It includes checkout,
+Python setup (only when `language: python`), CodeQL initialization, an optional
+manual build step, and the analysis itself — centralising the pinned CodeQL
+action version so Dependabot only needs to update one file across all repos
+using the action.
+
+```yaml
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: cpp
+            build-mode: manual
+            manual-build-command: make
+          - language: python
+            build-mode: none
+          - language: actions
+            build-mode: none
+    steps:
+      - uses: mongodb-labs/drivers-github-tools/codeql@v3
+        with:
+          language: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          manual-build-command: ${{ matrix.manual-build-command }}
+          config: |
+            paths-ignore:
+              - 'doc/**'
+              - 'test/**'
+```
+
+Pass `ref` when the workflow is invoked via `workflow_call` with a specific git
+ref:
+
+```yaml
+      - uses: mongodb-labs/drivers-github-tools/codeql@v3
+        with:
+          language: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          manual-build-command: ${{ matrix.manual-build-command }}
+          ref: ${{ inputs.ref }}
+```
+
 ## Other Common Actions
 
 ### Full Report
