@@ -29,7 +29,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v7
       with:
         python-version: '3.11'
       env:
@@ -38,7 +38,7 @@ runs:
       shell: bash
       run: pipx install hatch
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: all-dist-${{ github.run_id }}
         path: dist/
