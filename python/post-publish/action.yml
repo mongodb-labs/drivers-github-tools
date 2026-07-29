@@ -40,7 +40,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v7
       with:
         python-version: '3.11'
       env:
@@ -49,7 +49,7 @@ runs:
       shell: bash
       run: pipx install hatch
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: all-dist-${{ github.run_id }}
         path: dist/
@@ -105,13 +105,13 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
         FOLLOWING_VERSION: ${{ inputs.following_version }}
-    - uses: actions/attest-build-provenance@v1
+    - uses: actions/attest-build-provenance@v4
       if: inputs.dry_run == 'false'
       with:
         subject-path: dist/*
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-    - uses: actions/attest-sbom@v1
+    - uses: actions/attest-sbom@v4
       if: inputs.dry_run == 'false'
       with:
         subject-path: dist/*
