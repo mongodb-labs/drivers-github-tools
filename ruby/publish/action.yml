@@ -65,8 +65,7 @@ runs:
         submodules: true
 
     - name: Setup Ruby
-      # a30dfa457ad68707b8b910ac3a244714b61c0626 => the 'v1' branch as of 2026-07-21
-      uses: ruby/setup-ruby@a30dfa457ad68707b8b910ac3a244714b61c0626
+      uses: ruby/setup-ruby@a30dfa457ad68707b8b910ac3a244714b61c0626 # v1.320.0
       with:
         ruby-version: ${{ inputs.ruby_version }}
         rubygems: ${{ inputs.rubygems_version }}
@@ -88,8 +87,7 @@ runs:
         aws_secret_id: ${{ inputs.aws_secret_id }}
 
     - name: Fetch the gem artifacts
-      # 3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c => the 'v8' tag as of 2026-03-11
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         merge-multiple: true
       env:
@@ -200,8 +198,7 @@ runs:
         fi
 
     - name: Publish the gem
-      # 052cc82692552de3ef2b81fd670e41d13cba8092 => the 'v1' branch as of 2026-06-12
-      uses: rubygems/release-gem@052cc82692552de3ef2b81fd670e41d13cba8092
+      uses: rubygems/release-gem@052cc82692552de3ef2b81fd670e41d13cba8092 # v1.4.0
       if: inputs.dry_run == 'false' && steps.gem_exists.outputs.exists == 'false'
       with:
         await-release: false

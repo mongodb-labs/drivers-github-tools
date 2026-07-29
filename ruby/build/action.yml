@@ -34,8 +34,7 @@ runs:
   using: composite
   steps:
     - name: Check out the repository
-      # 4b4ff746f2eb9442a75d01c9d535370b4dcfe280 => 'main' HEAD as of 2026-07-23; 1 commit ahead of the 'v3' tag
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@4b4ff746f2eb9442a75d01c9d535370b4dcfe280
+      uses: mongodb-labs/drivers-github-tools/secure-checkout@4b4ff746f2eb9442a75d01c9d535370b4dcfe280 # unreleased, 1 commit ahead of v3
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
@@ -43,8 +42,7 @@ runs:
         submodules: true
 
     - name: Setup Ruby
-      # a30dfa457ad68707b8b910ac3a244714b61c0626 => the 'v1' branch as of 2026-07-21
-      uses: ruby/setup-ruby@a30dfa457ad68707b8b910ac3a244714b61c0626
+      uses: ruby/setup-ruby@a30dfa457ad68707b8b910ac3a244714b61c0626 # v1.320.0
       with:
         ruby-version: ${{ inputs.ruby_version }}
         rubygems: ${{ inputs.rubygems_version }}
@@ -76,8 +74,7 @@ runs:
         bundle exec rake build GEMSPEC="${GEM_NAME}.gemspec" GEM_FILE_NAME="${GEM_FILE_NAME}"
 
     - name: Save the generated gem file for later
-      # 043fb46d1a93c77aae656e7c1c64a875d1fc6a0a => the 'v7' tag as of 2026-04-10
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: ${{ inputs.artifact }}
         path: ${{ steps.gem_name.outputs.name }}

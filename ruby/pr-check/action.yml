@@ -23,8 +23,7 @@ runs:
   steps:
     - name: "Check PR Eligibility"
       id: check_pr
-      # 3a2844b7e9c422d3c10d287c895573f7108da1b3 => the 'v9' tag as of 2026-04-09
-      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       with:
