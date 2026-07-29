@@ -40,7 +40,7 @@ runs:
         with:
           ref: ${{ inputs.ref }}
           token: ${{ env.GH_TOKEN }}
-          fetch-depth: ${ {inputs.fetch-depth }}
+          fetch-depth: ${{ inputs.fetch-depth }}
           submodules: ${{ inputs.submodules }}
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
