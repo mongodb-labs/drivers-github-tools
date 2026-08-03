@@ -1,3 +1,4 @@
+# This is a template rendered into Node.js driver repos by generate_release.mjs, so it must keep pinned owner/repo/path@vX references (not $/), since $/ resolves relative to whatever repo the rendered workflow ends up living in, not this repo.
 on:
   push:
     branches: [RELEASE_BRANCH]

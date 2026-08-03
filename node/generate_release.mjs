@@ -19,7 +19,10 @@ const isNative =
 const template = readFileSync(
   join(__dirname, "./release_template.yml"),
   "utf-8",
-);
+)
+  .split("\n")
+  .filter((line) => !line.startsWith("# This is a template rendered into"))
+  .join("\n");
 
 const EVERGREEN_PROJECTS = {
   mongodb: "mongo-node-driver-next",

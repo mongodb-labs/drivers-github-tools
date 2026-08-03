@@ -9,16 +9,30 @@ See the [How To: Set up Secure Release Process using GitHub Action](https://wiki
 
 ## Working on Actions
 
-Many of the actions in this repo depend on one another.  There is no supported way to reference
-another action using a relative path.  Therefore the recommended approach is to
-set all of the relative actions to your branch name while working on a feature,
-then reverting to the version tag before merging.
+Many of the actions in this repo depend on one another. Internal action-to-action
+references use GitHub Actions' `$/` self-repository syntax (e.g. `uses: $/setup`),
+which resolves to the repository and ref of the file containing the reference:
+this repo, at the exact commit running, for anything that executes here. No
+version pin or checkout is needed. Use `$/` for any new internal reference
+instead of a pinned `mongodb-labs/drivers-github-tools/...@v3` reference.
+
+The one exception is `node/release_template.yml`: it's a template that
+`node/generate_release.mjs` renders into Node.js driver repos as their own
+release workflow, so `$/` there would resolve to the driver repo instead of
+this one. It must keep pinned `owner/repo/path@vX` references.
 
 ## Consuming Actions
 
 It is recommended that you use Dependabot and use an explicit reference when
 using these actions.  This will allow Dependabot to update to a more recent sha
 and allow you to accept updates to the actions as needed.
+
+Because `$/` resolves relative to the pinned ref (see "Working on Actions"
+above), pinning an old sha of a top-level action also freezes the sub-actions
+it calls internally at that same point, rather than always picking up their
+latest tagged version. For example, pinning `full-report` to an old sha means
+it also calls that old sha's `sbom`, `authorized-pub`, `code-scanning-export`,
+and `compliance-report`. Bump your pin to pick up sub-action updates too.
 
 Example `dependabot.yml`:
 

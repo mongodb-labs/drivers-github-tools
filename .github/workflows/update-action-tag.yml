@@ -30,7 +30,7 @@ jobs:
           persist-credentials: true
 
       - name: Setup
-        uses: ./setup
+        uses: $/setup
         with:
           aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
           aws_region_name: ${{ vars.AWS_REGION_NAME }}
@@ -43,7 +43,7 @@ jobs:
           git push origin ":v${VERSION}" || true
 
       - name: Create a new signed tag
-        uses: ./git-sign
+        uses: $/git-sign
         with:
           command: git tag -a "v${{ env.VERSION }}" -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
 
