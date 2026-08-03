@@ -9,10 +9,13 @@ See the [How To: Set up Secure Release Process using GitHub Action](https://wiki
 
 ## Working on Actions
 
-Many of the actions in this repo depend on one another.  There is no supported way to reference
-another action using a relative path.  Therefore the recommended approach is to
-set all of the relative actions to your branch name while working on a feature,
-then reverting to the version tag before merging.
+Many of the actions in this repo depend on one another. Internal action-to-action
+references use GitHub Actions' `$/` self-repository syntax (e.g. `uses: $/setup`),
+which always resolves to this repo at the exact commit currently running — no
+version pin or checkout needed. This requires an Actions runner >= 2.336.0
+(GitHub-hosted runners satisfy this automatically). Use `$/` for any new
+internal reference instead of a pinned `mongodb-labs/drivers-github-tools/...@v3`
+reference.
 
 ## Consuming Actions
 

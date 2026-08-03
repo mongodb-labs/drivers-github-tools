@@ -28,5 +28,7 @@ pre-commit run --all-files --hook-stage manual shellcheck
 
 To bump the version tag, run the "Update Tag" [workflow](https://github.com/mongodb-labs/drivers-github-tools/actions/workflows/update-action-tag.yml).
 
-To change the major version, update `.github/workflows/version.txt` and all references to `mongodb-labs/drivers-github-tools`
-in the repo.
+To change the major version, update `.github/workflows/version.txt`. Internal
+action-to-action references use `$/` and do not need updating on a version bump.
+Only update the example `mongodb-labs/drivers-github-tools/...@vX` references in
+`README.md`, which document the tag external consumers should pin to.
