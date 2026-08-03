@@ -30,5 +30,6 @@ To bump the version tag, run the "Update Tag" [workflow](https://github.com/mong
 
 To change the major version, update `.github/workflows/version.txt`. Internal
 action-to-action references use `$/` and do not need updating on a version bump.
-Only update the example `mongodb-labs/drivers-github-tools/...@vX` references in
-`README.md`, which document the tag external consumers should pin to.
+Update the example `mongodb-labs/drivers-github-tools/...@vX` references in
+`README.md` and `node/release_template.yml`, both of which document or use the
+tag external consumers should pin to.

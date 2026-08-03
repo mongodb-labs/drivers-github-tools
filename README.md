@@ -10,18 +10,32 @@ See the [How To: Set up Secure Release Process using GitHub Action](https://wiki
 ## Working on Actions
 
 Many of the actions in this repo depend on one another. Internal action-to-action
-references use GitHub Actions' `$/` self-repository syntax (e.g. `uses: $/setup`),
-which always resolves to this repo at the exact commit currently running — no
-version pin or checkout needed. This requires an Actions runner >= 2.336.0
-(GitHub-hosted runners satisfy this automatically). Use `$/` for any new
-internal reference instead of a pinned `mongodb-labs/drivers-github-tools/...@v3`
-reference.
+references use GitHub Actions' `$/` self-repository syntax (e.g. `uses: $/setup`).
+`$/` resolves to the repository and ref of the file that contains the reference.
+For an action or workflow that runs in this repo, that means this repo at the
+exact commit currently running, so no version pin or checkout is needed. This
+requires an Actions runner >= 2.336.0 (GitHub-hosted runners satisfy this
+automatically). Use `$/` for any new internal reference instead of a pinned
+`mongodb-labs/drivers-github-tools/...@v3` reference.
+
+The one exception is `node/release_template.yml`. It is not a workflow that runs
+in this repo, it is a template that `node/generate_release.mjs` renders into
+driver repos as their own release workflow. A `$/` reference in that file would
+resolve to the driver repo it ends up living in, not to this repo, so
+`node/release_template.yml` must keep pinned `owner/repo/path@vX` references
+instead of `$/`.
 
 ## Consuming Actions
 
 It is recommended that you use Dependabot and use an explicit reference when
 using these actions.  This will allow Dependabot to update to a more recent sha
 and allow you to accept updates to the actions as needed.
+
+Note that internal sub-action references now resolve to the same ref the
+top-level action was pinned to. This means pinning an old sha of a top-level
+action also freezes its internal sub-action dependencies at that same point,
+rather than always picking up the latest tagged version of the sub-action.
+Bump your pin to pick up sub-action updates too.
 
 Example `dependabot.yml`:
 

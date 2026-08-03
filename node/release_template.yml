@@ -1,3 +1,4 @@
+# This is a template rendered into consumer repos by generate_release.mjs, so it must keep pinned owner/repo/path@vX references (not $/), since $/ resolves relative to whatever repo the rendered workflow ends up living in, not this repo.
 on:
   push:
     branches: [RELEASE_BRANCH]
@@ -41,17 +42,17 @@ jobs:
           persist-credentials: false
 
       - name: Install Node and dependencies
-        uses: $/node/setup
+        uses: mongodb-labs/drivers-github-tools/node/setup@v3
         with:
           ignore_install_scripts: IGNORE_INSTALL_SCRIPTS
 
       - name: Load version and package info
-        uses: $/node/get_version_info
+        uses: mongodb-labs/drivers-github-tools/node/get_version_info@v3
         with:
           npm_package_name: RELEASE_PACKAGE
 
       - name: actions/compress_sign_and_upload
-        uses: $/node/sign_node_package
+        uses: mongodb-labs/drivers-github-tools/node/sign_node_package@v3
         with:
           aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
           aws_region_name: us-east-1
@@ -67,14 +68,14 @@ jobs:
       # only used for mongodb-client-encryption
       - name: Augment SBOM and copy to release assets
         if: ${{ SBOM_IN_PATH != '' }}
-        uses: $/sbom
+        uses: mongodb-labs/drivers-github-tools/sbom@v3
         with:
           sbom_in_path: SBOM_IN_PATH
           kondukto_sub_project: KONDUKTO_SUB_PROJECT
           sbom_file_name: sbom.json
 
       - name: Generate authorized pub report
-        uses: $/full-report
+        uses: mongodb-labs/drivers-github-tools/full-report@v3
         with:
           release_version: ${{ env.package_version }}
           product_name: RELEASE_PACKAGE
@@ -86,7 +87,7 @@ jobs:
           evergreen_project: EVERGREEN_PROJECT
           evergreen_commit: ${{ env.commit }}
 
-      - uses: $/upload-s3-assets
+      - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
         with:
           version: ${{ env.package_version }}
           product_name: RELEASE_PACKAGE
@@ -102,7 +103,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Node and dependencies
-        uses: $/node/setup
+        uses: mongodb-labs/drivers-github-tools/node/setup@v3
 
       - run: npm publish --provenance --tag=RELEASE_TAG
         if: ${{ needs.release_please.outputs.release_created }}
