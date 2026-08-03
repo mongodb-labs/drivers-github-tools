@@ -37,6 +37,17 @@ action also freezes its internal sub-action dependencies at that same point,
 rather than always picking up the latest tagged version of the sub-action.
 Bump your pin to pick up sub-action updates too.
 
+For example, `full-report/action.yml` internally calls `sbom`, `authorized-pub`,
+`code-scanning-export`, and `compliance-report` through `$/` references. If you
+pin `full-report` to an old sha:
+
+```yaml
+uses: mongodb-labs/drivers-github-tools/full-report@<old-sha>
+```
+
+that pinned `full-report` now uses the version of `sbom` (and its other
+sub-actions) that existed at that same sha, not the latest `v3`-tagged `sbom`.
+
 Example `dependabot.yml`:
 
 ```yaml
