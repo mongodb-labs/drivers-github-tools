@@ -42,12 +42,12 @@ runs:
         mkdir ${{ inputs.artifact_directory }}
 
     - name: Load version and package info
-      uses: mongodb-labs/drivers-github-tools/node/get_version_info@v3
+      uses: $/node/get_version_info
       with:
         npm_package_name: ${{ inputs.npm_package_name }}
 
     - name: Set up drivers-github-tools
-      uses: mongodb-labs/drivers-github-tools/setup@v3
+      uses: $/setup
       with:
         aws_region_name: ${{ inputs.aws_region_name }}
         aws_role_arn: ${{ inputs.aws_role_arn }}
@@ -70,7 +70,7 @@ runs:
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
     - name: Create detached signature
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
+      uses: $/gpg-sign
       with:
         filenames: ${{ env.FILES_TO_SIGN }}
       env:
