@@ -17,9 +17,9 @@ version pin or checkout is needed. Use `$/` for any new internal reference
 instead of a pinned `mongodb-labs/drivers-github-tools/...@v3` reference.
 
 The one exception is `node/release_template.yml`: it's a template that
-`node/generate_release.mjs` renders into driver repos as their own release
-workflow, so `$/` there would resolve to the driver repo instead of this one.
-It must keep pinned `owner/repo/path@vX` references.
+`node/generate_release.mjs` renders into Node.js driver repos as their own
+release workflow, so `$/` there would resolve to the driver repo instead of
+this one. It must keep pinned `owner/repo/path@vX` references.
 
 ## Consuming Actions
 

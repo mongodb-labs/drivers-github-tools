@@ -21,7 +21,7 @@ const template = readFileSync(
   "utf-8",
 )
   .split("\n")
-  .filter((line) => !line.startsWith("# This is a template rendered into consumer repos"))
+  .filter((line) => !line.startsWith("# This is a template rendered into"))
   .join("\n");
 
 const EVERGREEN_PROJECTS = {
