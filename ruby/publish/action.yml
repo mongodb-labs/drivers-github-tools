@@ -57,7 +57,7 @@ runs:
   using: composite
   steps:
     - name: Check out the repository
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
+      uses: $/secure-checkout
       with:
         app_id: ${{ inputs.app_id }}
         private_key: ${{ inputs.app_private_key }}
@@ -80,7 +80,7 @@ runs:
       run: echo "version=$(bundle exec rake version)" >> "$GITHUB_OUTPUT"
 
     - name: Setup GitHub tooling for DBX Drivers
-      uses: mongodb-labs/drivers-github-tools/setup@v3
+      uses: $/setup
       with:
         aws_role_arn: ${{ inputs.aws_role_arn }}
         aws_region_name: ${{ inputs.aws_region_name }}
@@ -94,12 +94,12 @@ runs:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - name: Sign the gems
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
+      uses: $/gpg-sign
       with:
         filenames: '*.gem'
 
     - name: Generate SSDLC Reports
-      uses: mongodb-labs/drivers-github-tools/full-report@v3
+      uses: $/full-report
       with:
         product_name: ${{ inputs.product_name }}
         release_version: ${{ steps.release_version.outputs.version }}
@@ -122,7 +122,7 @@ runs:
         fi
 
     - name: Create the tag
-      uses: mongodb-labs/drivers-github-tools/tag-version@v3
+      uses: $/tag-version
       if: steps.tag_exists.outputs.exists == 'false'
       with:
         version: ${{ steps.release_version.outputs.version }}
@@ -176,7 +176,7 @@ runs:
       run: gh release upload --clobber v${RELEASE_VERSION} *.gem ${RELEASE_ASSETS}/*.sig
 
     - name: Upload S3 assets
-      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
+      uses: $/upload-s3-assets
       with:
         version: ${{ steps.release_version.outputs.version }}
         product_name: ${{ inputs.product_id }}
