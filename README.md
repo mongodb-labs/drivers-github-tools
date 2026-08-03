@@ -13,10 +13,8 @@ Many of the actions in this repo depend on one another. Internal action-to-actio
 references use GitHub Actions' `$/` self-repository syntax (e.g. `uses: $/setup`),
 which resolves to the repository and ref of the file containing the reference:
 this repo, at the exact commit running, for anything that executes here. No
-version pin or checkout is needed. This requires an Actions runner >= 2.336.0
-(GitHub-hosted runners satisfy this automatically). Use `$/` for any new
-internal reference instead of a pinned `mongodb-labs/drivers-github-tools/...@v3`
-reference.
+version pin or checkout is needed. Use `$/` for any new internal reference
+instead of a pinned `mongodb-labs/drivers-github-tools/...@v3` reference.
 
 The one exception is `node/release_template.yml`: it's a template that
 `node/generate_release.mjs` renders into driver repos as their own release
