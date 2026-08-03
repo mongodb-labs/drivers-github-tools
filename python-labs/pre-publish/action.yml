@@ -55,7 +55,7 @@ runs:
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         rm -rf dist
     - name: Tag version
-      uses: mongodb-labs/drivers-github-tools/tag-version@v3
+      uses: $/tag-version
       with:
         version: ${{ env.VERSION }}
         tag_template: ${{ inputs.tag_template }}
