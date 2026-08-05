@@ -504,6 +504,56 @@ post-publish:
       dry_run: ${{ inputs.dry_run }}
 ```
 
+### uv Lock Update
+
+This action runs `uv lock --upgrade` and opens a pull request with the resulting
+lock file changes. It maintains a single open pull request: a subsequent run
+updates the existing one rather than opening a second.
+
+The caller checks out the repository and puts `uv` on `PATH`. The cooldown on new
+releases comes from `exclude-newer` in the consuming repo's `pyproject.toml`, not
+from this action.
+
+```yaml
+name: Update uv.lock
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+# Runs must serialize: two at once would force push the same branch and race on
+# the pull request. Keep the group static rather than keying it on the ref.
+concurrency:
+  group: uv-lock-update
+  cancel-in-progress: false
+
+jobs:
+  update-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v8
+      - uses: mongodb-labs/drivers-github-tools/python/uv-lock-update@v3
+        with:
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+```
+
+`app_id` and `private_key` are required unless `dry_run` is true.
+
+`base` defaults to the ref the workflow ran on, which is what a checkout with no
+`ref` takes. If you check out a different ref, set `base` to match it, or the
+pull request will contain every unrelated commit between the two branches.
+
+Every label named in `labels` must already exist in the repository, because
+GitHub rejects a pull request that asks for an unknown one.
+
+Set `dry_run: true` to log the branch and pull request the action would have
+created, without pushing or opening anything.
+
 ## Python Labs Helper Scripts
 
 These scripts are opinionated helper scripts for Python releases in MongoDB Labs.
