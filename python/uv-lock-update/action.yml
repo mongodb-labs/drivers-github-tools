@@ -65,7 +65,10 @@ runs:
     - name: Create or update the pull request
       shell: bash
       env:
-        GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+        # Only a dry run may use github.token. A live run gets the app token or
+        # nothing, so a future edit cannot silently reintroduce a fallback that
+        # opens pull requests CI will never run on.
+        GH_TOKEN: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
         BRANCH: ${{ inputs.branch }}
         BASE: ${{ inputs.base || github.ref_name }}
         LABELS: ${{ inputs.labels }}

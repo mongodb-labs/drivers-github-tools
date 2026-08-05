@@ -32,10 +32,14 @@ git commit -m "Update uv.lock"
 # every run, so overwriting whatever is currently on the remote (a still-open
 # PR's branch, a stale closed-PR branch, or nothing) is always safe and always
 # correct.
-# Authenticate the push inline rather than with `git remote set-url`, so the
-# token is never written to the workspace .git/config.
+# Supply credentials through a helper that reads GH_TOKEN from the environment,
+# so the token is never written to .git/config, never embedded in the remote URL
+# where git error output could echo it, and never passed as a command argument.
+# The empty first -c clears any inherited helper before adding ours.
 if [ "$DRY_RUN" != "true" ]; then
-  git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
+  git -c credential.helper= \
+    -c 'credential.helper=!f() { test "$1" = get && echo username=x-access-token && echo "password=$GH_TOKEN"; }; f' \
+    push --force "https://github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
 fi
 
 BRANCH="$BRANCH" BASE="$BASE" TITLE="Automation: Update uv.lock" \
