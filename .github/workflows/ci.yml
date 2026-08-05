@@ -59,8 +59,8 @@ jobs:
         working-directory: ${{ matrix.working-directory }}
         run: npm run ci-test
 
-  test-shell-scripts:
-    name: Shell Script Tests
+  test-release-scripts:
+    name: Release Scripts Tests
     runs-on: ubuntu-latest
 
     steps:
