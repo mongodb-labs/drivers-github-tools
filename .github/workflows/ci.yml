@@ -58,3 +58,22 @@ jobs:
         id: npm-ci-test
         working-directory: ${{ matrix.working-directory }}
         run: npm run ci-test
+
+  test-python:
+    name: Python Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+
+      - name: Run uv lock update tests
+        run: |
+          bash python/uv-lock-update/test_diff_lock.sh
+          bash python/uv-lock-update/test_decide_pr_action.sh
+          bash python/uv-lock-update/test_update_lock.sh
