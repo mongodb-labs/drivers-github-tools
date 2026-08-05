@@ -1,0 +1,75 @@
+name: uv Lock Update
+description: Runs `uv lock --upgrade` and opens or refreshes a single pull request with the lock file changes
+inputs:
+  app_id:
+    description: GitHub App ID for authenticated pushes. Required unless dry_run is true.
+    default: ""
+  private_key:
+    description: GitHub App private key for authenticated pushes. Required unless dry_run is true.
+    default: ""
+  branch:
+    description: Branch name for the update pull request
+    default: uv-lock-update
+  base:
+    description: >-
+      Base branch for the update pull request. Defaults to the ref the workflow
+      ran on, which is what actions/checkout checks out when given no ref.
+    default: ""
+  labels:
+    description: Labels to apply to the pull request
+    default: dependencies
+  dry_run:
+    description: If 'true', report intended actions without pushing or modifying pull requests
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    # A dry run only reads, so it needs no app token and stays usable before an
+    # App is configured. Real runs push and open pull requests, so they require
+    # one and the next step fails fast when it is missing.
+    - name: Generate app token
+      id: app-token
+      if: inputs.dry_run != 'true' && inputs.app_id != '' && inputs.private_key != ''
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      with:
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.private_key }}
+        permission-contents: write
+        permission-pull-requests: write
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+    - name: Require an app token outside dry runs
+      if: inputs.dry_run != 'true' && (inputs.app_id == '' || inputs.private_key == '')
+      shell: bash
+      run: |
+        echo "::error::app_id and private_key are both required unless dry_run is true. Falling back to github.token is not supported here: pull requests opened with it do not trigger workflow runs, so the pull request would arrive with no CI and look ready to merge."
+        exit 1
+
+    - name: Save current lock file
+      shell: bash
+      env:
+        OLD_LOCK: ${{ runner.temp }}/uv.lock.before
+      run: |
+        if [ ! -f uv.lock ]; then
+          echo "::error::No uv.lock found in ${PWD}. Run 'uv lock' and commit the result before using this action."
+          exit 1
+        fi
+        cp uv.lock "$OLD_LOCK"
+
+    - name: Upgrade the lock file
+      shell: bash
+      run: uv lock --upgrade
+
+    - name: Create or update the pull request
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
+        BRANCH: ${{ inputs.branch }}
+        BASE: ${{ inputs.base || github.ref_name }}
+        LABELS: ${{ inputs.labels }}
+        DRY_RUN: ${{ inputs.dry_run }}
+        OLD_LOCK: ${{ runner.temp }}/uv.lock.before
+        ACTION_PATH: ${{ github.action_path }}
+      run: ${{ github.action_path }}/update_lock.sh
