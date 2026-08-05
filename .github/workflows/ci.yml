@@ -58,3 +58,19 @@ jobs:
         id: npm-ci-test
         working-directory: ${{ matrix.working-directory }}
         run: npm run ci-test
+
+  test-shell-scripts:
+    name: Shell Script Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run next-version.sh tests
+        run: bash .github/scripts/next-version.test.sh
+
+      - name: Run bump-major-version.sh tests
+        run: bash .github/scripts/bump-major-version.test.sh
