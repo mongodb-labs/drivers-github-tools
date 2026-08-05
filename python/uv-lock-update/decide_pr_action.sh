@@ -12,7 +12,10 @@ set -euo pipefail
 # a different base, this query must still find it by head branch alone, or
 # the next run falls through to `gh pr create` and GitHub allows a second
 # open PR from the same force-pushed branch. New PRs still target $BASE below.
-PR_NUMBER=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+# --head matches on branch name only, and gh has no --owner filter, so a fork
+# with a branch of the same name could otherwise match and we would edit someone
+# else's pull request. isCrossRepository excludes anything not from this repo.
+PR_NUMBER=$(gh pr list --head "$BRANCH" --state open --json number,isCrossRepository --jq 'map(select(.isCrossRepository == false)) | .[0].number // empty')
 
 if [ "$DRY_RUN" = "true" ]; then
   # `gh pr create --dry-run` documents that it "may still push git changes",

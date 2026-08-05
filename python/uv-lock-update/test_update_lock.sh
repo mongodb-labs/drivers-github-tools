@@ -104,6 +104,26 @@ check "dry run leaves the branch alone" \
 
 # Each documented variable is genuinely required: unset it and the script fails
 # rather than proceeding with an empty value.
+# Change detection compares against the pre-upgrade copy, not against HEAD. A
+# workspace that was already dirty must still count as "no change" when the
+# upgrade produced nothing, or the pull request body would report no version
+# changes while claiming there were some.
+printf 'new\n' > "$TMPDIR/uv.lock.unchanged"
+set +e
+(
+  cd "$REPO" || exit 1
+  export BRANCH=uv-lock-update BASE=main LABELS=dependencies DRY_RUN=true
+  export OLD_LOCK="$TMPDIR/uv.lock.unchanged" ACTION_PATH="$STUB"
+  bash "$SCRIPT"
+) > "$TMPDIR/nochange.log" 2>&1
+STATUS=$?
+set -e
+
+check "dirty workspace with an unchanged lock exits cleanly" "0" "$STATUS"
+check "dirty workspace with an unchanged lock reports no changes" \
+  "No changes detected, skipping PR creation" \
+  "$(cat "$TMPDIR/nochange.log")"
+
 for VAR in BRANCH BASE LABELS DRY_RUN OLD_LOCK ACTION_PATH; do
   set +e
   run_update "$VAR"

@@ -39,7 +39,14 @@ cat > "$FAKE_GH" <<FAKE_GH_EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$TMPDIR/gh_calls.log"
 if [ "\$1" = "pr" ] && [ "\$2" = "list" ]; then
-  jq -r '.[0].number // empty' "$TMPDIR/pr_list_response.json"
+  # Apply the caller's own --jq against the canned response, so the real filter
+  # is exercised rather than a copy of it that could drift.
+  JQ_EXPR='.[0].number // empty'
+  while [ \$# -gt 0 ]; do
+    if [ "\$1" = "--jq" ]; then JQ_EXPR="\$2"; fi
+    shift
+  done
+  jq -r "\$JQ_EXPR" "$TMPDIR/pr_list_response.json"
 fi
 FAKE_GH_EOF
 chmod +x "$FAKE_GH"
@@ -67,16 +74,25 @@ mutating_calls() { grep -E '^pr (create|edit)' "$TMPDIR/gh_calls.log" || true; }
 # a PR a reviewer retargeted is missed and a second PR opens on the branch.
 run_script '[]' "false"
 check "no open PR: list finds the branch by head and state alone" \
-  "pr list --head uv-lock-update --state open --json number --jq .[0].number // empty" \
+  "pr list --head uv-lock-update --state open --json number,isCrossRepository --jq map(select(.isCrossRepository == false)) | .[0].number // empty" \
   "$(gh_call list)"
 check "no open PR: a PR is created against the configured base" \
   "pr create --title Automation: Update uv.lock --body ## Updated packages --base v4.16 --label dependencies --head uv-lock-update" \
   "$(gh_call create)"
 check "no open PR: nothing is edited" "" "$(gh_call edit)"
 
+# A fork can open a pull request whose head branch has the same name, and gh
+# cannot filter that out for us. Editing it would rewrite a stranger's pull
+# request, so it must be ignored and a fresh one created instead.
+run_script '[{"number": 99, "isCrossRepository": true}]' "false"
+check "fork PR on the same branch name is ignored" "" "$(gh_call edit)"
+check "fork PR on the same branch name: ours is created instead" \
+  "pr create --title Automation: Update uv.lock --body ## Updated packages --base v4.16 --label dependencies --head uv-lock-update" \
+  "$(gh_call create)"
+
 # Open PR found by head branch even though its base differs from BASE: it is
 # refreshed in place rather than duplicated.
-run_script '[{"number": 42}]' "false"
+run_script '[{"number": 42, "isCrossRepository": false}]' "false"
 check "open PR: it is edited in place with the new body and label" \
   "pr edit 42 --body ## Updated packages --add-label dependencies" \
   "$(gh_call edit)"
@@ -84,7 +100,7 @@ check "open PR: no second PR is created" "" "$(gh_call create)"
 
 # `gh pr create --dry-run` documents that it "may still push git changes", so a
 # dry run must report the decision without reaching any mutating gh command.
-run_script '[{"number": 42}]' "true"
+run_script '[{"number": 42, "isCrossRepository": false}]' "true"
 check "open PR + dry run: no mutating gh call" "" "$(mutating_calls)"
 check_contains "open PR + dry run: output names the PR it would update" \
   "Would update PR #42" "$(cat "$TMPDIR/output.log")"

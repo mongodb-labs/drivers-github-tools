@@ -6,7 +6,11 @@
 # ACTION_PATH, and GITHUB_REPOSITORY from the Actions runtime.
 set -euo pipefail
 
-if git diff --quiet uv.lock; then
+# Compare against the copy taken before the upgrade, which is the same baseline
+# diff_lock.py summarizes from. `git diff` would compare against HEAD instead, so
+# a workspace that was already dirty would disagree with the summary and could
+# open a pull request whose body reports no version changes.
+if cmp -s "$OLD_LOCK" uv.lock; then
   echo "No changes detected, skipping PR creation"
   exit 0
 fi
