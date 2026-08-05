@@ -54,7 +54,12 @@ jobs:
 
       - name: Determine next version
         shell: bash
-        run: bash .github/scripts/next-version.sh "${{ inputs.bump }}" >> "$GITHUB_ENV"
+        run: |
+          bash .github/scripts/next-version.sh "${{ inputs.bump }}" > /tmp/next-version.out 2> /tmp/next-version.err
+          cat /tmp/next-version.out >> "$GITHUB_ENV"
+          if [ -s /tmp/next-version.err ]; then
+            cat /tmp/next-version.err >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Bump the major version file
         if: inputs.bump == 'major'
@@ -77,29 +82,23 @@ jobs:
         run: |
           echo "[dry-run] Would move floating tag v3 to $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Remove the existing v3 tag
-        if: env.IS_V3 == 'true' && inputs.dry_run == false
-        shell: bash -eux {0}
-        run: |
-          git push origin ":v3" || true
-
       - name: Create a new signed v3 tag
         if: env.IS_V3 == 'true' && inputs.dry_run == false
         uses: $/git-sign
         with:
-          command: git tag -a "v3" -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
+          command: git tag -a "v3" -f -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
 
       - name: Push the v3 tag
         if: env.IS_V3 == 'true' && inputs.dry_run == false
         shell: bash -eux {0}
         run: |
-          git push origin --tags
+          git push --force origin refs/tags/v3:refs/tags/v3
 
       - name: Warn about floating tag retirement
         if: env.IS_V3 != 'true'
         shell: bash
         run: |
-          MESSAGE="Release v${NEXT_VERSION} does not use floating tags. Remove the floating-tag-update steps (Remove/Create/Push v3 tag, and this warning) from .github/workflows/release.yml."
+          MESSAGE="Release v${NEXT_VERSION} does not use floating tags. Remove the floating-tag-update steps (Create/Push v3 tag, and this warning) from .github/workflows/release.yml."
           echo "::warning::$MESSAGE"
           echo "$MESSAGE" >> "$GITHUB_STEP_SUMMARY"
 
