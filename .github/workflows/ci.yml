@@ -76,3 +76,4 @@ jobs:
         run: |
           bash python/uv-lock-update/test_diff_lock.sh
           bash python/uv-lock-update/test_decide_pr_action.sh
+          bash python/uv-lock-update/test_update_lock.sh
