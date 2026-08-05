@@ -35,3 +35,9 @@ action-to-action references use `$/` and do not need updating on a version bump.
 Update the example `mongodb-labs/drivers-github-tools/...@vX` references in
 `README.md` and `node/release_template.yml`, both of which document or use the
 tag external consumers should pin to — this remains a manual step after a major bump.
+
+Before the first `vX.Y.Z` tag exists, the workflow bootstraps from the current floating
+major tag (e.g. `v3` becomes `v3.0.0`) and ignores the requested `bump` input for that one
+run — don't be surprised if a first-time `major`/`minor` bump doesn't change the version the
+way you'd expect. Every release after that first one bumps normally from the latest `vX.Y.Z`
+tag.

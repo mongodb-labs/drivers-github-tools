@@ -55,11 +55,18 @@ jobs:
       - name: Determine next version
         shell: bash
         run: |
+          set +e
           bash .github/scripts/next-version.sh "${{ inputs.bump }}" > /tmp/next-version.out 2> /tmp/next-version.err
-          cat /tmp/next-version.out >> "$GITHUB_ENV"
+          STATUS=$?
+          set -e
           if [ -s /tmp/next-version.err ]; then
+            cat /tmp/next-version.err
             cat /tmp/next-version.err >> "$GITHUB_STEP_SUMMARY"
           fi
+          if [ "$STATUS" -ne 0 ]; then
+            exit "$STATUS"
+          fi
+          cat /tmp/next-version.out >> "$GITHUB_ENV"
 
       - name: Bump the major version file
         if: inputs.bump == 'major'
