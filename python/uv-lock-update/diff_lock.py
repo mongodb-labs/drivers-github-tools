@@ -4,8 +4,24 @@ Requires Python 3.11 or newer for `tomllib`. The action pins this with
 `uv run --python '>=3.11'`.
 """
 
+import re
 import sys
 import tomllib
+
+
+def version_sort_key(version: str) -> tuple[tuple[int, int | str], ...]:
+    """Sort key ordering numeric version segments numerically.
+
+    Plain string sorting puts ``10.0.0`` before ``9.0.0``. Segments that are all
+    digits compare as integers; anything else compares as a string, and numeric
+    segments sort before non-numeric ones at the same position so ``1.0``
+    precedes ``1.0post1``. Pre-release ordering is not modelled, since this only
+    determines the order versions are listed in a summary.
+    """
+    return tuple(
+        (0, int(part)) if part.isdigit() else (1, part)
+        for part in re.split(r"[._-]", version)
+    )
 
 
 def load_versions(path: str) -> dict[str, list[str]]:
@@ -26,7 +42,10 @@ def load_versions(path: str) -> dict[str, list[str]]:
         if "version" not in pkg:
             continue
         versions.setdefault(pkg["name"], set()).add(pkg["version"])
-    return {name: sorted(found) for name, found in versions.items()}
+    return {
+        name: sorted(found, key=version_sort_key)
+        for name, found in versions.items()
+    }
 
 
 def format_versions(versions: list[str]) -> str:

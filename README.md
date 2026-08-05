@@ -509,14 +509,31 @@ releases comes from `exclude-newer` in the consuming repo's `pyproject.toml`, no
 from this action.
 
 ```yaml
-- uses: actions/checkout@v7
-  with:
-    persist-credentials: false
-- uses: astral-sh/setup-uv@v8
-- uses: mongodb-labs/drivers-github-tools/python/uv-lock-update@v3
-  with:
-    app_id: ${{ vars.APP_ID }}
-    private_key: ${{ secrets.APP_PRIVATE_KEY }}
+name: Update uv.lock
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+# Runs must serialize: two at once would force push the same branch and race on
+# the pull request. Keep the group static rather than keying it on the ref.
+concurrency:
+  group: uv-lock-update
+  cancel-in-progress: false
+
+jobs:
+  update-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v8
+      - uses: mongodb-labs/drivers-github-tools/python/uv-lock-update@v3
+        with:
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
 ```
 
 `app_id` and `private_key` are required unless `dry_run` is true.

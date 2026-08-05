@@ -166,4 +166,30 @@ check "identical inputs produce empty output" \
   "" \
   "$(run_diff "$TMPDIR/new.lock" "$TMPDIR/new.lock")"
 
+# Forked versions are listed in version order, not string order. Sorting these
+# as strings puts 10.0.0 before 9.0.0.
+cat > "$TMPDIR/sort_old.lock" <<'EOF'
+[[package]]
+name = "widget"
+version = "9.0.0"
+EOF
+
+cat > "$TMPDIR/sort_new.lock" <<'EOF'
+[[package]]
+name = "widget"
+version = "9.0.0"
+
+[[package]]
+name = "widget"
+version = "10.0.0"
+
+[[package]]
+name = "widget"
+version = "9.10.0"
+EOF
+
+check "forked versions sort numerically, not lexically" \
+  "- widget: \`9.0.0\` → \`9.0.0\`, \`9.10.0\`, \`10.0.0\`" \
+  "$(run_diff "$TMPDIR/sort_old.lock" "$TMPDIR/sort_new.lock")"
+
 exit $FAIL

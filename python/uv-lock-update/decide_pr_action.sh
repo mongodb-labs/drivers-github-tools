@@ -4,7 +4,8 @@
 # merged or manually closed PR is not "open", so this falls through to creating
 # a fresh one, with no extra state to track.
 #
-# Required environment: BRANCH, BASE, TITLE, BODY, LABELS, DRY_RUN
+# Required environment: BRANCH, BASE, TITLE, BODY, LABELS, DRY_RUN, and
+# GH_TOKEN plus GH_REPO for gh itself.
 set -euo pipefail
 
 # Deliberately no --base filter here: if a reviewer retargets the open PR to
