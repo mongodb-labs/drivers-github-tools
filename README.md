@@ -424,7 +424,45 @@ jobs:
 
 ## Python Helper Scripts
 
-These scripts are opinionated helper scripts for Python releases.
+These are opinionated helper actions for Python CI and releases.
+
+### Setup
+
+This action installs Python, uv, and just, and runs the project's `just install`
+recipe. It replaces the block of setup steps that Python driver repos otherwise
+repeat in every CI job.
+
+```yaml
+- uses: mongodb-labs/drivers-github-tools/python/setup@v3
+  with:
+    python-version: "3.10"
+```
+
+Python comes from `actions/setup-python`, because the runner images already ship
+several versions and installing from them is faster than having uv download a
+managed interpreter. uv is then pointed at that exact interpreter through
+`UV_PYTHON`, so it does not pick a different one based on the project's
+`pyproject.toml` or `.python-version`.
+
+Set `run-install: "false"` for a job that does not need project dependencies:
+
+```yaml
+- uses: mongodb-labs/drivers-github-tools/python/setup@v3
+  with:
+    python-version: ${{ matrix.python-version }}
+    run-install: "false"
+```
+
+Leaving `run-install` at its default is also safe for a project with no justfile,
+or one whose justfile has no `install` recipe: the step reports the skip and
+succeeds. A recipe that exists and fails does fail the job.
+
+`exclude-newer` sets `UV_EXCLUDE_NEWER`, which holds back packages published
+after the given point and defaults to `7 days`. It takes a date (`2026-01-01`),
+an RFC 3339 timestamp, or a duration (`7 days`, `P7D`). Set it to an empty string
+to leave the variable unset.
+
+`enable-cache` defaults to `true` and is passed through to `astral-sh/setup-uv`.
 
 ### Pre-Publish
 
