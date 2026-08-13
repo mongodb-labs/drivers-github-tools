@@ -464,6 +464,10 @@ to leave the variable unset.
 
 `enable-cache` defaults to `true` and is passed through to `astral-sh/setup-uv`.
 
+Set `allow-prereleases: "true"` to test against a Python version that has no stable
+release yet, such as a version still in beta. Without it, `setup-python` fails
+rather than falling back to a prerelease.
+
 ### Pre-Publish
 
 Bump the version and create a new tag.  Verify the tag.

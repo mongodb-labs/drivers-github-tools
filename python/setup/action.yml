@@ -4,6 +4,11 @@ inputs:
   python-version:
     description: Python version for setup-python to install, and the interpreter uv will use
     default: "3.10"
+  allow-prereleases:
+    description: >-
+      Let setup-python fall back to a prerelease when python-version has no
+      stable release yet. Needed to test against a Python still in beta.
+    default: "false"
   enable-cache:
     description: Cache the uv download cache between runs
     default: "true"
@@ -31,6 +36,7 @@ runs:
       uses: actions/setup-python@v7
       with:
         python-version: ${{ inputs.python-version }}
+        allow-prereleases: ${{ inputs.allow-prereleases }}
 
     - name: Configure uv
       shell: bash
