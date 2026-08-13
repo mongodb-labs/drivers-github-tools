@@ -16,8 +16,9 @@ inputs:
     description: >-
       UV_EXCLUDE_NEWER value, which holds back packages published after it: a
       date (2026-01-01), an RFC 3339 timestamp, or a duration ('7 days', 'P7D').
-      Set to an empty string to leave it unset.
-    default: "7 days"
+      Empty by default, which leaves resolution to the consuming repo's own
+      configuration — a committed uv.lock, or exclude-newer in its pyproject.toml.
+    default: ""
   run-install:
     description: >-
       Run the project's `just install` recipe. Set to 'false' for jobs that do

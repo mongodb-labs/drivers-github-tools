@@ -457,10 +457,12 @@ Leaving `run-install` at its default is also safe for a project with no justfile
 or one whose justfile has no `install` recipe: the step reports the skip and
 succeeds. A recipe that exists and fails does fail the job.
 
-`exclude-newer` sets `UV_EXCLUDE_NEWER`, which holds back packages published
-after the given point and defaults to `7 days`. It takes a date (`2026-01-01`),
-an RFC 3339 timestamp, or a duration (`7 days`, `P7D`). Set it to an empty string
-to leave the variable unset.
+`exclude-newer` sets `UV_EXCLUDE_NEWER`, which holds back packages published after
+the given point. It takes a date (`2026-01-01`), an RFC 3339 timestamp, or a
+duration (`7 days`, `P7D`). It is empty by default, because a repo that commits
+`uv.lock` already pins resolution and an environment variable set here would
+override whatever the repo configured for itself. Set it only for a repo that
+wants a cooldown and has no lock file.
 
 `enable-cache` defaults to `true` and is passed through to `astral-sh/setup-uv`.
 
