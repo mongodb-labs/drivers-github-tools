@@ -14,13 +14,6 @@ inputs:
   enable-cache:
     description: Cache the uv download cache between runs
     default: "true"
-  exclude-newer:
-    description: >-
-      UV_EXCLUDE_NEWER value, which holds back packages published after it: a
-      date (2026-01-01), an RFC 3339 timestamp, or a duration ('7 days', 'P7D').
-      Empty by default, which leaves resolution to the consuming repo's own
-      configuration — a committed uv.lock, or exclude-newer in its pyproject.toml.
-    default: ""
   run-install:
     description: >-
       Run the project's `just install` recipe. Set to 'false' for jobs that do
@@ -41,26 +34,21 @@ runs:
         python-version: ${{ inputs.python-version }}
         allow-prereleases: ${{ inputs.allow-prereleases }}
 
-    - name: Configure uv
+    - name: Point uv at that interpreter
       shell: bash
       env:
-        # Inputs go through env rather than into the script body, so a value
-        # containing shell metacharacters cannot alter the commands below.
+        # The path goes through env rather than into the script body, so a value
+        # containing shell metacharacters cannot alter the command below.
         PYTHON_PATH: ${{ steps.setup-python.outputs.python-path }}
-        EXCLUDE_NEWER: ${{ inputs.exclude-newer }}
       # Exporting to the caller's later steps is the point of this step, and
       # GITHUB_ENV is the only way a composite action can do it, so the
-      # github-env audit has nothing actionable to say here. The values come
-      # from setup-python and this action's own inputs, not from a caller's
-      # untrusted content.
+      # github-env audit has nothing actionable to say here. The value comes from
+      # setup-python, not from a caller's untrusted content.
       run: | # zizmor: ignore[github-env]
         # An absolute interpreter path makes the choice exact: uv uses this
         # interpreter and never falls back to downloading one, whatever the
         # consuming project's pyproject.toml or .python-version asks for.
         echo "UV_PYTHON=$PYTHON_PATH" >> "$GITHUB_ENV"
-        if [ -n "$EXCLUDE_NEWER" ]; then
-          echo "UV_EXCLUDE_NEWER=$EXCLUDE_NEWER" >> "$GITHUB_ENV"
-        fi
 
     - name: Install uv
       uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
