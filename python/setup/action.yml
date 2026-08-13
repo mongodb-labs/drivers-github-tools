@@ -46,7 +46,12 @@ runs:
         # containing shell metacharacters cannot alter the commands below.
         PYTHON_PATH: ${{ steps.setup-python.outputs.python-path }}
         EXCLUDE_NEWER: ${{ inputs.exclude-newer }}
-      run: |
+      # Exporting to the caller's later steps is the point of this step, and
+      # GITHUB_ENV is the only way a composite action can do it, so the
+      # github-env audit has nothing actionable to say here. The values come
+      # from setup-python and this action's own inputs, not from a caller's
+      # untrusted content.
+      run: | # zizmor: ignore[github-env]
         # An absolute interpreter path makes the choice exact: uv uses this
         # interpreter and never falls back to downloading one, whatever the
         # consuming project's pyproject.toml or .python-version asks for.
