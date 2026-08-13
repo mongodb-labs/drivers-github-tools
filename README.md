@@ -466,9 +466,11 @@ wants a cooldown and has no lock file.
 
 `enable-cache` defaults to `true` and is passed through to `astral-sh/setup-uv`.
 
-Set `allow-prereleases: "true"` to test against a Python version that has no stable
-release yet, such as a version still in beta. Without it, `setup-python` fails
-rather than falling back to a prerelease.
+`allow-prereleases` defaults to `true`, so asking for a Python version with no
+stable release yet gets the prerelease instead of failing. uv resolves such a
+version on its own, so leaving this on keeps that behaviour for a repo moving to
+this action. Set it to `"false"` for a job that should fail rather than quietly
+test against a beta.
 
 ### Pre-Publish
 

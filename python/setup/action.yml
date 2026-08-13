@@ -7,8 +7,10 @@ inputs:
   allow-prereleases:
     description: >-
       Let setup-python fall back to a prerelease when python-version has no
-      stable release yet. Needed to test against a Python still in beta.
-    default: "false"
+      stable release yet, so asking for a Python still in beta gets that beta
+      instead of failing. On by default, because uv resolves such a version on
+      its own and a consumer moving to this action should not lose that.
+    default: "true"
   enable-cache:
     description: Cache the uv download cache between runs
     default: "true"
