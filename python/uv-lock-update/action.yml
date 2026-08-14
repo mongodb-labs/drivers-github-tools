@@ -21,6 +21,13 @@ inputs:
   dry_run:
     description: If 'true', report intended actions without pushing or modifying pull requests
     default: "false"
+  exclude_newer:
+    description: >-
+      Cutoff passed to uv as UV_EXCLUDE_NEWER, so the upgrade ignores releases
+      published after it. Accepts anything uv's --exclude-newer does: a date, an
+      RFC 3339 timestamp, a duration such as '30 days', or 'false' to disable the
+      cutoff. Pass "" to leave the cutoff to the project's own uv configuration.
+    default: 7 days
 
 runs:
   using: composite
@@ -60,7 +67,20 @@ runs:
 
     - name: Upgrade the lock file
       shell: bash
-      run: uv lock --upgrade
+      env:
+        EXCLUDE_NEWER: ${{ inputs.exclude_newer }}
+      run: |
+        # UV_EXCLUDE_NEWER outranks the project's uv configuration, and uv
+        # rejects it when empty, so an empty input clears the variable rather
+        # than passing the empty value through. Clearing it also drops any
+        # UV_EXCLUDE_NEWER the caller's workflow exported, so the input alone
+        # decides the cutoff.
+        if [ -n "$EXCLUDE_NEWER" ]; then
+          export UV_EXCLUDE_NEWER="$EXCLUDE_NEWER"
+        else
+          unset UV_EXCLUDE_NEWER
+        fi
+        uv lock --upgrade
 
     - name: Create or update the pull request
       shell: bash
