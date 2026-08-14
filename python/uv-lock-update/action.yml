@@ -26,8 +26,7 @@ inputs:
       Cutoff passed to uv as UV_EXCLUDE_NEWER, so the upgrade ignores releases
       published after it. Accepts anything uv's --exclude-newer does: a date, an
       RFC 3339 timestamp, a duration such as '30 days', or 'false' to disable the
-      cutoff. Set it to an empty string to leave the cutoff to the project's own
-      uv configuration.
+      cutoff. Pass "" to leave the cutoff to the project's own uv configuration.
     default: 7 days
 
 runs:

@@ -552,7 +552,7 @@ Change the cutoff with `exclude_newer`, which takes anything uv's
 `--exclude-newer` accepts: a date, an RFC 3339 timestamp, a duration such as
 `30 days`, or `false` to upgrade to the newest releases with no cutoff at all.
 It reaches uv as `UV_EXCLUDE_NEWER`, so it overrides an `exclude-newer` the
-repository sets in `pyproject.toml` or `uv.toml`. Set it to an empty string to
+repository sets in `pyproject.toml` or `uv.toml`. Pass `exclude_newer: ""` to
 leave that setting in charge instead.
 
 ```yaml
