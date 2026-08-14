@@ -69,14 +69,10 @@ jobs:
         with:
           persist-credentials: false
 
-      # The tests below need uv and just, and the python/setup action installs
-      # both. Using it here also exercises it end to end on every run, including
-      # its skip path: this repo has no justfile, so `just install` is skipped.
+      # The tests below need uv, which the python/setup action installs. Using it
+      # here also exercises the action itself on every run.
       - name: Install Python tooling
         uses: $/python/setup
-
-      - name: Run setup tests
-        run: bash python/setup/test_run_install.sh
 
       - name: Run uv lock update tests
         run: |

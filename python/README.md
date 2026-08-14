@@ -5,9 +5,8 @@ Opinionated helper actions for Python CI and releases. See the
 
 ## Setup
 
-This action installs Python, uv, and just, and runs the project's `just install`
-recipe. It replaces the block of setup steps that Python driver repos otherwise
-repeat in every CI job.
+This action puts Python, uv, and just on `PATH`. It replaces the block of setup
+steps that Python driver repos otherwise repeat in every CI job.
 
 ```yaml
 - uses: mongodb-labs/drivers-github-tools/python/setup@v3
@@ -21,18 +20,18 @@ managed interpreter. uv is then pointed at that exact interpreter through
 `UV_PYTHON`, so it does not pick a different one based on the project's
 `pyproject.toml` or `.python-version`.
 
-Set `run-install: "false"` for a job that does not need project dependencies:
+Add `run-install: "true"` for a job that also needs the project's dependencies:
 
 ```yaml
 - uses: mongodb-labs/drivers-github-tools/python/setup@v3
   with:
-    python-version: ${{ matrix.python-version }}
-    run-install: "false"
+    python-version: "3.10"
+    run-install: "true"
 ```
 
-Leaving `run-install` at its default is also safe for a project with no justfile,
-or one whose justfile has no `install` recipe: the step reports the skip and
-succeeds. A recipe that exists and fails does fail the job.
+That runs the project's `just install` recipe, and requires one to exist. It is
+off by default because installing dependencies changes the job's environment, and
+plenty of jobs only need the tools.
 
 The action sets no resolution policy of its own. A repo that wants to hold back
 newly published packages configures `exclude-newer` in its own `pyproject.toml` or

@@ -16,10 +16,11 @@ inputs:
     default: "true"
   run-install:
     description: >-
-      Run the project's `just install` recipe. Set to 'false' for jobs that do
-      not need project dependencies. When 'true' but the project has no justfile
-      or no `install` recipe, the step is skipped rather than failing.
-    default: "true"
+      Run the project's `just install` recipe. Off by default, because putting
+      the tools on PATH is what this action is for and installing dependencies
+      changes the job's environment. A job that needs them asks for them. The
+      project must define an `install` recipe, or the step fails.
+    default: "false"
 
 runs:
   using: composite
@@ -62,4 +63,4 @@ runs:
     - name: Run just install
       if: inputs.run-install == 'true'
       shell: bash
-      run: ${{ github.action_path }}/run_install.sh
+      run: just install
