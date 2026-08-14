@@ -71,10 +71,14 @@ runs:
         EXCLUDE_NEWER: ${{ inputs.exclude_newer }}
       run: |
         # UV_EXCLUDE_NEWER outranks the project's uv configuration, and uv
-        # rejects it when empty, so an empty input has to leave it unset rather
-        # than be passed through.
+        # rejects it when empty, so an empty input clears the variable rather
+        # than passing the empty value through. Clearing it also drops any
+        # UV_EXCLUDE_NEWER the caller's workflow exported, so the input alone
+        # decides the cutoff.
         if [ -n "$EXCLUDE_NEWER" ]; then
           export UV_EXCLUDE_NEWER="$EXCLUDE_NEWER"
+        else
+          unset UV_EXCLUDE_NEWER
         fi
         uv lock --upgrade
 
