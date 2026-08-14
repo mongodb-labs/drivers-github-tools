@@ -504,9 +504,7 @@ This action runs `uv lock --upgrade` and opens a pull request with the resulting
 lock file changes. It maintains a single open pull request: a subsequent run
 updates the existing one rather than opening a second.
 
-The caller checks out the repository and puts `uv` on `PATH`. The cooldown on new
-releases comes from `exclude-newer` in the consuming repo's `pyproject.toml`, not
-from this action.
+The caller checks out the repository and puts `uv` on `PATH`.
 
 ```yaml
 name: Update uv.lock
@@ -547,6 +545,23 @@ GitHub rejects a pull request that asks for an unknown one.
 
 Set `dry_run: true` to log the branch and pull request the action would have
 created, without pushing or opening anything.
+
+The upgrade skips releases published within the last 7 days, so a broken or
+compromised release has time to be yanked before it can land in the lock file.
+Change the cutoff with `exclude_newer`, which takes anything uv's
+`--exclude-newer` accepts: a date, an RFC 3339 timestamp, a duration such as
+`30 days`, or `false` to upgrade to the newest releases with no cutoff at all.
+It reaches uv as `UV_EXCLUDE_NEWER`, so it overrides an `exclude-newer` the
+repository sets in `pyproject.toml` or `uv.toml`. Set it to an empty string to
+leave that setting in charge instead.
+
+```yaml
+      - uses: mongodb-labs/drivers-github-tools/python/uv-lock-update@v3
+        with:
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          exclude_newer: 14 days
+```
 
 ## Python Labs Helper Scripts
 
