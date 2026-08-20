@@ -29,6 +29,7 @@ runs:
           app-id: ${{ inputs.app_id }}
           private-key: ${{ inputs.private_key }}
           permission-contents: write
+          permission-pull-requests: write
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
