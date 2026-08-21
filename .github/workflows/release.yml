@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version part to bump
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      dry_run:
+        description: Whether this is a dry run
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    environment: release
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+          # Needed to push the tag and version bump commit in later steps.
+          persist-credentials: true
+
+      - name: Setup
+        uses: $/setup
+        with:
+          aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws_region_name: ${{ vars.AWS_REGION_NAME }}
+          aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
+
+      - name: Determine next version
+        shell: bash
+        run: |
+          set +e
+          bash .github/scripts/next-version.sh "${{ inputs.bump }}" > /tmp/next-version.out 2> /tmp/next-version.err
+          STATUS=$?
+          set -e
+          if [ -s /tmp/next-version.err ]; then
+            cat /tmp/next-version.err
+            cat /tmp/next-version.err >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ "$STATUS" -ne 0 ]; then
+            exit "$STATUS"
+          fi
+          cat /tmp/next-version.out >> "$GITHUB_ENV"
+
+      - name: Bump the major version file
+        if: inputs.bump == 'major'
+        uses: $/bump-version
+        with:
+          version: ${{ env.NEXT_VERSION }}
+          version_bump_script: "bash .github/scripts/bump-major-version.sh"
+          push_commit: ${{ inputs.dry_run == false }}
+
+      - name: Tag the version
+        uses: $/tag-version
+        with:
+          version: ${{ env.NEXT_VERSION }}
+          tag_template: "v${VERSION}"
+          push_tag: ${{ inputs.dry_run == false }}
+
+      - name: Report floating v3 tag update (dry run)
+        if: env.IS_V3 == 'true' && inputs.dry_run == true
+        shell: bash
+        run: |
+          echo "[dry-run] Would move floating tag v3 to $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create a new signed v3 tag
+        if: env.IS_V3 == 'true' && inputs.dry_run == false
+        uses: $/git-sign
+        with:
+          command: git tag -a "v3" -f -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
+
+      - name: Push the v3 tag
+        if: env.IS_V3 == 'true' && inputs.dry_run == false
+        shell: bash -eux {0}
+        run: |
+          git push --force origin refs/tags/v3:refs/tags/v3
+
+      - name: Warn about floating tag retirement
+        if: env.IS_V3 != 'true'
+        shell: bash
+        run: |
+          MESSAGE="Release v${NEXT_VERSION} no longer uses floating tags. Open a PR removing the floating-tag-update steps (Create/Push v3 tag, and this warning) from .github/workflows/release.yml."
+          echo "::warning::$MESSAGE"
+          echo "$MESSAGE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create GitHub Release
+        if: inputs.dry_run == false
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release create "v${NEXT_VERSION}" --title "v${NEXT_VERSION}" --generate-notes
+          echo "Created release v${NEXT_VERSION}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report release (dry run)
+        if: inputs.dry_run == true
+        shell: bash
+        run: |
+          echo "[dry-run] Would create tag v${NEXT_VERSION} and GitHub Release v${NEXT_VERSION}" >> "$GITHUB_STEP_SUMMARY"

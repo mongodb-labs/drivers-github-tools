@@ -26,10 +26,12 @@ pre-commit run --all-files --hook-stage manual shellcheck
 
 ## Version Tag
 
-To bump the version tag, run the "Update Tag" [workflow](https://github.com/mongodb-labs/drivers-github-tools/actions/workflows/update-action-tag.yml).
+To cut a release, run the [Release workflow](https://github.com/mongodb-labs/drivers-github-tools/actions/workflows/release.yml)
+with the desired `bump` input (`patch`, `minor`, or `major`). Use `dry_run: true` first to preview
+the computed version before pushing anything.
 
-To change the major version, update `.github/workflows/version.txt`. Internal
-action-to-action references use `$/` and do not need updating on a version bump.
-Update the example `mongodb-labs/drivers-github-tools/...@vX` references in
-`README.md` and `node/release_template.yml`, both of which document or use the
-tag external consumers should pin to.
+A `major` bump also updates `.github/workflows/version.txt` automatically. Internal
+action-to-action references use `$/` and don't need updating on a version bump. The
+example `mongodb-labs/drivers-github-tools/...@vX` references in `README.md` and
+`node/release_template.yml` document the tag external consumers pin to, so update
+those manually after a major bump.
