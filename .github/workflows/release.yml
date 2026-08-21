@@ -102,7 +102,7 @@ jobs:
         if: env.IS_V3 != 'true'
         shell: bash
         run: |
-          MESSAGE="Release v${NEXT_VERSION} does not use floating tags. Remove the floating-tag-update steps (Create/Push v3 tag, and this warning) from .github/workflows/release.yml."
+          MESSAGE="Release v${NEXT_VERSION} no longer uses floating tags. Open a PR removing the floating-tag-update steps (Create/Push v3 tag, and this warning) from .github/workflows/release.yml."
           echo "::warning::$MESSAGE"
           echo "$MESSAGE" >> "$GITHUB_STEP_SUMMARY"
 
