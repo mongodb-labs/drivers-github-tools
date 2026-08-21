@@ -31,7 +31,7 @@ with the desired `bump` input (`patch`, `minor`, or `major`). Use `dry_run: true
 the computed version before pushing anything.
 
 A `major` bump also updates `.github/workflows/version.txt` automatically. Internal
-action-to-action references use `$/` and do not need updating on a version bump.
-Update the example `mongodb-labs/drivers-github-tools/...@vX` references in
-`README.md` and `node/release_template.yml`, both of which document or use the
-tag external consumers should pin to — this remains a manual step after a major bump.
+action-to-action references use `$/` and don't need updating on a version bump. The
+example `mongodb-labs/drivers-github-tools/...@vX` references in `README.md` and
+`node/release_template.yml` document the tag external consumers pin to, so update
+those manually after a major bump.

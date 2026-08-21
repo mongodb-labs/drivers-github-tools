@@ -36,8 +36,8 @@ and `compliance-report`. Bump your pin to pick up sub-action updates too.
 
 > [!NOTE]
 > Through `v3`, this repo maintains floating major-version tags (e.g. `v3`) that move to the
-> latest commit on `main`. Starting with `v4`, only immutable `vX.Y.Z` release tags are produced;
-> there is no floating `v4` tag. Pin to an exact `vX.Y.Z` tag (or its resolved commit SHA) once you
+> latest commit on `main`. Starting with `v4`, releases only get immutable `vX.Y.Z` tags; there
+> is no floating `v4` tag. Pin to an exact `vX.Y.Z` tag (or its resolved commit SHA) once you
 > move to `v4`.
 
 Example `dependabot.yml`:
