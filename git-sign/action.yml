@@ -29,3 +29,24 @@ runs:
           ${ECR_REGISTRY}/${ECR_REPOSITORY} \
           /bin/bash -c "git config --global --add safe.directory $WORKING_DIR && gpgloader && ${COMMAND}"
       shell: bash
+    # The container runs as root, so any file it creates (git objects, refs,
+    # worktree files) is owned by root and steps running as the runner user
+    # cannot write to it afterwards. This surfaces later as
+    # "insufficient permission for adding an object to repository database
+    # .git/objects". Hand ownership back using the container itself, which is
+    # root, so this works on runners without passwordless sudo.
+    - name: "Restore workspace ownership"
+      if: always()
+      env:
+        ECR_REGISTRY: ${{ inputs.ecr_registry }}
+        ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+      run: |
+        WORKING_DIR=/home/git-checkout
+        docker run \
+          --rm \
+          -v $(pwd):$WORKING_DIR \
+          -w $WORKING_DIR \
+          --entrypoint chown \
+          ${ECR_REGISTRY}/${ECR_REPOSITORY} \
+          -R "$(id -u):$(id -g)" .
+      shell: bash
