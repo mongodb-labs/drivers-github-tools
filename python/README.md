@@ -15,8 +15,15 @@ repos repeat in every CI job.
 ```
 
 Python comes from `actions/setup-python`, which is faster than having uv download
-a managed interpreter. uv is then pinned to that interpreter through `UV_PYTHON`,
-so the project's `pyproject.toml` and `.python-version` do not change the choice.
+a managed interpreter. The action then exports `UV_PYTHON` as the requested
+version, so the project's `pyproject.toml` and `.python-version` do not change
+the choice, and `UV_PYTHON_PREFERENCE=only-system`, so uv never downloads an
+interpreter of its own.
+
+`UV_PYTHON` holds a version rather than an interpreter path. A path would also
+outrank a virtual environment that the job activates later, so a job doing its
+own `uv venv` would find `uv pip install` targeting the interpreter behind its
+back.
 
 The action runs no just recipes. A job that needs project dependencies runs its
 own `just install` step after this one.
