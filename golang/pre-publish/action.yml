@@ -31,7 +31,7 @@ runs:
     - name: "Determine branch to merge up to"
       if: ${{ inputs.push_changes == 'true' && ! contains(fromJSON(inputs.ignored_branches), github.ref_name) }}
       id: get-next-branch
-      uses: alcaeus/automatic-merge-up-action/get-next-branch@e23e7c71d58f12531cbaba73473bbe78fd14baf0 #1.0.1
+      uses: alcaeus/automatic-merge-up-action/get-next-branch@874dd723d79cb95bb2360bfeb46b6964060aa515 #1.1.0
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
       with:
