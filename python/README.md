@@ -5,8 +5,8 @@ Opinionated helper actions for Python CI and releases. See the
 
 ## Setup
 
-This action puts Python, uv, and just on `PATH`. It replaces the block of setup
-steps that Python driver repos otherwise repeat in every CI job.
+Puts Python, uv, and just on `PATH`, replacing the setup steps that Python driver
+repos repeat in every CI job.
 
 ```yaml
 - uses: mongodb-labs/drivers-github-tools/python/setup@v3
@@ -14,11 +14,9 @@ steps that Python driver repos otherwise repeat in every CI job.
     python-version: "3.10"
 ```
 
-Python comes from `actions/setup-python`, because the runner images already ship
-several versions and installing from them is faster than having uv download a
-managed interpreter. uv is then pointed at that exact interpreter through
-`UV_PYTHON`, so it does not pick a different one based on the project's
-`pyproject.toml` or `.python-version`.
+Python comes from `actions/setup-python`, which is faster than having uv download
+a managed interpreter. uv is then pinned to that interpreter through `UV_PYTHON`,
+so the project's `pyproject.toml` and `.python-version` do not change the choice.
 
 Add `run-install: "true"` for a job that also needs the project's dependencies:
 
@@ -29,21 +27,17 @@ Add `run-install: "true"` for a job that also needs the project's dependencies:
     run-install: "true"
 ```
 
-That runs the project's `just install` recipe, and requires one to exist. It is
-off by default because installing dependencies changes the job's environment, and
-plenty of jobs only need the tools.
+That runs the project's `just install` recipe, which must exist.
 
-The action sets no resolution policy of its own. A repo that wants to hold back
-newly published packages configures `exclude-newer` in its own `pyproject.toml` or
+The action sets no resolution policy. A repo that wants to hold back newly
+published packages configures `exclude-newer` in its own `pyproject.toml` or
 `uv.toml`, or commits a `uv.lock`.
 
 `enable-cache` defaults to `true` and is passed through to `astral-sh/setup-uv`.
 
-`allow-prereleases` defaults to `true`, so asking for a Python version with no
-stable release yet gets the prerelease instead of failing. uv resolves such a
-version on its own, so leaving this on keeps that behaviour for a repo moving to
-this action. Set it to `"false"` for a job that should fail rather than quietly
-test against a beta.
+`allow-prereleases` defaults to `true`, so a Python version with no stable release
+resolves to the prerelease instead of failing. Set it to `"false"` for a job that
+should fail instead of testing against a beta.
 
 ## Pre-Publish
 

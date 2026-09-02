@@ -2,32 +2,22 @@ name: Python Setup
 description: Installs Python, uv, and just, and optionally runs the project's `just install` recipe
 inputs:
   python-version:
-    description: Python version for setup-python to install, and the interpreter uv will use
+    description: Python version setup-python installs and uv then uses
     default: "3.10"
   allow-prereleases:
-    description: >-
-      Let setup-python fall back to a prerelease when python-version has no
-      stable release yet, so asking for a Python still in beta gets that beta
-      instead of failing. On by default, because uv resolves such a version on
-      its own and a consumer moving to this action should not lose that.
+    description: Select a prerelease when python-version has no stable release, instead of failing
     default: "true"
   enable-cache:
     description: Cache the uv download cache between runs
     default: "true"
   run-install:
-    description: >-
-      Run the project's `just install` recipe. Off by default, because putting
-      the tools on PATH is what this action is for and installing dependencies
-      changes the job's environment. A job that needs them asks for them. The
-      project must define an `install` recipe, or the step fails.
+    description: Run the project's `just install` recipe, which must exist
     default: "false"
 
 runs:
   using: composite
   steps:
-    # The runner images already ship several Python versions, so installing from
-    # them is faster than having uv download a managed interpreter. uv is pointed
-    # at this one below rather than choosing its own.
+    # Runner images already ship these versions, so uv downloads no interpreter.
     - name: Install Python
       id: setup-python
       uses: actions/setup-python@v7
@@ -38,21 +28,14 @@ runs:
     - name: Point uv at that interpreter
       shell: bash
       env:
-        # The path goes through env rather than into the script body, so a value
-        # containing shell metacharacters cannot alter the command below.
         PYTHON_PATH: ${{ steps.setup-python.outputs.python-path }}
-      # Exporting to the caller's later steps is the point of this step, and
-      # GITHUB_ENV is the only way a composite action can do it, so the
-      # github-env audit has nothing actionable to say here. The value comes from
-      # setup-python, not from a caller's untrusted content.
+      # GITHUB_ENV is the only way a composite action exports to later steps.
       run: | # zizmor: ignore[github-env]
-        # An absolute interpreter path makes the choice exact: uv uses this
-        # interpreter and never falls back to downloading one, whatever the
-        # consuming project's pyproject.toml or .python-version asks for.
+        # An absolute path pins uv here, ignoring .python-version.
         echo "UV_PYTHON=$PYTHON_PATH" >> "$GITHUB_ENV"
 
     - name: Install uv
-      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
       with:
         enable-cache: ${{ inputs.enable-cache }}
 
