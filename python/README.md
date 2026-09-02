@@ -18,18 +18,8 @@ Python comes from `actions/setup-python`, which is faster than having uv downloa
 a managed interpreter. uv is then pinned to that interpreter through `UV_PYTHON`,
 so the project's `pyproject.toml` and `.python-version` do not change the choice.
 
-List recipes in `just-recipes` to run them after setup:
-
-```yaml
-- uses: mongodb-labs/drivers-github-tools/python/setup@v3
-  with:
-    python-version: "3.10"
-    just-recipes: "install"
-```
-
-Entries run in order, and each recipe must exist. A failing recipe fails the job,
-and the entries after it do not run. An entry can carry arguments, as in
-`just-recipes: "install, setup-tests doctest"`.
+The action runs no just recipes. A job that needs project dependencies runs its
+own `just install` step after this one.
 
 The action sets no resolution policy. A repo that wants to hold back newly
 published packages configures `exclude-newer` in its own `pyproject.toml` or

@@ -1,5 +1,5 @@
 name: Python Setup
-description: Installs Python, uv, and just, and optionally runs project just recipes
+description: Installs Python, uv, and just
 inputs:
   python-version:
     description: Python version setup-python installs and uv then uses
@@ -10,9 +10,6 @@ inputs:
   enable-cache:
     description: Cache the uv download cache between runs
     default: "true"
-  just-recipes:
-    description: Comma-separated just recipes to run after setup, each of which must exist
-    default: ""
 
 runs:
   using: composite
@@ -42,18 +39,3 @@ runs:
     - name: Install just
       shell: bash
       run: uv tool install rust-just
-
-    - name: Run just recipes
-      if: inputs.just-recipes != ''
-      shell: bash
-      env:
-        JUST_RECIPES: ${{ inputs.just-recipes }}
-      run: |
-        IFS=',' read -ra recipes <<< "$JUST_RECIPES"
-        for recipe in "${recipes[@]}"; do
-          # Skip a blank entry, so a trailing comma does not run the default
-          # recipe. Unquoted, so an entry can carry arguments.
-          [ -n "${recipe// /}" ] || continue
-          # shellcheck disable=SC2086
-          just $recipe
-        done
