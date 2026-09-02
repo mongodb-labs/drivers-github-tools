@@ -69,8 +69,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      # The tests below need uv, which the python/setup action installs. Using it
+      # here also exercises the action itself on every run.
+      - name: Install Python tooling
+        uses: $/python/setup
 
       - name: Run uv lock update tests
         run: |
