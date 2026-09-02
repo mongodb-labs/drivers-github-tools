@@ -15,7 +15,7 @@ Push the commit and tag to the source branch unless `dry_run` is set.
   with:
     ...
 
-- uses: mongodb-labs/drivers-github-tools/python-labs/pre-publishv2
+- uses: mongodb-labs/drivers-github-tools/python-labs/pre-publish@v3
   with:
     version_bump_script: ./.github/scripts/bump-version.sh
     dry_run: ${{ inputs.dry_run }}

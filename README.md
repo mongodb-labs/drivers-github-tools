@@ -428,5 +428,5 @@ Python helper actions have their own READMEs:
 
 - [`python/`](python/README.md) covers setup, pre-publish, post-publish, and uv
   lock updates for the Python drivers.
-- [`python-labs/`](python-labs/README.md) covers the same ground for MongoDB Labs
-  projects, without the SSDLC assets and S3 upload.
+- [`python-labs/`](python-labs/README.md) covers pre-publish and post-publish for
+  MongoDB Labs projects, without the SSDLC assets and S3 upload.
