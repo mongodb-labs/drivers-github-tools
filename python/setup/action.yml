@@ -16,20 +16,32 @@ runs:
   steps:
     # Runner images already ship these versions, so uv downloads no interpreter.
     - name: Install Python
-      id: setup-python
       uses: actions/setup-python@v7
       with:
         python-version: ${{ inputs.python-version }}
         allow-prereleases: ${{ inputs.allow-prereleases }}
 
-    - name: Point uv at that interpreter
+    - name: Point uv at that Python
       shell: bash
       env:
-        PYTHON_PATH: ${{ steps.setup-python.outputs.python-path }}
+        PYTHON_VERSION: ${{ inputs.python-version }}
       # GITHUB_ENV is the only way a composite action exports to later steps.
       run: | # zizmor: ignore[github-env]
-        # An absolute path pins uv here, ignoring .python-version.
-        echo "UV_PYTHON=$PYTHON_PATH" >> "$GITHUB_ENV"
+        shopt -s extglob
+        # Trim incidental whitespace, e.g. from a caller using a `|` block
+        # scalar. What remains must be a single token, or a newline here
+        # would inject an arbitrary extra line into GITHUB_ENV.
+        VERSION="${PYTHON_VERSION##+([[:space:]])}"
+        VERSION="${VERSION%%+([[:space:]])}"
+        if [[ "$VERSION" == *[[:space:]]* ]]; then
+          echo "::error::python-version must be a single version, got: $PYTHON_VERSION"
+          exit 1
+        fi
+        # A version, not an interpreter path: a path also outranks a virtual
+        # environment the job activates later, which silently retargets `uv pip`.
+        echo "UV_PYTHON=$VERSION" >> "$GITHUB_ENV"
+        # setup-python already provided the interpreter, so never download one.
+        echo "UV_PYTHON_PREFERENCE=only-system" >> "$GITHUB_ENV"
 
     - name: Install uv
       uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
