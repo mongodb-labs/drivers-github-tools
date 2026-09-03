@@ -103,12 +103,12 @@ jobs:
         if: inputs.dry_run == false
         shell: bash -eux {0}
         run: |
-          REFS=("HEAD:refs/heads/main" "refs/tags/v${NEXT_VERSION}:refs/tags/v${NEXT_VERSION}")
-          if [ "$IS_V3" = "true" ]; then
+          REFS=("HEAD:refs/heads/${GITHUB_REF_NAME}" "refs/tags/${TAG}:refs/tags/${TAG}")
+          if [ "${IS_V3}" = "true" ]; then
             REFS+=("+refs/tags/v3:refs/tags/v3")
           fi
           git push --atomic origin "${REFS[@]}"
-          echo "Pushed main, v${NEXT_VERSION}$([ "$IS_V3" = "true" ] && echo ", and v3")" >> "$GITHUB_STEP_SUMMARY"
+          echo "Pushed ${GITHUB_REF_NAME}, ${TAG}$([ "${IS_V3}" = "true" ] && echo ", and v3")" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Warn about floating tag retirement
         if: env.IS_V3 != 'true'
