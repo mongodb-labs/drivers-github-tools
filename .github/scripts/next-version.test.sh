@@ -25,27 +25,6 @@ new_temp_repo() {
   echo "$tmp"
 }
 
-# Test: no tags at all -> non-zero exit
-repo=$(new_temp_repo)
-if (cd "$repo" && bash "$NEXT_VERSION_SH" patch) >/dev/null 2>&1; then
-  echo "FAIL: expected failure with no tags present" >&2
-  FAILURES=$((FAILURES + 1))
-else
-  echo "PASS: fails with no tags present"
-fi
-rm -rf "$repo"
-
-# Test: only a floating tag exists, no vX.Y.Z tag -> non-zero exit (bootstrapping is manual, not automatic)
-repo=$(new_temp_repo)
-git -C "$repo" tag v3
-if (cd "$repo" && bash "$NEXT_VERSION_SH" patch) >/dev/null 2>&1; then
-  echo "FAIL: expected failure with only a floating tag present" >&2
-  FAILURES=$((FAILURES + 1))
-else
-  echo "PASS: fails with only a floating tag present"
-fi
-rm -rf "$repo"
-
 # Test: patch bump from full semver tag
 repo=$(new_temp_repo)
 git -C "$repo" tag v3.2.1

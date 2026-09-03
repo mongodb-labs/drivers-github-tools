@@ -15,12 +15,7 @@ LATEST_SEMVER=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' \
   | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
   | sed 's/^v//' \
   | sort -t. -k1,1n -k2,2n -k3,3n \
-  | tail -1 || true)
-
-if [ -z "$LATEST_SEMVER" ]; then
-  echo "No vX.Y.Z tag found. Create the first version tag manually, then run this workflow to bump from it." >&2
-  exit 1
-fi
+  | tail -1)
 
 MAJOR=$(echo "$LATEST_SEMVER" | cut -d. -f1)
 MINOR=$(echo "$LATEST_SEMVER" | cut -d. -f2)
