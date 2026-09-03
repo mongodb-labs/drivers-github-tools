@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BUMP="${1:?Usage: next-version.sh <patch|minor|major>}"
+
+case "$BUMP" in
+  patch|minor|major) ;;
+  *)
+    echo "Unknown bump type: $BUMP" >&2
+    exit 1
+    ;;
+esac
+
+LATEST_SEMVER=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' \
+  | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+  | sed 's/^v//' \
+  | sort -t. -k1,1n -k2,2n -k3,3n \
+  | tail -1)
+
+MAJOR=$(echo "$LATEST_SEMVER" | cut -d. -f1)
+MINOR=$(echo "$LATEST_SEMVER" | cut -d. -f2)
+PATCH=$(echo "$LATEST_SEMVER" | cut -d. -f3)
+PREVIOUS_MAJOR="$MAJOR"
+
+case "$BUMP" in
+  major)
+    MAJOR=$((MAJOR + 1))
+    MINOR=0
+    PATCH=0
+    ;;
+  minor)
+    MINOR=$((MINOR + 1))
+    PATCH=0
+    ;;
+  patch)
+    PATCH=$((PATCH + 1))
+    ;;
+esac
+
+if [ "$MAJOR" != "$PREVIOUS_MAJOR" ]; then
+  MAJOR_BUMPED=true
+else
+  MAJOR_BUMPED=false
+fi
+
+NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+
+if [ "$MAJOR" = "3" ]; then
+  IS_V3=true
+else
+  IS_V3=false
+fi
+
+echo "NEXT_VERSION=${NEXT_VERSION}"
+echo "IS_V3=${IS_V3}"
+echo "MAJOR_BUMPED=${MAJOR_BUMPED}"
