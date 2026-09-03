@@ -17,41 +17,35 @@ LATEST_SEMVER=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' \
   | sort -t. -k1,1n -k2,2n -k3,3n \
   | tail -1 || true)
 
-if [ -n "$LATEST_SEMVER" ]; then
-  MAJOR=$(echo "$LATEST_SEMVER" | cut -d. -f1)
-  MINOR=$(echo "$LATEST_SEMVER" | cut -d. -f2)
-  PATCH=$(echo "$LATEST_SEMVER" | cut -d. -f3)
+if [ -z "$LATEST_SEMVER" ]; then
+  echo "No vX.Y.Z tag found. Create the first version tag manually, then run this workflow to bump from it." >&2
+  exit 1
+fi
 
-  case "$BUMP" in
-    major)
-      MAJOR=$((MAJOR + 1))
-      MINOR=0
-      PATCH=0
-      ;;
-    minor)
-      MINOR=$((MINOR + 1))
-      PATCH=0
-      ;;
-    patch)
-      PATCH=$((PATCH + 1))
-      ;;
-  esac
+MAJOR=$(echo "$LATEST_SEMVER" | cut -d. -f1)
+MINOR=$(echo "$LATEST_SEMVER" | cut -d. -f2)
+PATCH=$(echo "$LATEST_SEMVER" | cut -d. -f3)
+PREVIOUS_MAJOR="$MAJOR"
+
+case "$BUMP" in
+  major)
+    MAJOR=$((MAJOR + 1))
+    MINOR=0
+    PATCH=0
+    ;;
+  minor)
+    MINOR=$((MINOR + 1))
+    PATCH=0
+    ;;
+  patch)
+    PATCH=$((PATCH + 1))
+    ;;
+esac
+
+if [ "$MAJOR" != "$PREVIOUS_MAJOR" ]; then
+  MAJOR_BUMPED=true
 else
-  LATEST_FLOATING=$(git tag -l 'v[0-9]*' \
-    | grep -E '^v[0-9]+$' \
-    | sed 's/^v//' \
-    | sort -n \
-    | tail -1 || true)
-
-  if [ -z "$LATEST_FLOATING" ]; then
-    echo "No version tags found (neither vX.Y.Z nor vN)." >&2
-    exit 1
-  fi
-
-  echo "No vX.Y.Z tag found; bootstrapping from floating tag v${LATEST_FLOATING}. Ignoring requested bump '${BUMP}'." >&2
-  MAJOR="$LATEST_FLOATING"
-  MINOR=0
-  PATCH=0
+  MAJOR_BUMPED=false
 fi
 
 NEXT_VERSION="${MAJOR}.${MINOR}.${PATCH}"
@@ -64,3 +58,4 @@ fi
 
 echo "NEXT_VERSION=${NEXT_VERSION}"
 echo "IS_V3=${IS_V3}"
+echo "MAJOR_BUMPED=${MAJOR_BUMPED}"

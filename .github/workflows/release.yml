@@ -17,6 +17,10 @@ on:
         type: boolean
         default: true
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Release
@@ -66,7 +70,7 @@ jobs:
           cat /tmp/next-version.out >> "$GITHUB_ENV"
 
       - name: Bump the major version file
-        if: inputs.bump == 'major'
+        if: env.MAJOR_BUMPED == 'true'
         uses: $/bump-version
         with:
           version: ${{ env.NEXT_VERSION }}
@@ -112,7 +116,10 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          gh release create "v${NEXT_VERSION}" --title "v${NEXT_VERSION}" --generate-notes
+          if ! gh release create "v${NEXT_VERSION}" --title "v${NEXT_VERSION}" --generate-notes; then
+            echo "::error::Tag v${NEXT_VERSION} was already pushed, but creating its GitHub Release failed. Run 'gh release create v${NEXT_VERSION} --generate-notes' manually to finish; re-running this workflow would compute a new version instead."
+            exit 1
+          fi
           echo "Created release v${NEXT_VERSION}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report release (dry run)

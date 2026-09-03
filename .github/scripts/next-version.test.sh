@@ -35,32 +35,36 @@ else
 fi
 rm -rf "$repo"
 
-# Test: bootstrap from floating v3 tag, ignoring the requested bump
+# Test: only a floating tag exists, no vX.Y.Z tag -> non-zero exit (bootstrapping is manual, not automatic)
 repo=$(new_temp_repo)
 git -C "$repo" tag v3
-OUTPUT=$(cd "$repo" && bash "$NEXT_VERSION_SH" patch)
-assert_eq "bootstrap ignores bump, uses floating major" "$(printf 'NEXT_VERSION=3.0.0\nIS_V3=true')" "$OUTPUT"
+if (cd "$repo" && bash "$NEXT_VERSION_SH" patch) >/dev/null 2>&1; then
+  echo "FAIL: expected failure with only a floating tag present" >&2
+  FAILURES=$((FAILURES + 1))
+else
+  echo "PASS: fails with only a floating tag present"
+fi
 rm -rf "$repo"
 
 # Test: patch bump from full semver tag
 repo=$(new_temp_repo)
 git -C "$repo" tag v3.2.1
 OUTPUT=$(cd "$repo" && bash "$NEXT_VERSION_SH" patch)
-assert_eq "patch bump" "$(printf 'NEXT_VERSION=3.2.2\nIS_V3=true')" "$OUTPUT"
+assert_eq "patch bump" "$(printf 'NEXT_VERSION=3.2.2\nIS_V3=true\nMAJOR_BUMPED=false')" "$OUTPUT"
 rm -rf "$repo"
 
 # Test: minor bump resets patch
 repo=$(new_temp_repo)
 git -C "$repo" tag v3.2.1
 OUTPUT=$(cd "$repo" && bash "$NEXT_VERSION_SH" minor)
-assert_eq "minor bump resets patch" "$(printf 'NEXT_VERSION=3.3.0\nIS_V3=true')" "$OUTPUT"
+assert_eq "minor bump resets patch" "$(printf 'NEXT_VERSION=3.3.0\nIS_V3=true\nMAJOR_BUMPED=false')" "$OUTPUT"
 rm -rf "$repo"
 
-# Test: major bump resets minor/patch and flips IS_V3 to false
+# Test: major bump resets minor/patch, flips IS_V3 to false, and reports a major bump
 repo=$(new_temp_repo)
 git -C "$repo" tag v3.2.1
 OUTPUT=$(cd "$repo" && bash "$NEXT_VERSION_SH" major)
-assert_eq "major bump resets minor/patch" "$(printf 'NEXT_VERSION=4.0.0\nIS_V3=false')" "$OUTPUT"
+assert_eq "major bump resets minor/patch" "$(printf 'NEXT_VERSION=4.0.0\nIS_V3=false\nMAJOR_BUMPED=true')" "$OUTPUT"
 rm -rf "$repo"
 
 # Test: a full semver tag takes priority over an existing floating tag
@@ -68,7 +72,7 @@ repo=$(new_temp_repo)
 git -C "$repo" tag v3
 git -C "$repo" tag v3.2.1
 OUTPUT=$(cd "$repo" && bash "$NEXT_VERSION_SH" patch)
-assert_eq "full semver tag wins over floating tag" "$(printf 'NEXT_VERSION=3.2.2\nIS_V3=true')" "$OUTPUT"
+assert_eq "full semver tag wins over floating tag" "$(printf 'NEXT_VERSION=3.2.2\nIS_V3=true\nMAJOR_BUMPED=false')" "$OUTPUT"
 rm -rf "$repo"
 
 # Test: numeric sort, not lexicographic (v3.10.0 > v3.2.1)
@@ -76,7 +80,7 @@ repo=$(new_temp_repo)
 git -C "$repo" tag v3.2.1
 git -C "$repo" tag v3.10.0
 OUTPUT=$(cd "$repo" && bash "$NEXT_VERSION_SH" patch)
-assert_eq "numeric sort picks v3.10.0 over v3.2.1" "$(printf 'NEXT_VERSION=3.10.1\nIS_V3=true')" "$OUTPUT"
+assert_eq "numeric sort picks v3.10.0 over v3.2.1" "$(printf 'NEXT_VERSION=3.10.1\nIS_V3=true\nMAJOR_BUMPED=false')" "$OUTPUT"
 rm -rf "$repo"
 
 # Test: invalid bump type is rejected
