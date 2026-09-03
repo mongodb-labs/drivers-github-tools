@@ -75,14 +75,14 @@ jobs:
         with:
           version: ${{ env.NEXT_VERSION }}
           version_bump_script: "bash .github/scripts/bump-major-version.sh"
-          push_commit: ${{ inputs.dry_run == false }}
+          push_commit: false
 
       - name: Tag the version
         uses: $/tag-version
         with:
           version: ${{ env.NEXT_VERSION }}
           tag_template: "v${VERSION}"
-          push_tag: ${{ inputs.dry_run == false }}
+          push_tag: false
 
       - name: Report floating v3 tag update (dry run)
         if: env.IS_V3 == 'true' && inputs.dry_run == true
@@ -96,17 +96,25 @@ jobs:
         with:
           command: git tag -a "v3" -f -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
 
-      - name: Push the v3 tag
-        if: env.IS_V3 == 'true' && inputs.dry_run == false
+      # Everything above this point is created and verified locally without touching the
+      # remote. Pushing the branch and both tags together, atomically, means a failure here
+      # leaves the remote exactly as it was before this run, so a plain rerun is always safe.
+      - name: Push release refs
+        if: inputs.dry_run == false
         shell: bash -eux {0}
         run: |
-          git push --force origin refs/tags/v3:refs/tags/v3
+          REFS=("HEAD:refs/heads/main" "refs/tags/v${NEXT_VERSION}:refs/tags/v${NEXT_VERSION}")
+          if [ "$IS_V3" = "true" ]; then
+            REFS+=("+refs/tags/v3:refs/tags/v3")
+          fi
+          git push --atomic origin "${REFS[@]}"
+          echo "Pushed main, v${NEXT_VERSION}$([ "$IS_V3" = "true" ] && echo ", and v3")" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Warn about floating tag retirement
         if: env.IS_V3 != 'true'
         shell: bash
         run: |
-          MESSAGE="Release v${NEXT_VERSION} no longer uses floating tags. Open a PR removing the floating-tag-update steps (Create/Push v3 tag, and this warning) from .github/workflows/release.yml."
+          MESSAGE="Release v${NEXT_VERSION} no longer uses floating tags. Open a PR removing the floating-tag-update logic and this warning from .github/workflows/release.yml."
           echo "::warning::$MESSAGE"
           echo "$MESSAGE" >> "$GITHUB_STEP_SUMMARY"
 
