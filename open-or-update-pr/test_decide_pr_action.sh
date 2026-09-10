@@ -56,13 +56,15 @@ export PATH="$TMPDIR:$PATH"
 run_script() {
   local pr_list_json="$1"
   local dry_run="$2"
+  # Labels default to a real value, so only the empty-label cases below opt out.
+  local labels="${3-dependencies}"
   echo "$pr_list_json" > "$TMPDIR/pr_list_response.json"
   : > "$TMPDIR/gh_calls.log"
   BRANCH="uv-lock-update" \
   BASE="v4.16" \
   TITLE="Automation: Update uv.lock" \
   BODY="## Updated packages" \
-  LABELS="dependencies" \
+  LABELS="$labels" \
   DRY_RUN="$dry_run" \
     bash "$SCRIPT" > "$TMPDIR/output.log" 2>&1 || true
 }
@@ -115,5 +117,17 @@ check_contains "no open PR + dry run: output names the branch and base" \
   "from uv-lock-update into v4.16" "$(cat "$TMPDIR/output.log")"
 check_contains "no open PR + dry run: the body is logged" \
   "## Updated packages" "$(cat "$TMPDIR/output.log")"
+
+# gh rejects an empty --label/--add-label value, so callers that want no labels
+# must produce a command with the flag absent rather than passing "" through.
+run_script '[]' "false" ""
+check "no labels: create omits the flag rather than passing an empty value" \
+  "pr create --title Automation: Update uv.lock --body ## Updated packages --base v4.16 --head uv-lock-update" \
+  "$(gh_call create)"
+
+run_script '[{"number": 42, "isCrossRepository": false}]' "false" ""
+check "no labels: edit omits the flag rather than passing an empty value" \
+  "pr edit 42 --body ## Updated packages" \
+  "$(gh_call edit)"
 
 exit $FAIL

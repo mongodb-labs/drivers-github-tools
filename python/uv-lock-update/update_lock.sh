@@ -1,10 +1,29 @@
 #!/usr/bin/env bash
 # Summarize the upgraded lock file, commit it to the bot owned branch, push, and
-# hand off to decide_pr_action.sh to open or refresh the pull request.
+# report the summary back as step outputs. action.yml passes those to
+# $/open-or-update-pr, which opens or refreshes the pull request.
 #
-# Required environment: GH_TOKEN, BRANCH, BASE, LABELS, DRY_RUN, OLD_LOCK,
-# ACTION_PATH, and GITHUB_REPOSITORY from the Actions runtime.
+# Sets two outputs: `changed`, which gates that step, and `body`, the pull
+# request body.
+#
+# Required environment: GH_TOKEN, BRANCH, DRY_RUN, OLD_LOCK, ACTION_PATH, and
+# GITHUB_OUTPUT plus GITHUB_REPOSITORY from the Actions runtime.
 set -euo pipefail
+
+# Write a step output whose value may span lines. A random delimiter keeps a
+# value that happens to contain the delimiter text from closing the heredoc
+# early, which would let the rest of the value be parsed as further outputs.
+emit_output() {
+  local name="$1"
+  local value="$2"
+  local delim
+  delim="EOF_$(openssl rand -hex 16)"
+  {
+    echo "${name}<<${delim}"
+    echo "$value"
+    echo "$delim"
+  } >> "$GITHUB_OUTPUT"
+}
 
 # Compare against the copy taken before the upgrade, which is the same baseline
 # diff_lock.py summarizes from. `git diff` would compare against HEAD instead, so
@@ -12,6 +31,7 @@ set -euo pipefail
 # open a pull request whose body reports no version changes.
 if cmp -s "$OLD_LOCK" uv.lock; then
   echo "No changes detected, skipping PR creation"
+  echo "changed=false" >> "$GITHUB_OUTPUT"
   exit 0
 fi
 
@@ -27,7 +47,7 @@ else
 fi
 
 # Everything below mutates state, so a dry run skips all of it and leaves the
-# workspace untouched. decide_pr_action.sh still runs and still reports the
+# workspace untouched. The pull request step still runs and still reports the
 # decision: it finds an existing pull request by querying the remote for the head
 # branch, so it needs no local branch or commit.
 if [ "$DRY_RUN" != "true" ]; then
@@ -50,6 +70,5 @@ if [ "$DRY_RUN" != "true" ]; then
     push --force "https://github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
 fi
 
-BRANCH="$BRANCH" BASE="$BASE" TITLE="Automation: Update uv.lock" \
-BODY="$BODY" LABELS="$LABELS" DRY_RUN="$DRY_RUN" \
-  bash "$ACTION_PATH/decide_pr_action.sh"
+echo "changed=true" >> "$GITHUB_OUTPUT"
+emit_output body "$BODY"

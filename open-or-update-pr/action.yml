@@ -1,0 +1,52 @@
+name: Open or Update Pull Request
+description: >-
+  Opens a pull request from a bot owned branch, or refreshes the one already open
+  on that branch, so repeated automation runs maintain a single pull request.
+
+inputs:
+  token:
+    description: >-
+      Token used for the gh calls. Outside a dry run this must be a GitHub App
+      token: pull requests opened with github.token do not trigger workflow
+      runs, so the pull request would arrive with no CI and look ready to merge.
+    required: true
+  branch:
+    description: Head branch the pull request is opened from
+    required: true
+  base:
+    description: Base branch for a newly created pull request
+    required: true
+  title:
+    description: Title for a newly created pull request
+    required: true
+  body:
+    description: Body for the pull request, set on create and refreshed on update
+    required: true
+  labels:
+    description: >-
+      Labels to apply to the pull request. Every label named here must already
+      exist in the repository, because GitHub rejects a pull request that asks
+      for an unknown one. Pass "" to apply none.
+    default: ""
+  dry_run:
+    description: If 'true', report the intended action without creating or editing anything
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Create or update the pull request
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        # Target the repository explicitly rather than letting gh infer it from
+        # the git remote, so the pull request lookup cannot depend on how the
+        # caller configured its checkout.
+        GH_REPO: ${{ github.repository }}
+        BRANCH: ${{ inputs.branch }}
+        BASE: ${{ inputs.base }}
+        TITLE: ${{ inputs.title }}
+        BODY: ${{ inputs.body }}
+        LABELS: ${{ inputs.labels }}
+        DRY_RUN: ${{ inputs.dry_run }}
+      run: ${{ github.action_path }}/decide_pr_action.sh
