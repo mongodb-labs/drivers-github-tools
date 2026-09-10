@@ -5,7 +5,7 @@ inputs:
     description: Python version setup-python installs and uv then uses
     default: "3.10"
   uv-version:
-    description: Version of uv to install (e.g. "0.12.12"). Empty installs the version found in pyproject.toml or the latest.
+    description: Version of uv to install (e.g. "0.12.12"). Empty installs the version pinned in [tool.uv.required-version] in pyproject.toml, or the latest if unset.
     default: ""
   allow-prereleases:
     description: Select a prerelease when python-version has no stable release, instead of failing
