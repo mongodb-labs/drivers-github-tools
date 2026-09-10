@@ -1,0 +1,3 @@
+# The pre-commit-autoupdate scripts import a module from their own directory, so
+# running them or their tests leaves bytecode behind.
+__pycache__/

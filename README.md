@@ -428,6 +428,94 @@ jobs:
           token: ${{ github.token }}
 ```
 
+## Maintenance Actions
+
+### Pre-commit Autoupdate
+
+Use this action to run `pre-commit autoupdate` on a schedule and open a pull
+request with the resulting hook revision changes. It maintains a single open
+pull request: a subsequent run updates the existing one rather than opening a
+second.
+
+The caller checks out the repository and puts `pre-commit` on `PATH`.
+
+```yaml
+name: Update pre-commit hooks
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+# Runs must serialize: two at once would force push the same branch and race on
+# the pull request. Keep the group static rather than keying it on the ref.
+concurrency:
+  group: pre-commit-autoupdate
+  cancel-in-progress: false
+
+jobs:
+  autoupdate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+      - run: pipx install pre-commit
+      - uses: mongodb-labs/drivers-github-tools/pre-commit-autoupdate@v3
+        with:
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+```
+
+`app_id` and `private_key` are required unless `dry_run` is true.
+
+`base` defaults to the ref the workflow ran on, which is what a checkout with no
+`ref` takes. If you check out a different ref, set `base` to match it, or the
+pull request will contain every unrelated commit between the two branches.
+
+Every label named in `labels` must already exist in the repository, because
+GitHub rejects a pull request that asks for an unknown one.
+
+Set `dry_run: true` to log the branch and pull request the action would have
+created, without pushing or opening anything.
+
+A hook is only moved to a release that is at least `cooldown_days` old, so a
+broken or compromised release has time to be yanked before it lands in the
+config. A hook whose newest tag is younger than that keeps its current rev and
+is picked up by a later run; the pull request body lists what was held and why.
+`pre-commit` has no cooldown of its own, so the action applies it by reverting
+any rev whose tag is too new. Set `cooldown_days: 0` to adopt new releases
+immediately.
+
+```yaml
+      - uses: mongodb-labs/drivers-github-tools/pre-commit-autoupdate@v3
+        with:
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          cooldown_days: 14
+          config: .pre-commit-config.yaml
+```
+
+A rev whose release date cannot be determined, such as one that is not a tag in
+the hook repository, is held back and logged as a warning rather than adopted
+unchecked.
+
+### Open or Update Pull Request
+
+An internal building block for the automation actions above. It opens a pull
+request from a bot owned branch, or refreshes the one already open on that
+branch, so repeated runs maintain a single pull request rather than piling up a
+new one each week.
+
+Driver repos do not call this directly; `pre-commit-autoupdate` and
+`python/uv-lock-update` both use it via `uses: $/open-or-update-pr`. It expects
+the caller to have already committed and pushed the branch.
+
+`token` must be a GitHub App token outside a dry run. Pull requests opened with
+`github.token` do not trigger workflow runs, so one would arrive with no CI and
+look ready to merge.
+
 ## Python Actions
 
 Python helper actions have their own READMEs:

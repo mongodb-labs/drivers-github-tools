@@ -1,5 +1,8 @@
-name: uv Lock Update
-description: Runs `uv lock --upgrade` and opens or refreshes a single pull request with the lock file changes
+name: Pre-commit Autoupdate
+description: >-
+  Runs `pre-commit autoupdate` behind a release cooldown and opens or refreshes a
+  single pull request with the hook revision changes
+
 inputs:
   app_id:
     description: GitHub App ID for authenticated pushes. Required unless dry_run is true.
@@ -9,7 +12,7 @@ inputs:
     default: ""
   branch:
     description: Branch name for the update pull request
-    default: uv-lock-update
+    default: pre-commit-autoupdate
   base:
     description: >-
       Base branch for the update pull request. Defaults to the ref the workflow
@@ -21,13 +24,16 @@ inputs:
   dry_run:
     description: If 'true', report intended actions without pushing or modifying pull requests
     default: "false"
-  exclude_newer:
+  config:
+    description: Path to the pre-commit configuration file to update
+    default: .pre-commit-config.yaml
+  cooldown_days:
     description: >-
-      Cutoff passed to uv as UV_EXCLUDE_NEWER, so the upgrade ignores releases
-      published after it. Accepts anything uv's --exclude-newer does: a date, an
-      RFC 3339 timestamp, a duration such as '30 days', or 'false' to disable the
-      cutoff. Pass "" to leave the cutoff to the project's own uv configuration.
-    default: 7 days
+      Minimum age, in days, of a hook release before it may be adopted. A repo
+      whose newest tag is younger than this keeps its current rev and is picked
+      up by a later run, so a broken or compromised release has time to be
+      yanked before it lands. Set to 0 to adopt the newest release immediately.
+    default: "7"
 
 runs:
   using: composite
@@ -54,35 +60,25 @@ runs:
         echo "::error::app_id and private_key are both required unless dry_run is true. Falling back to github.token is not supported here: pull requests opened with it do not trigger workflow runs, so the pull request would arrive with no CI and look ready to merge."
         exit 1
 
-    - name: Save current lock file
+    - name: Save current configuration
       shell: bash
       env:
-        OLD_LOCK: ${{ runner.temp }}/uv.lock.before
+        CONFIG_PATH: ${{ inputs.config }}
+        OLD_CONFIG: ${{ runner.temp }}/pre-commit-config.before
       run: |
-        if [ ! -f uv.lock ]; then
-          echo "::error::No uv.lock found in ${PWD}. Run 'uv lock' and commit the result before using this action."
+        if [ ! -f "$CONFIG_PATH" ]; then
+          echo "::error::No $CONFIG_PATH found in ${PWD}. Commit a pre-commit configuration before using this action, or set 'config' to its path."
           exit 1
         fi
-        cp uv.lock "$OLD_LOCK"
+        cp "$CONFIG_PATH" "$OLD_CONFIG"
 
-    - name: Upgrade the lock file
+    - name: Update the hook revisions
       shell: bash
       env:
-        EXCLUDE_NEWER: ${{ inputs.exclude_newer }}
-      run: |
-        # UV_EXCLUDE_NEWER outranks the project's uv configuration, and uv
-        # rejects it when empty, so an empty input clears the variable rather
-        # than passing the empty value through. Clearing it also drops any
-        # UV_EXCLUDE_NEWER the caller's workflow exported, so the input alone
-        # decides the cutoff.
-        if [ -n "$EXCLUDE_NEWER" ]; then
-          export UV_EXCLUDE_NEWER="$EXCLUDE_NEWER"
-        else
-          unset UV_EXCLUDE_NEWER
-        fi
-        uv lock --upgrade
+        CONFIG_PATH: ${{ inputs.config }}
+      run: pre-commit autoupdate --config "$CONFIG_PATH"
 
-    - name: Commit and summarize the upgrade
+    - name: Apply the cooldown and summarize
       id: prepare
       shell: bash
       env:
@@ -92,12 +88,15 @@ runs:
         GH_TOKEN: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
         BRANCH: ${{ inputs.branch }}
         DRY_RUN: ${{ inputs.dry_run }}
-        OLD_LOCK: ${{ runner.temp }}/uv.lock.before
+        CONFIG_PATH: ${{ inputs.config }}
+        OLD_CONFIG: ${{ runner.temp }}/pre-commit-config.before
+        COOLDOWN_DAYS: ${{ inputs.cooldown_days }}
         ACTION_PATH: ${{ github.action_path }}
-      run: ${{ github.action_path }}/update_lock.sh
+      run: ${{ github.action_path }}/autoupdate.sh
 
-    # Skipped when the upgrade produced no change, so an unchanged lock file
-    # never touches an existing pull request.
+    # Skipped when the update produced no change, or when the cooldown held
+    # every one of them back, so a run with nothing to adopt never touches an
+    # existing pull request.
     - name: Create or update the pull request
       if: steps.prepare.outputs.changed == 'true'
       uses: $/open-or-update-pr
@@ -105,7 +104,7 @@ runs:
         token: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
         branch: ${{ inputs.branch }}
         base: ${{ inputs.base || github.ref_name }}
-        title: "Automation: Update uv.lock"
+        title: "Automation: Update pre-commit hooks"
         body: ${{ steps.prepare.outputs.body }}
         labels: ${{ inputs.labels }}
         dry_run: ${{ inputs.dry_run }}
