@@ -75,6 +75,23 @@ jobs:
       - name: Run bump-major-version.sh tests
         run: bash .github/scripts/bump-major-version.test.sh
 
+  retrigger-ci:
+    name: Re-trigger CI Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Python tooling
+        uses: $/python/setup
+
+      # The tests stub gh, so no token or network access is needed.
+      - name: Run retrigger-ci tests
+        run: uv run --no-project --with pytest python -m pytest retrigger-ci -q
+
   test-python:
     name: Python Tests
     runs-on: ubuntu-latest

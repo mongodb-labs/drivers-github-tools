@@ -1,0 +1,66 @@
+name: Re-trigger Downstream CI
+description: >-
+  Re-run a downstream repository's CI after a branch it checks out by ref was
+  force-pushed.
+inputs:
+  ci_rerun:
+    description: >-
+      JSON object mapping each downstream owner/name to how its CI re-runs.
+      A string dispatches the downstream test workflows on that ref, which is
+      how a branch with no pull request is re-tested. {"pr": N} re-runs the
+      workflow runs on that pull request, and {"pr": N, "evergreen": true} also
+      comments 'evergreen retry'. A list may mix the forms. Empty re-triggers
+      nothing.
+    required: true
+  app_id:
+    description: >-
+      ID of a GitHub App installed on every downstream repository named in
+      ci_rerun. This action mints the scoped token itself, so callers never
+      handle a cross-repository token.
+    required: true
+  private_key:
+    description: The private key of the GitHub App
+    required: true
+  owner:
+    description: >-
+      Owner the App token is scoped to. Defaults to this repository's owner,
+      which is wrong when the downstream repository has a different one.
+    default: ${{ github.repository_owner }}
+  repositories:
+    description: >-
+      Comma-separated repository names the App token is scoped to, without the
+      owner. Defaults to every repository the App can reach in `owner`.
+    default: ""
+  workflow_pattern:
+    description: >-
+      Matched against downstream workflow paths to choose what a ref dispatches.
+      Scoped by default, or a dispatch would also start release workflows.
+    default: test-python
+  dry_run:
+    description: If 'true', log the calls without making them
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Generate a downstream-scoped app token
+      id: app-token
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      with:
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.private_key }}
+        owner: ${{ inputs.owner }}
+        repositories: ${{ inputs.repositories }}
+        # issues: write covers pull request comments, which are issue comments.
+        permission-actions: write
+        permission-pull-requests: read
+        permission-issues: write
+
+    - name: Re-trigger downstream CI
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        CI_RERUN: ${{ inputs.ci_rerun }}
+        WORKFLOW_PATTERN: ${{ inputs.workflow_pattern }}
+        DRY_RUN: ${{ inputs.dry_run }}
+      run: python3 ${{ github.action_path }}/retrigger_ci.py
