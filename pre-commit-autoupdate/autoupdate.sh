@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Summarize the upgraded lock file, commit it to the bot owned branch, push,
-# and report the summary as step outputs. action.yml gates
+# Summarize the updated hook revisions, commit them to the bot owned branch,
+# push, and report the summary as step outputs. action.yml gates
 # $/open-or-update-pr on `changed`.
 set -euo pipefail
 
@@ -19,34 +19,37 @@ emit_output() {
   } >> "$GITHUB_OUTPUT"
 }
 
-# Compare against the copy taken before the upgrade, the same baseline
-# diff_lock.py uses. `git diff` compares against HEAD, so an already dirty
-# workspace could open a pull request whose body reports no changes.
-if cmp -s "$OLD_LOCK" uv.lock; then
-  echo "No changes detected, skipping PR creation"
+no_changes() {
+  echo "$1"
   echo "changed=false" >> "$GITHUB_OUTPUT"
   exit 0
+}
+
+# Compare against the copy taken before the update. `git diff` compares
+# against HEAD, so an already dirty workspace could open a pull request whose
+# body reports no hook changes.
+if cmp -s "$OLD_CONFIG" "$CONFIG_PATH"; then
+  no_changes "No changes detected, skipping PR creation"
 fi
 
-# diff_lock.py needs tomllib, so Python 3.11+. uv already required here, so
-# let it supply the interpreter rather than the runner's python3.
-UPDATES=$(uv run --no-project --python '>=3.11' python "$ACTION_PATH/diff_lock.py" "$OLD_LOCK" uv.lock)
+# `prek update` rewrites only the rev lines, so a diff of those is the summary.
+# `diff` exits 1 when files differ, so `|| true` keeps pipefail from ending it.
+UPDATES=$({ diff "$OLD_CONFIG" "$CONFIG_PATH" || true; } | sed -n 's/^> *rev: *\(.*\)/- `\1`/p')
 
 if [ -n "$UPDATES" ]; then
-  BODY="## Updated packages"$'\n\n'"${UPDATES}"
+  BODY="## Updated hooks"$'\n\n'"${UPDATES}"
 else
-  BODY="No package version changes. The lock file metadata changed; see the file diff for details."
+  BODY="No hook revision changes. The configuration changed; see the file diff for details."
 fi
 
-# Everything below mutates state, so a dry run skips it and leaves the
-# workspace untouched. The pull request step still reports its decision: it
-# queries the remote for the head branch, needing no local branch or commit.
+# A dry run skips the mutations below. The pull request step still reports its
+# decision: it queries the remote, needing no local branch or commit.
 if [ "$DRY_RUN" != "true" ]; then
   git config user.name "github-actions[bot]"
   git config user.email "github-actions[bot]@users.noreply.github.com"
   git checkout -B "$BRANCH"
-  git add uv.lock
-  git commit -m "Update uv.lock"
+  git add "$CONFIG_PATH"
+  git commit -m "Update pre-commit hooks"
 
   # Credentials come from a helper reading GH_TOKEN from the environment, so
   # the token never lands in .git/config, the remote URL, or an argument. The
