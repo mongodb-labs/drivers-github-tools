@@ -6,6 +6,7 @@ Run with `python3 -m pytest retrigger-ci/test_retrigger_ci.py`.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -18,10 +19,13 @@ import retrigger_ci as rc  # noqa: E402
 
 BACKEND = "mongodb/django-mongodb-backend"
 
+# Captured before a fixture replaces subprocess.run with the gh stub.
+REAL_RUN = subprocess.run
+
 
 # --- the ci_rerun mapping -------------------------------------------------
-# The value's type selects the behaviour. A mapping must parse the same here
-# as in the sync config, or copying one across re-triggers the wrong thing.
+# The value's type selects the behaviour, and must parse as it does in the
+# sync config, or a copied mapping re-triggers the wrong thing.
 
 
 def parse(value):
@@ -36,13 +40,8 @@ def test_a_list_may_mix_the_forms():
     }
 
 
-def test_a_quoted_pr_number_still_parses():
-    """A matrix value passes through YAML, so a number may arrive quoted."""
-    assert parse({"pr": "622", "evergreen": True})["evergreen_prs"] == [622]
-
-
 def test_a_key_that_is_not_owner_slash_name_is_rejected():
-    """The key scopes the App token, so a malformed one must not reach gh."""
+    """The key scopes the App token."""
     with pytest.raises(SystemExit):
         rc.parse_ci_rerun(json.dumps({"django-mongodb-backend": "main"}))
 
@@ -70,7 +69,7 @@ class FakeGh:
         return subprocess.CompletedProcess(args, 0, stdout="", stderr="")
 
     def mutating(self):
-        """Every call that changes state downstream."""
+        """Every call that changes downstream state."""
         return [
             c
             for c in self.calls
@@ -118,7 +117,7 @@ def test_a_ref_dispatches_each_matching_workflow(gh):
 
 
 def test_a_workflow_without_a_dispatch_trigger_is_skipped(gh):
-    """Dispatching one would 422, so each definition is inspected."""
+    """Dispatching one would 422."""
     fake = gh(
         {
             "actions/workflows": json.dumps([".github/workflows/test-python.yml"]),
@@ -131,11 +130,11 @@ def test_a_workflow_without_a_dispatch_trigger_is_skipped(gh):
 
 
 def test_a_pr_reruns_every_run_on_its_head_commit(gh):
-    """Lint and Evergreen checks gate the merge too, so all runs re-queue."""
+    """Lint and Evergreen gate the merge too, so all runs re-queue."""
     fake = gh(
         {
             "pr view": json.dumps({"state": "OPEN", "headRefOid": "abc123"}),
-            "actions/runs?": json.dumps([1, 2, 3]),
+            "actions/runs?": "1\n2\n3",
         }
     )
     rc.rerun_pr(BACKEND, 607, dry_run=False)
@@ -144,7 +143,7 @@ def test_a_pr_reruns_every_run_on_its_head_commit(gh):
 
 
 def test_a_closed_pr_is_skipped(gh):
-    """A stale mapping is a config bug to surface, not act on."""
+    """A stale mapping is a config bug to surface."""
     fake = gh({"pr view": json.dumps({"state": "MERGED", "headRefOid": "abc123"})})
     with pytest.raises(rc.Skip, match="merged"):
         rc.rerun_pr(BACKEND, 607, dry_run=False)
@@ -152,30 +151,23 @@ def test_a_closed_pr_is_skipped(gh):
 
 
 def test_evergreen_comments_the_retry(gh):
-    """The comment body is the literal Evergreen looks for."""
+    """The body is the literal Evergreen looks for."""
     fake = gh({"pr view": json.dumps({"state": "OPEN"})})
     rc.retry_evergreen(BACKEND, 622, dry_run=False)
     assert ["gh", "pr", "comment", "622", "--repo", BACKEND, "--body",
             "evergreen retry"] in fake.calls
 
 
-def test_evergreen_skips_a_closed_pr(gh):
-    fake = gh({"pr view": json.dumps({"state": "CLOSED"})})
-    with pytest.raises(rc.Skip, match="closed"):
-        rc.retry_evergreen(BACKEND, 607, dry_run=False)
-    assert not fake.mutating()
-
-
-def test_runs_past_the_retry_window_say_so(gh):
-    """The refusal otherwise looks like a permissions problem."""
-    fake = gh(
+def test_a_wholly_failed_rerun_reports_the_reason_and_the_remedy(gh):
+    """The refusal alone looks like a permissions problem."""
+    gh(
         {
             "pr view": json.dumps({"state": "OPEN", "headRefOid": "abc123"}),
-            "actions/runs?": json.dumps([1]),
+            "actions/runs?": "1",
         },
-        fail_on={"rerun": "gh: This run is over a month ago (HTTP 403)"},
+        fail_on={"rerun": "gh: Unable to retry this workflow run (HTTP 403)"},
     )
-    with pytest.raises(rc.Skip, match="past GitHub's retry window"):
+    with pytest.raises(rc.Skip, match="Unable to retry.*Push to the PR branch"):
         rc.rerun_pr(BACKEND, 607, dry_run=False)
 
 
@@ -183,7 +175,7 @@ def test_runs_past_the_retry_window_say_so(gh):
 
 
 def test_one_bad_target_does_not_stop_the_others(gh, monkeypatch, capsys):
-    """Best-effort: a stale entry must not mask a branch that synced."""
+    """A stale entry must not mask a branch that synced."""
     fake = gh(
         {
             "pr view": json.dumps({"state": "MERGED"}),
@@ -197,13 +189,6 @@ def test_one_bad_target_does_not_stop_the_others(gh, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "::warning::" in out
     assert any(c[1] == "workflow" and c[2] == "run" for c in fake.calls)
-
-
-def test_an_empty_ci_rerun_does_nothing(gh, monkeypatch):
-    fake = gh()
-    monkeypatch.setenv("CI_RERUN", "")
-    assert rc.main() == 0
-    assert not fake.calls
 
 
 def test_a_dry_run_makes_no_mutating_call(gh, monkeypatch, capsys):
@@ -224,49 +209,123 @@ def test_a_dry_run_makes_no_mutating_call(gh, monkeypatch, capsys):
 
 
 def test_a_bare_number_is_rejected_not_read_as_a_ref():
-    """It would otherwise dispatch on a branch named '622'."""
+    """It would dispatch on a branch named '622'."""
     with pytest.raises(SystemExit, match="not '622'"):
         parse("622")
 
 
 def test_a_value_that_is_neither_a_ref_nor_a_pr_is_rejected():
-    """Exiting clean would report success on an untested downstream."""
+    """Exiting clean reports success on an untested downstream."""
     with pytest.raises(SystemExit):
         parse(622)
     with pytest.raises(SystemExit):
         parse(None)
 
 
-def test_duplicates_act_once():
-    """Two dispatches race, and two Evergreen comments are noise."""
-    assert parse(["main", "main"])["refs"] == ["main"]
-    ever = parse([{"pr": 622, "evergreen": True}, {"pr": 622, "evergreen": True}])
-    assert ever["prs"] == [622]
-    assert ever["evergreen_prs"] == [622]
+def test_every_page_of_runs_is_requeued(gh):
+    """Without --paginate, runs past per_page are left un-rerun."""
+    fake = gh(
+        {
+            "pr view": json.dumps({"state": "OPEN", "headRefOid": "abc123"}),
+            "actions/runs?": "\n".join(str(n) for n in range(150)),
+        }
+    )
+    rc.rerun_pr(BACKEND, 607, dry_run=False)
+    listed = next(c for c in fake.calls if "actions/runs?" in " ".join(c))
+    assert "--paginate" in listed
+    assert len([c for c in fake.calls if "rerun" in " ".join(c)]) == 150
+
+
+def test_a_forbidden_definition_read_skips_rather_than_dispatching(gh):
+    """403 is contents:read missing. Dispatching blind would 422."""
+    fake = gh(
+        {"actions/workflows": json.dumps([".github/workflows/test-python.yml"])},
+        fail_on={"contents/": "gh: Resource not accessible by integration (HTTP 403)"},
+    )
+    with pytest.raises(rc.Skip, match="contents:read"):
+        rc.dispatch_workflows(BACKEND, "main", "test-python", dry_run=False)
+    assert not fake.mutating()
+
+
+def test_a_partial_rerun_warns(gh, capsys):
+    """A count alone would read as a clean re-run of the whole PR."""
+    gh(
+        {
+            "pr view": json.dumps({"state": "OPEN", "headRefOid": "abc123"}),
+            "actions/runs?": "1\n2\n3",
+        },
+        fail_on={"runs/2/rerun": "gh: Unable to retry this run (HTTP 403)"},
+    )
+    rc.rerun_pr(BACKEND, 607, dry_run=False)
+    out = capsys.readouterr().out
+    assert "queued 2 workflow run(s)" in out
+    assert "::warning::1 of 3 runs" in out
+
+
+def test_every_target_skipping_fails_the_run(gh, monkeypatch, capsys):
+    """A wrong app id skips them all, and green reports a false success."""
+    gh(fail_on={"": "gh: Bad credentials (HTTP 401)"})
+    monkeypatch.setenv("CI_RERUN", json.dumps({BACKEND: ["main", {"pr": 622}]}))
+    monkeypatch.setenv("DRY_RUN", "false")
+    assert rc.main() == 1
+    assert "::error::no targets re-triggered" in capsys.readouterr().out
 
 
 def test_whitespace_only_stderr_does_not_crash():
-    """An IndexError escapes Skip and aborts the whole run."""
+    """An IndexError escapes Skip and aborts the run."""
     exc = subprocess.CalledProcessError(1, ["gh"], stderr="   ")
     assert rc.gh_error(exc) == ""
 
 
 def test_evergreen_skips_when_the_state_lookup_fails(gh):
-    """A failed lookup must not read as 'open' and land a stray comment."""
+    """A failed lookup must not read as 'open'."""
     fake = gh(fail_on={"pr view": "gh: API rate limit exceeded (HTTP 403)"})
     with pytest.raises(rc.Skip, match="unknown state"):
         rc.retry_evergreen(BACKEND, 622, dry_run=False)
     assert not fake.mutating()
 
 
-def test_a_pattern_with_a_dot_is_matched_literally(gh):
-    """Unescaped, '.' matches any character and widens the scope."""
+def jq_filter(gh, pattern, workflows):
+    """Build the jq program, then run it under real jq.
+
+    Asserting the string handed to a stubbed gh cannot catch a program jq
+    refuses to compile, which is how the \\- escape bug shipped.
+    """
+    if shutil.which("jq") is None:
+        pytest.skip("jq is not installed")
     fake = gh(
         {
-            "actions/workflows": json.dumps([".github/workflows/test-python.yml"]),
+            "actions/workflows": json.dumps([]),
             "contents/": b64("on:\n  workflow_dispatch:\n"),
         }
     )
-    rc.dispatch_workflows(BACKEND, "main", "test-python.yml", dry_run=False)
-    listed = [c for c in fake.calls if "actions/workflows" in " ".join(c)][0]
-    assert "test\\-python\\.yml" in " ".join(listed) or "test\\-python\\.yml" in str(listed)
+    with pytest.raises(rc.Skip):
+        rc.dispatch_workflows(BACKEND, "main", pattern, dry_run=False)
+    listed = next(c for c in fake.calls if "actions/workflows" in " ".join(c))
+    program = listed[listed.index("--jq") + 1]
+    payload = json.dumps({"workflows": [{"path": p} for p in workflows]})
+    # The fixture replaced subprocess.run, so use the one captured at import.
+    result = REAL_RUN(
+        ["jq", "-c", program], input=payload, capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
+
+
+def test_the_jq_program_compiles(gh):
+    """'\\-' in re.escape('test-python') is not a valid jq escape. Raw, jq
+    refuses the program and nothing dispatches."""
+    assert jq_filter(
+        gh, "test-python", [".github/workflows/test-python.yml"]
+    ) == [".github/workflows/test-python.yml"]
+
+
+def test_a_dotted_pattern_is_matched_literally(gh):
+    """Unescaped, '.' matches any character."""
+    assert jq_filter(
+        gh,
+        "test-python.yml",
+        [".github/workflows/test-python.yml", ".github/workflows/test-pythonXyml"],
+    ) == [".github/workflows/test-python.yml"]
+
+

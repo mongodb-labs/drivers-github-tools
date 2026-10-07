@@ -20,9 +20,8 @@ two cases, named by the value's type:
 
 A list may name several, mixing the two.
 
-Best-effort: a stale PR number or an API error is reported and skipped rather
-than failing the run, so one bad mapping entry cannot mask the branches that
-synced correctly.
+Best-effort: a stale PR number or an API error warns and is skipped, so one
+bad entry cannot mask the rest. Every entry skipping fails the run.
 """
 
 from __future__ import annotations
@@ -33,10 +32,6 @@ import os
 import re
 import subprocess
 import sys
-
-# GitHub refuses to re-run a run older than this. Worth naming: the refusal
-# otherwise looks like a permissions problem.
-RETRY_WINDOW_HINT = "over a month ago"
 
 
 class Skip(Exception):
@@ -65,11 +60,7 @@ def gh_json(args: list[str]):
 
 
 def gh_error(exc: subprocess.CalledProcessError) -> str:
-    """Pull the human-readable part out of gh's stderr.
-
-    gh reports API failures as ``gh: <message> (HTTP <code>)``, sometimes after
-    the raw JSON body, so callers can report why GitHub refused.
-    """
+    """Pull the message out of gh's ``gh: <message> (HTTP <code>)`` stderr."""
     for line in reversed((exc.stderr or "").strip().splitlines()):
         line = line.strip()
         if line.startswith("gh: "):
@@ -79,10 +70,8 @@ def gh_error(exc: subprocess.CalledProcessError) -> str:
 
 
 def parse_ci_rerun(raw: str) -> dict[str, dict]:
-    """Split the mapping into per-target lists of refs, PRs, and Evergreen PRs.
+    """Split the mapping into per-target refs, PRs, and Evergreen PRs.
 
-    Returns ``owner/name`` ->
-    ``{"refs": [...], "prs": [...], "evergreen_prs": [...]}``, where
     ``evergreen_prs`` is the subset of ``prs`` that also want a retry comment.
     """
     try:
@@ -111,28 +100,26 @@ def parse_ci_rerun(raw: str) -> dict[str, dict]:
                 refs.append(item)
             elif isinstance(item, dict):
                 pr = item.get("pr")
-                # A matrix value reaches us through YAML, so a number may
-                # arrive quoted. bool subclasses int, so exclude it or `true`
-                # parses as pull request #1.
+                # YAML may quote the number. bool subclasses int, so
+                # exclude it or `true` parses as PR #1.
                 if isinstance(pr, str) and pr.isdigit():
                     pr = int(pr)
                 if isinstance(pr, bool) or not isinstance(pr, int):
                     raise SystemExit(
                         f"::error::ci_rerun 'pr' must be a number, got {pr!r}"
                     )
-                # The Actions runs always re-run; the flag adds Evergreen.
+                # The runs always re-run; the flag adds Evergreen.
                 prs.append(pr)
                 if item.get("evergreen"):
                     evergreen_prs.append(pr)
             else:
-                # Failing beats exiting clean, which would report success on
-                # an untested downstream.
+                # Exiting clean would report success on an untested
+                # downstream.
                 raise SystemExit(
                     f"::error::ci_rerun: {item!r} is not a git ref or a "
                     '{"pr": N} object'
                 )
-        # A repeated entry would otherwise dispatch twice and post two
-        # identical comments.
+        # A repeat would dispatch twice and comment twice.
         result[target] = {
             "refs": list(dict.fromkeys(refs)),
             "prs": list(dict.fromkeys(prs)),
@@ -153,8 +140,7 @@ def pr_state(target: str, number: int) -> str | None:
 def rerun_pr(target: str, number: int, dry_run: bool) -> None:
     """Re-queue every workflow run on an open PR's head commit.
 
-    Every run, not just the test workflows: the lint and Evergreen checks gate
-    the merge too, so all of them need re-validating.
+    Every run, not just the test ones: lint and Evergreen gate the merge too.
     """
     print(f"Re-running CI on {target}#{number}")
     try:
@@ -169,15 +155,19 @@ def rerun_pr(target: str, number: int, dry_run: bool) -> None:
         head_sha = pr.get("headRefOid") if isinstance(pr, dict) else None
         if not head_sha:
             raise Skip(f"{target}#{number} returned no head commit")
-        runs = gh_json(
+        # --paginate, or runs past per_page are left un-rerun. With --jq it
+        # prints one id per line across pages, not one array.
+        out = run_gh(
             [
                 "api",
+                "--paginate",
                 f"repos/{target}/actions/runs?head_sha={head_sha}&per_page=100",
                 "--jq",
-                "[.workflow_runs[].id]",
+                ".workflow_runs[].id",
             ]
         )
-    except (subprocess.CalledProcessError, json.JSONDecodeError) as exc:
+        runs = [int(line) for line in out.split()]
+    except (subprocess.CalledProcessError, ValueError) as exc:
         raise Skip(f"could not resolve runs for {target}#{number}: {exc}")
 
     if not runs:
@@ -199,27 +189,31 @@ def rerun_pr(target: str, number: int, dry_run: bool) -> None:
 
     if requeued or dry_run:
         print(f"  queued {requeued} workflow run(s)")
+        # A count alone would read as a clean re-run of the whole PR.
+        if reasons:
+            warn(
+                f"{len(runs) - requeued} of {len(runs)} runs on {target}#{number} "
+                f"did not re-queue: {'; '.join(reasons)}"
+            )
         return
+    # Report gh's reason, then the remedy. GitHub does not document the
+    # refusal wording, and the remedy is the same whatever it is.
     detail = f": {reasons[0]}" if reasons else ""
-    if any(RETRY_WINDOW_HINT in r for r in reasons):
-        detail += (
-            f". These runs are past GitHub's retry window; push to the PR branch "
-            f"to get fresh runs on #{number}"
-        )
-    raise Skip(f"no runs re-queued on {target}#{number}{detail}")
+    raise Skip(
+        f"no runs re-queued on {target}#{number}{detail}. "
+        f"Push to the PR branch to get fresh runs on #{number}"
+    )
 
 
 def retry_evergreen(target: str, number: int, dry_run: bool) -> None:
     """Comment ``evergreen retry`` so Evergreen starts a fresh patch.
 
-    Evergreen pins the fork ref as Actions does, so a rebase does not re-run
-    it. A closed or merged PR is skipped: Evergreen runs no patch for one.
+    Evergreen pins the fork ref as Actions does, so a rebase does not re-run it.
     """
     print(f"Retrying Evergreen on {target}#{number}")
     state = pr_state(target, number)
     if state != "OPEN":
-        # Unknown included: a failed lookup skips rather than guessing open,
-        # since a comment on a closed pull request is noise nobody sees.
+        # Unknown included: a comment on a closed PR is noise.
         detail = state.lower() if state else "of unknown state"
         raise Skip(f"{target}#{number} is {detail}; update the ci_rerun mapping")
     try:
@@ -235,18 +229,19 @@ def retry_evergreen(target: str, number: int, dry_run: bool) -> None:
 def dispatch_workflows(target: str, ref: str, pattern: str, dry_run: bool) -> None:
     """Dispatch the downstream test workflows on a branch or tag.
 
-    No PR is needed: workflow_dispatch runs each definition as it exists on
-    ``ref``, which pins the fork branch that definition checks out.
+    workflow_dispatch runs each definition as it exists on ``ref``.
     """
     print(f"Dispatching CI on {target}@{ref}")
+    # json.dumps quotes the regex for the jq string layer. Raw, the "\-" in
+    # re.escape("test-python") is not a valid jq escape and nothing compiles.
+    regex = json.dumps(f"workflows/{re.escape(pattern)}")
     try:
         workflows = gh_json(
             [
                 "api",
                 f"repos/{target}/actions/workflows",
                 "--jq",
-                f"[.workflows[] | select(.path | "
-                f'test("workflows/{re.escape(pattern)}")) | .path]',
+                f"[.workflows[] | select(.path | test({regex})) | .path]",
             ]
         )
     except (subprocess.CalledProcessError, json.JSONDecodeError) as exc:
@@ -255,28 +250,32 @@ def dispatch_workflows(target: str, ref: str, pattern: str, dry_run: bool) -> No
     if not workflows:
         raise Skip(f"no {pattern}* workflows found in {target}")
 
-    # Only a workflow declaring workflow_dispatch can run on a ref; the rest
-    # would 422. Inspect each definition at `ref`.
+    # Only a workflow declaring workflow_dispatch can run on a ref.
     dispatchable = []
     for path in sorted(workflows):
         name = path.split("/")[-1]
         try:
             content = run_gh(["api", f"repos/{target}/contents/{path}?ref={ref}", "--jq", ".content"])
             body = base64.b64decode(content).decode("utf-8", "replace")
-            # Avoid a YAML dependency: the trigger has to appear in the file.
+            # Avoid a YAML dependency: the trigger is in the file or not.
             if "workflow_dispatch" in body:
                 dispatchable.append(path)
             else:
                 print(f"  {name}: skipped, no workflow_dispatch trigger")
         except subprocess.CalledProcessError as exc:
             stderr = exc.stderr or ""
-            # The Actions registry still lists workflows deleted at this
-            # ref. Dispatching one would 422.
+            # The registry still lists workflows deleted at this ref.
             if "404" in stderr or "Not Found" in stderr:
                 print(f"  {name}: skipped, not present on {ref}")
                 continue
-            # Any other error is transient, so attempt the dispatch rather
-            # than skip work over a failed inspection.
+            # A 403 is contents:read missing, so every inspection fails the
+            # same way. Dispatching blind would just 422.
+            if "403" in stderr or "Forbidden" in stderr:
+                raise Skip(
+                    f"could not read {path} in {target}: {gh_error(exc)}. The app "
+                    f"token needs contents:read to inspect workflow definitions"
+                )
+            # Anything else is transient: dispatch rather than skip work.
             dispatchable.append(path)
 
     if not dispatchable:
@@ -315,13 +314,20 @@ def main() -> int:
         print("ci_rerun named no targets, nothing to re-trigger.")
         return 0
 
-    # Best-effort: one stale entry must not stop the rest. Failures warn, so
-    # the run stays green and still says what was skipped.
+    # Best-effort: one stale entry must not stop the rest.
+    succeeded = 0
     for func, *args in actions:
         try:
             func(*args, dry_run)
+            succeeded += 1
         except Skip as exc:
             warn(str(exc))
+
+    # All of them skipping means a broken mapping or token, not a stale
+    # entry. Green there reports success on an untriggered downstream.
+    if not succeeded:
+        print(f"::error::no targets re-triggered; all {len(actions)} were skipped")
+        return 1
     return 0
 
 

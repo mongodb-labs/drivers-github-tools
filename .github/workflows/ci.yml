@@ -88,7 +88,8 @@ jobs:
       - name: Install Python tooling
         uses: $/python/setup
 
-      # The tests stub gh, so no token or network access is needed.
+      # The tests stub gh, so no token or network is needed. They do run the
+      # real jq, preinstalled on the runner.
       - name: Run retrigger-ci tests
         run: uv run --no-project --with pytest python -m pytest retrigger-ci -q
 

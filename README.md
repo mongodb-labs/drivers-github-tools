@@ -462,9 +462,13 @@ only `app_id` and `private_key`. The App must be installed on every downstream
 repository named in the mapping. Set `owner` when the downstream repository
 has a different owner than the calling repository.
 
+The App needs `actions: write`, `contents: read`, `pull-requests: read`, and
+`issues: write` on each downstream repository.
+
 Re-triggering is best-effort: a stale PR number, a closed pull request, or an
 API error is reported as a warning and skipped, so one bad entry cannot mask
-the branches that re-triggered correctly.
+the branches that re-triggered correctly. The step fails only when every entry
+was skipped, which means a broken mapping or token rather than one stale entry.
 
 ```yaml
 - name: Re-trigger backend CI

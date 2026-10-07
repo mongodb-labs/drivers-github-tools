@@ -51,8 +51,10 @@ runs:
         private-key: ${{ inputs.private_key }}
         owner: ${{ inputs.owner }}
         repositories: ${{ inputs.repositories }}
-        # issues: write covers pull request comments, which are issue comments.
+        # contents: read fetches each workflow definition at the ref.
+        # issues: write covers PR comments, which are issue comments.
         permission-actions: write
+        permission-contents: read
         permission-pull-requests: read
         permission-issues: write
 
