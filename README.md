@@ -428,6 +428,61 @@ jobs:
           token: ${{ github.token }}
 ```
 
+### Re-trigger Downstream CI
+
+Use this action when a repository force-pushes a branch that a *different*
+repository checks out by ref. The downstream CI pins the branch at a ref, so a
+rebase changes what it builds against without re-triggering anything.
+
+`ci_rerun` maps each downstream `owner/name` to what consumes the branch.
+There are two cases.
+
+**A merged branch.** No pull request exists, so the downstream `test-python*`
+workflows are dispatched on that branch:
+
+```json
+{"mongodb/django-mongodb-backend": "main"}
+```
+
+**An open pull request.** Its checks gate the merge, so the workflow runs on
+its head commit re-run. Set `evergreen` when the downstream also tests in
+Evergreen: Evergreen pins the branch just as Actions does, so a rebase
+re-triggers neither, and the two need separate calls.
+
+```json
+{"mongodb/django-mongodb-backend": {"pr": 622, "evergreen": true}}
+```
+
+A list may name several, mixing the two: `["main", {"pr": 622}]`. The shape
+matches the mapping the existing sync tooling uses, so one copies across
+verbatim.
+
+The action mints the downstream-scoped App token itself, so the caller passes
+only `app_id` and `private_key`. The App must be installed on every downstream
+repository named in the mapping. Set `owner` when the downstream repository
+has a different owner than the calling repository.
+
+The App needs `actions: write`, `contents: read`, `pull-requests: read`, and
+`issues: write` on each downstream repository.
+
+Re-triggering is best-effort: a stale PR number, a closed pull request, or an
+API error is reported as a warning and skipped, so one bad entry cannot mask
+the branches that re-triggered correctly. The step fails only when every entry
+was skipped, which means a broken mapping or token rather than one stale entry.
+
+```yaml
+- name: Re-trigger backend CI
+  uses: mongodb-labs/drivers-github-tools/retrigger-ci@v3
+  with:
+    ci_rerun: '{"mongodb/django-mongodb-backend": "main"}'
+    owner: mongodb
+    repositories: django-mongodb-backend
+    app_id: ${{ vars.APP_ID }}
+    private_key: ${{ secrets.APP_PRIVATE_KEY }}
+```
+
+Set `dry_run: true` to log the calls without making them.
+
 ## Python Actions
 
 Python helper actions have their own READMEs:
