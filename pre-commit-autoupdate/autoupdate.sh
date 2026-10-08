@@ -32,9 +32,20 @@ if cmp -s "$OLD_CONFIG" "$CONFIG_PATH"; then
   no_changes "No changes detected, skipping PR creation"
 fi
 
-# `prek update` rewrites only the rev lines, so a diff of those is the summary.
-# `diff` exits 1 when files differ, so `|| true` keeps pipefail from ending it.
-UPDATES=$({ diff "$OLD_CONFIG" "$CONFIG_PATH" || true; } | sed -n 's/^> *rev: *\(.*\)/- `\1`/p')
+# `prek update` rewrites only the rev lines, so the two files still line up.
+# Walk both together and report each changed rev with its repo and old value,
+# so the PR body says which hook moved.
+UPDATES=$(awk '
+  NR == FNR {
+    if ($2 == "repo:") repo = $3
+    if ($1 == "rev:") oldrev[FNR] = $2
+    next
+  }
+  {
+    if ($2 == "repo:") repo = $3
+    if ($1 == "rev:" && oldrev[FNR] != $2) print "- `" repo "`: `" oldrev[FNR] "` -> `" $2 "`"
+  }
+' "$OLD_CONFIG" "$CONFIG_PATH")
 
 if [ -n "$UPDATES" ]; then
   BODY="## Updated hooks"$'\n\n'"${UPDATES}"

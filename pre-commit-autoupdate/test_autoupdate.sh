@@ -78,7 +78,7 @@ echo "$BEFORE" > "$TMPDIR/before.yaml"
 echo "$AFTER" > "$TMPDIR/after.yaml"
 run_autoupdate
 check_contains "changed: changed=true" "changed=true" "$(outputs)"
-check_contains "changed: the new rev is in the body" '- `24.2.0`' "$(outputs)"
+check_contains "changed: the new rev is in the body" '- `https://github.com/psf/black`: `24.1.0` -> `24.2.0`' "$(outputs)"
 check "changed: the branch is pushed once" "1" "$(pushes)"
 
 # A dry run reports its decision without touching git.

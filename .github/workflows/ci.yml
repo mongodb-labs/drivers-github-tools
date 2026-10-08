@@ -102,8 +102,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # git and jq only, both on ubuntu-latest. gh and git are stubbed, so
-      # nothing reaches the network.
+      # git, jq, openssl, cmp, and diff only, all on ubuntu-latest. gh and git
+      # are stubbed, so nothing reaches the network.
       - name: Run shared action tests
         run: |
           bash open-or-update-pr/test_decide_pr_action.sh
