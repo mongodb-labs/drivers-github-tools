@@ -35,3 +35,6 @@ action-to-action references use `$/` and don't need updating on a version bump. 
 example `mongodb-labs/drivers-github-tools/...@vX` references in `README.md` and
 `node/release_template.yml` document the tag external consumers pin to, so update
 those manually after a major bump.
+
+After the release is created, announce it in the `#client-libraries` Slack channel: post the new
+version and a summary of what changed, so teams that consume these tools learn about the release.
