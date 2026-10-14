@@ -56,13 +56,14 @@ export PATH="$TMPDIR:$PATH"
 run_script() {
   local pr_list_json="$1"
   local dry_run="$2"
+  local labels="${3-dependencies}"
   echo "$pr_list_json" > "$TMPDIR/pr_list_response.json"
   : > "$TMPDIR/gh_calls.log"
   BRANCH="uv-lock-update" \
   BASE="v4.16" \
   TITLE="Automation: Update uv.lock" \
   BODY="## Updated packages" \
-  LABELS="dependencies" \
+  LABELS="$labels" \
   DRY_RUN="$dry_run" \
     bash "$SCRIPT" > "$TMPDIR/output.log" 2>&1 || true
 }
@@ -70,8 +71,7 @@ run_script() {
 gh_call() { grep "^pr $1" "$TMPDIR/gh_calls.log" || true; }
 mutating_calls() { grep -E '^pr (create|edit)' "$TMPDIR/gh_calls.log" || true; }
 
-# No open PR: create one targeting BASE. The lookup must not filter on base, or
-# a PR a reviewer retargeted is missed and a second PR opens on the branch.
+# No open PR: create one targeting BASE.
 run_script '[]' "false"
 check "no open PR: list finds the branch by head and state alone" \
   "pr list --head uv-lock-update --state open --json number,isCrossRepository --jq map(select(.isCrossRepository == false)) | .[0].number // empty" \
@@ -81,9 +81,8 @@ check "no open PR: a PR is created against the configured base" \
   "$(gh_call create)"
 check "no open PR: nothing is edited" "" "$(gh_call edit)"
 
-# A fork can open a pull request whose head branch has the same name, and gh
-# cannot filter that out for us. Editing it would rewrite a stranger's pull
-# request, so it must be ignored and a fresh one created instead.
+# A fork can open a pull request from a branch of the same name. Editing it
+# would rewrite a stranger's pull request.
 run_script '[{"number": 99, "isCrossRepository": true}]' "false"
 check "fork PR on the same branch name is ignored" "" "$(gh_call edit)"
 check "fork PR on the same branch name: ours is created instead" \
@@ -115,5 +114,17 @@ check_contains "no open PR + dry run: output names the branch and base" \
   "from uv-lock-update into v4.16" "$(cat "$TMPDIR/output.log")"
 check_contains "no open PR + dry run: the body is logged" \
   "## Updated packages" "$(cat "$TMPDIR/output.log")"
+
+# gh rejects an empty --label/--add-label value, so callers that want no labels
+# must produce a command with the flag absent rather than passing "" through.
+run_script '[]' "false" ""
+check "no labels: create omits the flag rather than passing an empty value" \
+  "pr create --title Automation: Update uv.lock --body ## Updated packages --base v4.16 --head uv-lock-update" \
+  "$(gh_call create)"
+
+run_script '[{"number": 42, "isCrossRepository": false}]' "false" ""
+check "no labels: edit omits the flag rather than passing an empty value" \
+  "pr edit 42 --body ## Updated packages" \
+  "$(gh_call edit)"
 
 exit $FAIL
