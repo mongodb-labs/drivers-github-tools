@@ -1,0 +1,108 @@
+name: Pre-commit Autoupdate
+description: >-
+  Runs `prek update` behind a release cooldown and opens or refreshes a single
+  pull request with the hook revision changes. Requires `prek` on PATH.
+
+inputs:
+  app_id:
+    description: GitHub App ID for authenticated pushes. Required unless dry_run is true.
+    default: ""
+  private_key:
+    description: GitHub App private key for authenticated pushes. Required unless dry_run is true.
+    default: ""
+  branch:
+    description: Branch name for the update pull request
+    default: pre-commit-autoupdate
+  base:
+    description: >-
+      Base branch for the update pull request. Defaults to the ref the workflow
+      ran on, which is what actions/checkout checks out when given no ref.
+    default: ""
+  labels:
+    description: Labels to apply to the pull request
+    default: dependencies
+  dry_run:
+    description: If 'true', report intended actions without pushing or modifying pull requests
+    default: "false"
+  config:
+    description: Path to the pre-commit configuration file to update
+    default: .pre-commit-config.yaml
+  cooldown_days:
+    description: >-
+      Passed to `prek update --cooldown-days`. A hook release younger than this
+      is not adopted, so a broken or compromised one has time to be yanked
+      before it lands. A later run picks it up once it ages past the cutoff.
+      Set to 0 to adopt the newest release immediately.
+    default: "7"
+
+runs:
+  using: composite
+  steps:
+    # A dry run only reads, so it needs no app token and works before an App
+    # is configured. Real runs push, so the next step fails fast without one.
+    - name: Generate app token
+      id: app-token
+      if: inputs.dry_run != 'true' && inputs.app_id != '' && inputs.private_key != ''
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      with:
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.private_key }}
+        permission-contents: write
+        permission-pull-requests: write
+
+    - name: Require an app token outside dry runs
+      if: inputs.dry_run != 'true' && (inputs.app_id == '' || inputs.private_key == '')
+      shell: bash
+      run: |
+        echo "::error::app_id and private_key are both required unless dry_run is true. Falling back to github.token is not supported here: pull requests opened with it do not trigger workflow runs, so the pull request would arrive with no CI and look ready to merge."
+        exit 1
+
+    - name: Save current configuration
+      shell: bash
+      env:
+        CONFIG_PATH: ${{ inputs.config }}
+        OLD_CONFIG: ${{ runner.temp }}/pre-commit-config.before
+      run: |
+        if [ ! -f "$CONFIG_PATH" ]; then
+          echo "::error::No $CONFIG_PATH found in ${PWD}. Commit a pre-commit configuration before using this action, or set 'config' to its path."
+          exit 1
+        fi
+        cp "$CONFIG_PATH" "$OLD_CONFIG"
+
+    - name: Update the hook revisions
+      shell: bash
+      env:
+        CONFIG_PATH: ${{ inputs.config }}
+        COOLDOWN_DAYS: ${{ inputs.cooldown_days }}
+        # prek fetches hook repos. Without a token it fetches anonymously,
+        # which hits GitHub rate limits and cannot reach private hook repos.
+        GH_TOKEN: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
+      run: prek update --config "$CONFIG_PATH" --cooldown-days "$COOLDOWN_DAYS"
+
+    - name: Summarize the update
+      id: prepare
+      shell: bash
+      env:
+        # Only a dry run may use github.token. A live run gets the app token
+        # or nothing, so no future edit can reintroduce a fallback that opens
+        # pull requests CI never runs on.
+        GH_TOKEN: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
+        BRANCH: ${{ inputs.branch }}
+        DRY_RUN: ${{ inputs.dry_run }}
+        CONFIG_PATH: ${{ inputs.config }}
+        OLD_CONFIG: ${{ runner.temp }}/pre-commit-config.before
+      run: ${{ github.action_path }}/autoupdate.sh
+
+    # Skipped when nothing changed, so a quiet run never touches an existing
+    # pull request.
+    - name: Create or update the pull request
+      if: steps.prepare.outputs.changed == 'true'
+      uses: $/open-or-update-pr
+      with:
+        token: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
+        branch: ${{ inputs.branch }}
+        base: ${{ inputs.base || github.ref_name }}
+        title: "Automation: Update pre-commit hooks"
+        body: ${{ steps.prepare.outputs.body }}
+        labels: ${{ inputs.labels }}
+        dry_run: ${{ inputs.dry_run }}

@@ -32,9 +32,8 @@ inputs:
 runs:
   using: composite
   steps:
-    # A dry run only reads, so it needs no app token and stays usable before an
-    # App is configured. Real runs push and open pull requests, so they require
-    # one and the next step fails fast when it is missing.
+    # A dry run only reads, so it needs no app token and works before an App
+    # is configured. Real runs push, so the next step fails fast without one.
     - name: Generate app token
       id: app-token
       if: inputs.dry_run != 'true' && inputs.app_id != '' && inputs.private_key != ''
@@ -44,8 +43,6 @@ runs:
         private-key: ${{ inputs.private_key }}
         permission-contents: write
         permission-pull-requests: write
-      env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - name: Require an app token outside dry runs
       if: inputs.dry_run != 'true' && (inputs.app_id == '' || inputs.private_key == '')
@@ -70,11 +67,9 @@ runs:
       env:
         EXCLUDE_NEWER: ${{ inputs.exclude_newer }}
       run: |
-        # UV_EXCLUDE_NEWER outranks the project's uv configuration, and uv
-        # rejects it when empty, so an empty input clears the variable rather
-        # than passing the empty value through. Clearing it also drops any
-        # UV_EXCLUDE_NEWER the caller's workflow exported, so the input alone
-        # decides the cutoff.
+        # uv rejects an empty UV_EXCLUDE_NEWER, so an empty input unsets it
+        # rather than passing "" through. Unsetting also drops any the caller
+        # exported, so this input alone decides the cutoff.
         if [ -n "$EXCLUDE_NEWER" ]; then
           export UV_EXCLUDE_NEWER="$EXCLUDE_NEWER"
         else
@@ -82,21 +77,30 @@ runs:
         fi
         uv lock --upgrade
 
-    - name: Create or update the pull request
+    - name: Commit and summarize the upgrade
+      id: prepare
       shell: bash
       env:
-        # Only a dry run may use github.token. A live run gets the app token or
-        # nothing, so a future edit cannot silently reintroduce a fallback that
-        # opens pull requests CI will never run on.
+        # Only a dry run may use github.token. A live run gets the app token
+        # or nothing, so no future edit can reintroduce a fallback that opens
+        # pull requests CI never runs on.
         GH_TOKEN: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
-        # Target the repository explicitly rather than letting gh infer it from
-        # the git remote, so the pull request lookup cannot depend on how the
-        # caller configured its checkout.
-        GH_REPO: ${{ github.repository }}
         BRANCH: ${{ inputs.branch }}
-        BASE: ${{ inputs.base || github.ref_name }}
-        LABELS: ${{ inputs.labels }}
         DRY_RUN: ${{ inputs.dry_run }}
         OLD_LOCK: ${{ runner.temp }}/uv.lock.before
         ACTION_PATH: ${{ github.action_path }}
       run: ${{ github.action_path }}/update_lock.sh
+
+    # Skipped when nothing changed, so a quiet run never touches an existing
+    # pull request.
+    - name: Create or update the pull request
+      if: steps.prepare.outputs.changed == 'true'
+      uses: $/open-or-update-pr
+      with:
+        token: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
+        branch: ${{ inputs.branch }}
+        base: ${{ inputs.base || github.ref_name }}
+        title: "Automation: Update uv.lock"
+        body: ${{ steps.prepare.outputs.body }}
+        labels: ${{ inputs.labels }}
+        dry_run: ${{ inputs.dry_run }}
