@@ -83,7 +83,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Python tooling
-        uses: ./python/setup
+        uses: $/python/setup
 
       # The tests stub gh, so no token or network is needed. They do run the
       # real jq, preinstalled on the runner.
@@ -103,7 +103,7 @@ jobs:
       # The tests below need uv, which the python/setup action installs. Using it
       # here also exercises the action itself on every run.
       - name: Install Python tooling
-        uses: ./python/setup
+        uses: $/python/setup
 
       - name: Run uv lock update tests
         run: |
