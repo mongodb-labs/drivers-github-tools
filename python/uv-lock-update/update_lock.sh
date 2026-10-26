@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Summarize the upgraded lock file, commit it to the bot owned branch, push,
 # and report the summary as step outputs. action.yml gates
-# $/open-or-update-pr on `changed`.
+# open-or-update-pr on `changed`.
 set -euo pipefail
 
 # Write a step output that may span lines. A random delimiter stops a value

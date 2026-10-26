@@ -78,7 +78,7 @@ runs:
     # pull request.
     - name: Create or update the pull request
       if: steps.prepare.outputs.changed == 'true'
-      uses: $/open-or-update-pr
+      uses: mongodb-labs/drivers-github-tools/open-or-update-pr@v3
       with:
         token: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
         branch: ${{ inputs.branch }}

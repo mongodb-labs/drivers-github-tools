@@ -30,11 +30,8 @@ To cut a release, run the [Release workflow](https://github.com/mongodb-labs/dri
 with the desired `bump` input (`patch`, `minor`, or `major`). Use `dry_run: true` first to preview
 the computed version before pushing anything.
 
-A `major` bump also updates `.github/workflows/version.txt` automatically. Internal
-action-to-action references use `$/` and don't need updating on a version bump. The
-example `mongodb-labs/drivers-github-tools/...@vX` references in `README.md` and
-`node/release_template.yml` document the tag external consumers pin to, so update
-those manually after a major bump.
+A `major` bump also updates `.github/workflows/version.txt` automatically. Update all
+`mongodb-labs/drivers-github-tools/...@vX` references in the repo manually after a major bump.
 
 After the release is created, announce it in the `#client-libraries` Slack channel: post the new
 version and a summary of what changed, so teams that consume these tools learn about the release.

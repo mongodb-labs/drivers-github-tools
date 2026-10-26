@@ -47,7 +47,7 @@ jobs:
           persist-credentials: true
 
       - name: Setup
-        uses: $/setup
+        uses: ./setup
         with:
           aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
           aws_region_name: ${{ vars.AWS_REGION_NAME }}
@@ -71,14 +71,14 @@ jobs:
 
       - name: Bump the major version file
         if: env.MAJOR_BUMPED == 'true'
-        uses: $/bump-version
+        uses: ./bump-version
         with:
           version: ${{ env.NEXT_VERSION }}
           version_bump_script: "bash .github/scripts/bump-major-version.sh"
           push_commit: false
 
       - name: Tag the version
-        uses: $/tag-version
+        uses: ./tag-version
         with:
           version: ${{ env.NEXT_VERSION }}
           tag_template: "v${VERSION}"
@@ -92,7 +92,7 @@ jobs:
 
       - name: Create a new signed v3 tag
         if: env.IS_V3 == 'true' && inputs.dry_run == false
-        uses: $/git-sign
+        uses: ./git-sign
         with:
           command: git tag -a "v3" -f -m "Update tag" -s --local-user=${{ env.GPG_KEY_ID }}
 
