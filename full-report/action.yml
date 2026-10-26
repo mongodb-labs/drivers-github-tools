@@ -36,32 +36,42 @@ runs:
   using: composite
   steps:
     - name: Generate Authorized Publication Report
-      uses: mongodb-labs/drivers-github-tools/authorized-pub@v3
-      with:
-        product_name: ${{ inputs.product_name }}
-        release_version: ${{ inputs.release_version }}
-        filenames: ${{ inputs.dist_filenames }}
-        token: ${{ inputs.token }}
+      shell: bash
+      env:
+        PRODUCT_NAME: ${{ inputs.product_name }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
+        FILENAMES: ${{ inputs.dist_filenames }}
+        TOKEN: ${{ inputs.token }}
+        ACTOR: ${{ github.actor }}
+        RUN_ID: ${{ github.run_id }}
+      run: bash "${{ github.action_path }}/../authorized-pub/authorized-pub.sh"
     - name: Generate SBOM File
       # not all packages have third party dependencies, and so not all packages produce sboms.
       if: ${{ inputs.sbom_in_path }}
-      uses: mongodb-labs/drivers-github-tools/sbom@v3
-      with:
-        sbom_file_name: ${{ inputs.sbom_file_name }}
-        kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
-        sbom_in_path: ${{ inputs.sbom_in_path }}
+      shell: bash
+      env:
+        SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
+        KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
+        SBOM_IN_PATH: ${{ inputs.sbom_in_path }}
+      run: bash "${{ github.action_path }}/../sbom/sbom.sh"
     - name: Generate Sarif File
-      uses: mongodb-labs/drivers-github-tools/code-scanning-export@v3
-      with:
-        ref: ${{ inputs.sarif_report_target_ref || inputs.release_version }}
-        output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
+      shell: bash
+      env:
+        INPUT_REF: ${{ inputs.sarif_report_target_ref || inputs.release_version }}
+        INPUT_OUTPUT-FILE: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
+        INPUT_TOKEN: ${{ github.token }}
+      run: node "${{ github.action_path }}/../code-scanning-export/dist/index.js"
     - name: Generate Compliance Report
-      uses: mongodb-labs/drivers-github-tools/compliance-report@v3
-      with:
-        release_version: ${{ inputs.release_version }}
-        security_report_location: ${{ inputs.security_report_location }}
-        token: ${{ inputs.token }}
-        third_party_dependency_tool: ${{ inputs.third_party_dependency_tool }}
-        sbom_name: ${{ inputs.sbom_file_name }}
-        evergreen_project: ${{ inputs.evergreen_project }}
-        evergreen_commit: ${{ inputs.evergreen_commit }}
+      shell: bash
+      env:
+        TOKEN: ${{ inputs.token }}
+        SBOM_NAME: ${{ inputs.sbom_file_name }}
+        SARIF_NAME: code-scanning-alerts.json
+        AUTHORIZED_PUB_NAME: authorized-publication.txt
+        SECURITY_REPORT_LOCATION: ${{ inputs.security_report_location }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
+        THIRD_PARTY_DEPENDENCY_TOOL: ${{ inputs.third_party_dependency_tool }}
+        EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
+        EVERGREEN_COMMIT: ${{ inputs.evergreen_commit }}
+      working-directory: ${{ github.action_path }}/../compliance-report
+      run: ./generate.sh

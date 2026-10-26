@@ -33,11 +33,12 @@ runs:
         export TAG_MESSAGE=$(echo "${{ inputs.tag_message_template }}" | envsubst)
         echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_ENV
     - name: Tag the version
-      uses: mongodb-labs/drivers-github-tools/git-sign@v3
-      with:
-        command: |-
+      shell: bash
+      env:
+        COMMAND: >-
           git tag -a "${{ env.TAG }}" -m "${{ env.TAG_MESSAGE }}" ${{ env.GPG_PUBLIC_URL != '' && format('-m "PGP-Signing-Key: {0}"', env.GPG_PUBLIC_URL) || '' }} -s --local-user=${{ env.GPG_KEY_ID }}
-        ecr_repository: ${{ inputs.ecr_repository }}
+        ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+      run: bash "${{ github.action_path }}/../git-sign/git-sign.sh"
     - name: Verify the tag
       shell: bash -eux {0}
       run: |

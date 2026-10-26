@@ -18,26 +18,11 @@ runs:
   steps:
     - name: Prepare report
       shell: bash
-      run: |
-          if [ -n "${{ inputs.token }}" ]; then
-            export GH_TOKEN=${{ inputs.token }}
-          fi
-          NAME=$(gh api users/${{ github.actor }} --jq '.name')
-          export REPORT=$S3_ASSETS/authorized-publication.txt
-          export FILENAMES=${{ inputs.filenames }}
-          cat << EOF > $REPORT
-          Product: ${{ inputs.product_name }}
-          Version: ${{ inputs.release_version }}
-          Releaser: $NAME
-          Build Source: GitHub Actions
-          Build Number: ${{ github.run_id }}
-          EOF
-          if [ -z "$FILENAMES" ]; then
-              echo "No published artifacts." >> $REPORT
-          else
-            for filename in ${{ inputs.filenames }}; do
-                SHA=$(shasum -a 256 $filename | awk '{print $1;}')
-                echo "Filename: $filename"  >> $REPORT
-                echo "Shasum: $SHA"  >> $REPORT
-            done
-          fi
+      env:
+        PRODUCT_NAME: ${{ inputs.product_name }}
+        RELEASE_VERSION: ${{ inputs.release_version }}
+        FILENAMES: ${{ inputs.filenames }}
+        TOKEN: ${{ inputs.token }}
+        ACTOR: ${{ github.actor }}
+        RUN_ID: ${{ github.run_id }}
+      run: bash "${{ github.action_path }}/authorized-pub.sh"
