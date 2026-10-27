@@ -14,33 +14,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Get the list of filenames as a space-separated string
-      shell: bash
-      id: filenames
-      run: |
-          set -eux
-          FILENAMES="${{inputs.filenames}}"
-          if [[ $FILENAMES =~ '*' ]]; then
-            FILENAMES=$(ls $FILENAMES | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')
-          fi
-          echo "names=\"$FILENAMES\"" >> $GITHUB_OUTPUT
-    - name: "Create detached signature for file"
+    - name: Create detached signatures and move them to the release directory
       shell: bash
       env:
+        FILENAMES: ${{ inputs.filenames }}
         ECR_REGISTRY: ${{ inputs.ecr_registry }}
         ECR_REPOSITORY: ${{ inputs.ecr_repository }}
-      run: |
-        docker run \
-          --env-file=$GARASIGN_ENVFILE \
-          --rm \
-          -v $(pwd):$(pwd) \
-          -w $(pwd) \
-          ${ECR_REGISTRY}/${ECR_REPOSITORY} \
-          /bin/bash -c 'gpgloader && for filename in ${{ inputs.filenames }}; do gpg --detach-sign --armor --output ${filename}.sig ${filename}; done'
-
-    - name: "Move the signature files to the release directory"
-      shell: bash
-      run: |
-        set -eux
-        export FILENAMES=${{steps.filenames.outputs.names}}
-        for filename in $FILENAMES; do mv ${filename}.sig $RELEASE_ASSETS; done
+      run: bash "${{ github.action_path }}/gpg-sign.sh"

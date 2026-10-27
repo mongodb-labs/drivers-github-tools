@@ -78,12 +78,14 @@ runs:
     # pull request.
     - name: Create or update the pull request
       if: steps.prepare.outputs.changed == 'true'
-      uses: mongodb-labs/drivers-github-tools/open-or-update-pr@v3
-      with:
-        token: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
-        branch: ${{ inputs.branch }}
-        base: ${{ inputs.base || github.ref_name }}
-        title: "Automation: Update uv.lock"
-        body: ${{ steps.prepare.outputs.body }}
-        labels: ${{ inputs.labels }}
-        dry_run: ${{ inputs.dry_run }}
+      shell: bash
+      env:
+        GH_REPO: ${{ github.repository }}
+        GH_TOKEN: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
+        BRANCH: ${{ inputs.branch }}
+        BASE: ${{ inputs.base || github.ref_name }}
+        TITLE: "Automation: Update uv.lock"
+        BODY: ${{ steps.prepare.outputs.body }}
+        LABELS: ${{ inputs.labels }}
+        DRY_RUN: ${{ inputs.dry_run }}
+      run: bash "${{ github.action_path }}/../../open-or-update-pr/decide_pr_action.sh"

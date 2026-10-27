@@ -35,43 +35,20 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Generate Authorized Publication Report
+    - name: Generate the reports
       shell: bash
       env:
         PRODUCT_NAME: ${{ inputs.product_name }}
         RELEASE_VERSION: ${{ inputs.release_version }}
-        FILENAMES: ${{ inputs.dist_filenames }}
-        TOKEN: ${{ inputs.token }}
-        ACTOR: ${{ github.actor }}
-        RUN_ID: ${{ github.run_id }}
-      run: bash "${{ github.action_path }}/../authorized-pub/authorized-pub.sh"
-    - name: Generate SBOM File
-      # not all packages have third party dependencies, and so not all packages produce sboms.
-      if: ${{ inputs.sbom_in_path }}
-      shell: bash
-      env:
-        SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
-        KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
+        SARIF_REPORT_TARGET_REF: ${{ inputs.sarif_report_target_ref }}
         SBOM_IN_PATH: ${{ inputs.sbom_in_path }}
-      run: bash "${{ github.action_path }}/../sbom/sbom.sh"
-    - name: Generate Sarif File
-      shell: bash
-      env:
-        INPUT_REF: ${{ inputs.sarif_report_target_ref || inputs.release_version }}
-        INPUT_OUTPUT-FILE: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
-        INPUT_TOKEN: ${{ github.token }}
-      run: node "${{ github.action_path }}/../code-scanning-export/dist/index.js"
-    - name: Generate Compliance Report
-      shell: bash
-      env:
-        TOKEN: ${{ inputs.token }}
-        SBOM_NAME: ${{ inputs.sbom_file_name }}
-        SARIF_NAME: code-scanning-alerts.json
-        AUTHORIZED_PUB_NAME: authorized-publication.txt
-        SECURITY_REPORT_LOCATION: ${{ inputs.security_report_location }}
-        RELEASE_VERSION: ${{ inputs.release_version }}
+        KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
+        SBOM_FILE_NAME: ${{ inputs.sbom_file_name }}
         THIRD_PARTY_DEPENDENCY_TOOL: ${{ inputs.third_party_dependency_tool }}
         EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
         EVERGREEN_COMMIT: ${{ inputs.evergreen_commit }}
-      working-directory: ${{ github.action_path }}/../compliance-report
-      run: ./generate.sh
+        SECURITY_REPORT_LOCATION: ${{ inputs.security_report_location }}
+        DIST_FILENAMES: ${{ inputs.dist_filenames }}
+        TOKEN: ${{ inputs.token }}
+        CODE_SCANNING_TOKEN: ${{ github.token }}
+      run: bash "${{ github.action_path }}/full-report.sh"

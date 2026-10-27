@@ -24,15 +24,18 @@ runs:
       shell: bash
       run: |
         echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - uses: mongodb-labs/drivers-github-tools/full-report@v3
-      with:
-        product_name: mongo-go-driver
-        release_version: ${{ inputs.version }}
-        sbom_in_path: sbom.json
-        evergreen_project: ${{ inputs.evergreen_project }}
-        evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
-        security_report_location: ${{ env.SECURITY_REPORT_URL }}
-        token: ${{ inputs.token }}
+    - name: Generate the reports
+      shell: bash
+      env:
+        PRODUCT_NAME: mongo-go-driver
+        RELEASE_VERSION: ${{ inputs.version }}
+        SBOM_IN_PATH: sbom.json
+        EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
+        EVERGREEN_COMMIT: ${{ steps.evergreen-commit.outputs.commit }}
+        SECURITY_REPORT_LOCATION: ${{ env.SECURITY_REPORT_URL }}
+        TOKEN: ${{ inputs.token }}
+        CODE_SCANNING_TOKEN: ${{ github.token }}
+      run: bash "${{ github.action_path }}/../../full-report/full-report.sh"
     - name: Publish GitHub Release
       shell: bash -eux {0}
       working-directory: ${{ github.action_path }}
@@ -43,8 +46,9 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: ./publish.sh
     - name: Upload S3 assets
-      uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
-      with:
-          version: ${{ inputs.version }}
-          product_name: mongo-go-driver
-          dry_run: ${{ env.DRY_RUN }}
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        PRODUCT_NAME: mongo-go-driver
+        DRY_RUN: ${{ env.DRY_RUN }}
+      run: bash "${{ github.action_path }}/../../upload-s3-assets/upload-s3-assets.sh"

@@ -55,12 +55,13 @@ runs:
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         rm -rf dist
     - name: Tag version
-      uses: mongodb-labs/drivers-github-tools/tag-version@v3
-      with:
-        version: ${{ env.VERSION }}
-        tag_template: ${{ inputs.tag_template }}
-        tag_message_template: ${{ inputs.tag_message_template }}
-        push_tag: ${{ env.PUSH_CHANGES }}
+      shell: bash
+      env:
+        VERSION: ${{ env.VERSION }}
+        TAG_TEMPLATE: ${{ inputs.tag_template }}
+        TAG_MESSAGE_TEMPLATE: ${{ inputs.tag_message_template }}
+        PUSH_TAG: ${{ env.PUSH_CHANGES }}
+      run: bash "${{ github.action_path }}/../../tag-version/tag-version.sh"
     - name: Handle version output
       shell: bash
       id: version

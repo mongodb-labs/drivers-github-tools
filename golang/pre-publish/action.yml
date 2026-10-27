@@ -28,10 +28,12 @@ runs:
         WORKING_DIRECTORY: "."
         ECR_REPOSITORY: ""
       run: bash "${{ github.action_path }}/../../bump-version/bump-version.sh"
-    - uses: mongodb-labs/drivers-github-tools/tag-version@v3
-      with:
-        version: v${{ inputs.version }}
-        push_tag: ${{ inputs.push_changes }}
+    - name: Tag the version
+      shell: bash
+      env:
+        VERSION: v${{ inputs.version }}
+        PUSH_TAG: ${{ inputs.push_changes }}
+      run: bash "${{ github.action_path }}/../../tag-version/tag-version.sh"
     - name: "Determine branch to merge up to"
       if: ${{ inputs.push_changes == 'true' && ! contains(fromJSON(inputs.ignored_branches), github.ref_name) }}
       id: get-next-branch

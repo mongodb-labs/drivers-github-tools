@@ -14,11 +14,27 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: 'Check out the repository'
-      uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
+    - name: Create temporary app token
+      uses: actions/create-github-app-token@v3
+      id: app-token
       with:
-        app_id: ${{ inputs.app_id }}
-        private_key: ${{ inputs.app_private_key }}
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.app_private_key }}
+        permission-contents: write
+        permission-pull-requests: write
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    - name: Store GitHub token in environment
+      run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+      shell: bash
+    - name: Check out the repository
+      uses: actions/checkout@v7
+      with:
+        token: ${{ env.GH_TOKEN }}
+        fetch-depth: 1
+        submodules: false
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
     - name: Delete the release
       shell: bash

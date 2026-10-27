@@ -18,6 +18,7 @@ fi
 
 export VERSION
 COMMIT_MESSAGE=$(echo "${COMMIT_TEMPLATE}" | envsubst)
+echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> "$GITHUB_ENV"
 
 COMMIT_ARGS=(-a -m "${COMMIT_MESSAGE}")
 if [ -n "${GPG_PUBLIC_URL}" ]; then

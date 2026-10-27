@@ -20,41 +20,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Get the tag
-      shell: bash -eux {0}
-      run: |
-        export VERSION=${{ inputs.version }}
-        export TAG=$(echo "${{ inputs.tag_template }}" | envsubst)
-        echo "TAG=$TAG" >> $GITHUB_ENV
-    - name: Get the tag message
-      shell: bash -eux {0}
-      run: |
-        export VERSION=${{ inputs.version }}
-        export TAG_MESSAGE=$(echo "${{ inputs.tag_message_template }}" | envsubst)
-        echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_ENV
     - name: Tag the version
       shell: bash
       env:
-        COMMAND: >-
-          git tag -a "${{ env.TAG }}" -m "${{ env.TAG_MESSAGE }}" ${{ env.GPG_PUBLIC_URL != '' && format('-m "PGP-Signing-Key: {0}"', env.GPG_PUBLIC_URL) || '' }} -s --local-user=${{ env.GPG_KEY_ID }}
+        VERSION: ${{ inputs.version }}
+        TAG_TEMPLATE: ${{ inputs.tag_template }}
+        TAG_MESSAGE_TEMPLATE: ${{ inputs.tag_message_template }}
+        PUSH_TAG: ${{ inputs.push_tag }}
         ECR_REPOSITORY: ${{ inputs.ecr_repository }}
-      run: bash "${{ github.action_path }}/../git-sign/git-sign.sh"
-    - name: Verify the tag
-      shell: bash -eux {0}
-      run: |
-        if [ -n "$GPG_PUBLIC_URL" ]; then
-          curl $GPG_PUBLIC_URL --output /tmp/signature.pub
-          gpg --import /tmp/signature.pub
-          git verify-tag $TAG
-        else
-          echo "Skipping tag verification"
-        fi
-    - name: Push the tag to the source branch
-      shell: bash -eux {0}
-      run: |
-        if [ ${{ inputs.push_tag }} == "true" ]; then
-          git push origin tag $TAG
-          echo "Pushed tag: ${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "Created tag (no push): ${{ env.TAG }}" >> $GITHUB_STEP_SUMMARY
-        fi
+      run: bash "${{ github.action_path }}/tag-version.sh"

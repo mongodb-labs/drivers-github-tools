@@ -23,6 +23,4 @@ runs:
         RELEASE_VERSION: ${{ inputs.release_version }}
         FILENAMES: ${{ inputs.filenames }}
         TOKEN: ${{ inputs.token }}
-        ACTOR: ${{ github.actor }}
-        RUN_ID: ${{ github.run_id }}
       run: bash "${{ github.action_path }}/authorized-pub.sh"

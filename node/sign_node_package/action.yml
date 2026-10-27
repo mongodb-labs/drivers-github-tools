@@ -42,16 +42,44 @@ runs:
         mkdir ${{ inputs.artifact_directory }}
 
     - name: Load version and package info
-      uses: mongodb-labs/drivers-github-tools/node/get_version_info@v3
-      with:
-        npm_package_name: ${{ inputs.npm_package_name }}
+      shell: bash
+      run: bash "${{ github.action_path }}/../get_version_info/get_version_info.sh"
 
-    - name: Set up drivers-github-tools
-      uses: mongodb-labs/drivers-github-tools/setup@v3
+    - name: Set up drivers-github-tools - configure aws credentials for ECR
+      uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
       with:
-        aws_region_name: ${{ inputs.aws_region_name }}
-        aws_role_arn: ${{ inputs.aws_role_arn }}
-        aws_secret_id: ${{ inputs.aws_secret_id }}
+        role-to-assume: arn:aws:iam::901841024863:role/ecr-role-gha-ro
+        role-session-name: release-session
+        aws-region: us-east-1
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    - name: Set up drivers-github-tools - log in to ECR
+      uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2
+      with:
+        registries: "901841024863"
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    - name: Set up drivers-github-tools - configure aws credentials
+      uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+      with:
+        role-to-assume: ${{ inputs.aws_role_arn }}
+        role-session-name: release-session
+        aws-region: ${{ inputs.aws_region_name }}
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    - name: Set up drivers-github-tools - read secrets from AWS Secrets Manager into environment variables
+      uses: aws-actions/aws-secretsmanager-get-secrets@2297f9a879480a9e3af9b293ed15c70caf8e1c88 # v3.0.2
+      with:
+        secret-ids: |
+          ${{ inputs.aws_secret_id }}
+        parse-json-secrets: true
+      env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+    - name: Set up drivers-github-tools - set up
+      shell: bash
+      run: bash "${{ github.action_path }}/../../setup/setup.sh"
+      env:
+        AWS_SECRET_ID: ${{ inputs.aws_secret_id }}
 
     - name: Determine what files to sign (native packages, works with glob patterns of build artifacts)
       if: ${{ inputs.sign_native == 'true' }}
@@ -70,11 +98,11 @@ runs:
         echo "FILES_TO_SIGN=${FILENAMES}" >> "$GITHUB_ENV"
 
     - name: Create detached signature
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
-      with:
-        filenames: ${{ env.FILES_TO_SIGN }}
+      shell: bash
       env:
+        FILENAMES: ${{ env.FILES_TO_SIGN }}
         RELEASE_ASSETS: ${{ inputs.artifact_directory }}
+      run: bash "${{ github.action_path }}/../../gpg-sign/gpg-sign.sh"
 
     - name: Copy the tarballs to the artifacts directory
       shell: bash

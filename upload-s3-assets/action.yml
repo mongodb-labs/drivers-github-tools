@@ -19,12 +19,11 @@ inputs:
 runs:
   using: composite
   steps:
-    - shell: bash
-      working-directory: ${{ env.S3_ASSETS }}
-      run: |
-        if [ "${{ inputs.dry_run }}" == "false" ]; then
-          for filename in ${{ inputs.filenames }}; do aws s3 cp ${filename} s3://${AWS_BUCKET}/${{ inputs.product_name }}/${{ inputs.version }}/${filename}; done
-        else
-          for filename in ${{ inputs.filenames }}; do echo "Would upload ${filename} to ${{ inputs.product_name }}/${{ inputs.version }}/${filename}"; done
-          echo "Dry run, skipping S3 Upload of ${{ inputs.filenames }}" >> $GITHUB_STEP_SUMMARY
-        fi
+    - name: Upload the assets to S3
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        PRODUCT_NAME: ${{ inputs.product_name }}
+        FILENAMES: ${{ inputs.filenames }}
+        DRY_RUN: ${{ inputs.dry_run }}
+      run: bash "${{ github.action_path }}/upload-s3-assets.sh"

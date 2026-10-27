@@ -70,30 +70,36 @@ runs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         fi
     - name: Create detached signature for dist files
-      uses: mongodb-labs/drivers-github-tools/gpg-sign@v3
-      with:
-        filenames: dist/*
+      shell: bash
+      env:
+        FILENAMES: dist/*
+      run: bash "${{ github.action_path }}/../../gpg-sign/gpg-sign.sh"
     - name: Get the evergreen commit
       id: evergreen-commit
       shell: bash
       run: |
         echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - uses: mongodb-labs/drivers-github-tools/full-report@v3
-      with:
-        product_name: ${{ inputs.product_name }}
-        release_version: ${{ env.VERSION }}
-        sarif_report_target_ref: ${{ env.VERSION }}
-        dist_filenames: dist/*
-        kondukto_sub_project: ${{ inputs.kondukto_sub_project }}
-        sbom_in_path: ${{ inputs.sbom_in_path }}
-        evergreen_project: ${{ inputs.evergreen_project }}
-        evergreen_commit: ${{ steps.evergreen-commit.outputs.commit }}
-        token: ${{ inputs.token }}
-    - uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
-      with:
-          version: ${{ env.VERSION }}
-          product_name: ${{ inputs.product_name }}
-          dry_run: ${{ inputs.dry_run }}
+    - name: Generate the reports
+      shell: bash
+      env:
+        PRODUCT_NAME: ${{ inputs.product_name }}
+        RELEASE_VERSION: ${{ env.VERSION }}
+        SARIF_REPORT_TARGET_REF: ${{ env.VERSION }}
+        DIST_FILENAMES: dist/*
+        KONDUKTO_SUB_PROJECT: ${{ inputs.kondukto_sub_project }}
+        SBOM_IN_PATH: ${{ inputs.sbom_in_path }}
+        EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
+        EVERGREEN_COMMIT: ${{ steps.evergreen-commit.outputs.commit }}
+        TOKEN: ${{ inputs.token }}
+        CODE_SCANNING_TOKEN: ${{ github.token }}
+      run: bash "${{ github.action_path }}/../../full-report/full-report.sh"
+    - name: Upload S3 assets
+      shell: bash
+      env:
+        VERSION: ${{ env.VERSION }}
+        PRODUCT_NAME: ${{ inputs.product_name }}
+        DRY_RUN: ${{ inputs.dry_run }}
+      run: bash "${{ github.action_path }}/../../upload-s3-assets/upload-s3-assets.sh"
     - name: Run GitHub Publish script
       shell: bash
       id: publish-script

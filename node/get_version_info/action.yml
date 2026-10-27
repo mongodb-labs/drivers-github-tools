@@ -11,10 +11,4 @@ runs:
     - name: Get release version and release package file name
       id: get_version
       shell: bash
-      run: |
-        package_version=$(jq --raw-output '.version' package.json)
-        echo "package_version=${package_version}" >> "$GITHUB_ENV"
-        npm pack
-        PACKFILE=$(ls *.tgz)
-        echo "package_file=$PACKFILE" >> "$GITHUB_ENV"
-        echo "commit=$(git rev-parse HEAD)" >> $GITHUB_ENV
+      run: bash "${{ github.action_path }}/get_version_info.sh"
