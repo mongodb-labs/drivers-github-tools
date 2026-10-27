@@ -124,12 +124,16 @@ runs:
         git clean -dffx
         git pull origin ${GITHUB_REF}
     - name: Set following version
-      uses: mongodb-labs/drivers-github-tools/bump-version@v3
       if: inputs.dry_run == 'false'
-      with:
-          version: ${{ steps.publish-script.outputs.following_version }}
-          version_bump_script: ${{ inputs.version_bump_script }}
-          working_directory: ${{ inputs.working_directory }}
+      shell: bash
+      env:
+        VERSION: ${{ steps.publish-script.outputs.following_version }}
+        VERSION_BUMP_SCRIPT: ${{ inputs.version_bump_script }}
+        COMMIT_TEMPLATE: ""
+        PUSH_COMMIT: "true"
+        WORKING_DIRECTORY: ${{ inputs.working_directory }}
+        ECR_REPOSITORY: ""
+      run: bash "${{ github.action_path }}/../../bump-version/bump-version.sh"
     - name: Skip Setting following version
       shell: bash
       if: inputs.dry_run == 'true'

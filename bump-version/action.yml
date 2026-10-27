@@ -23,35 +23,13 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set new version
-      if: ${{ inputs.version_bump_script != '' }}
-      shell: bash -eux {0}
-      working-directory: ${{ inputs.working_directory }}
-      run: |
-        ${{ inputs.version_bump_script }} ${{ inputs.version }}
-    - name: Get the commit message
-      shell: bash -eux {0}
-      run: |
-        export VERSION=${{ inputs.version }}
-        export COMMIT_MESSAGE=$(echo "${{ inputs.commit_template }}" | envsubst)
-        echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
-    - name: Commit the version bump
+    - name: Bump the version
       shell: bash
       env:
-        COMMAND: >-
-          git commit -a -m "${{ env.COMMIT_MESSAGE }}" ${{ env.GPG_PUBLIC_URL != '' && format('-m "PGP-Signing-Key: {0}"', env.GPG_PUBLIC_URL) || '' }} -s --gpg-sign=${{ env.GPG_KEY_ID }}
+        VERSION: ${{ inputs.version }}
+        VERSION_BUMP_SCRIPT: ${{ inputs.version_bump_script }}
+        COMMIT_TEMPLATE: ${{ inputs.commit_template }}
+        PUSH_COMMIT: ${{ inputs.push_commit }}
+        WORKING_DIRECTORY: ${{ inputs.working_directory }}
         ECR_REPOSITORY: ${{ inputs.ecr_repository }}
-      run: bash "${{ github.action_path }}/../git-sign/git-sign.sh"
-    - name: Push the commit to the source branch
-      shell: bash -eux {0}
-      run: |
-        if [ ${{ inputs.push_commit }} == "true" ]; then
-          if git ls-remote --heads --exit-code origin "$(git symbolic-ref --short HEAD)" &>/dev/null; then
-            git push origin
-          else
-            git push --set-upstream origin "$(git symbolic-ref --short HEAD)"
-          fi
-          echo "Pushed version bump: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
-        else
-          echo "Created version bump (no push): ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
-        fi
+      run: bash "${{ github.action_path }}/bump-version.sh"

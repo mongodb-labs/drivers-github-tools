@@ -17,13 +17,17 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: mongodb-labs/drivers-github-tools/bump-version@v3
-      with:
-        version: ${{ inputs.version }}
-        version_bump_script: "go run ${{ github.action_path }}/bump-version.go"
-        commit_template: "BUMP v${VERSION}"
-        # Never push commit, we still need to merge up if a push is requested
-        push_commit: false
+    - name: Bump the version
+      shell: bash
+            # Never push commit, we still need to merge up if a push is requested
+      env:
+        VERSION: ${{ inputs.version }}
+        VERSION_BUMP_SCRIPT: "go run ${{ github.action_path }}/bump-version.go"
+        COMMIT_TEMPLATE: "BUMP v${VERSION}"
+        PUSH_COMMIT: "false"
+        WORKING_DIRECTORY: "."
+        ECR_REPOSITORY: ""
+      run: bash "${{ github.action_path }}/../../bump-version/bump-version.sh"
     - uses: mongodb-labs/drivers-github-tools/tag-version@v3
       with:
         version: v${{ inputs.version }}

@@ -65,13 +65,16 @@ runs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         fi
     - name: Set version
-      uses: mongodb-labs/drivers-github-tools/bump-version@v3
       if: ${{ inputs.version }}
-      with:
-        version: ${{ env.VERSION }}
-        version_bump_script: ${{ inputs.version_bump_script }}
-        working_directory: ${{ inputs.working_directory }}
-        push_commit: ${{ env.PUSH_CHANGES }}
+      shell: bash
+      env:
+        VERSION: ${{ env.VERSION }}
+        VERSION_BUMP_SCRIPT: ${{ inputs.version_bump_script }}
+        COMMIT_TEMPLATE: ""
+        PUSH_COMMIT: ${{ env.PUSH_CHANGES }}
+        WORKING_DIRECTORY: ${{ inputs.working_directory }}
+        ECR_REPOSITORY: ""
+      run: bash "${{ github.action_path }}/../../bump-version/bump-version.sh"
     - name: Tag version
       uses: mongodb-labs/drivers-github-tools/tag-version@v3
       with:

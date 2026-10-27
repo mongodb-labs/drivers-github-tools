@@ -39,10 +39,13 @@ runs:
         RELEASE_WORKFLOW_PATH: ${{ inputs.release_workflow_path }}
         EVERGREEN_PROJECT: ${{ inputs.evergreen_project }}
       run: ${{ github.action_path }}/create-branch.sh
-    - uses: mongodb-labs/drivers-github-tools/bump-version@v3
-      with:
-        version: ${{ inputs.version }}
-        version_bump_script: ${{ inputs.version_bump_script }}
-        commit_template: "Prep branch ${{ inputs.branch_name }}"
-        push_commit: ${{ inputs.push_changes }}
-        ecr_repository: ${{ inputs.ecr_repository }}
+    - name: Bump the version
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        VERSION_BUMP_SCRIPT: ${{ inputs.version_bump_script }}
+        COMMIT_TEMPLATE: "Prep branch ${{ inputs.branch_name }}"
+        PUSH_COMMIT: ${{ inputs.push_changes }}
+        WORKING_DIRECTORY: "."
+        ECR_REPOSITORY: ${{ inputs.ecr_repository }}
+      run: bash "${{ github.action_path }}/../bump-version/bump-version.sh"
