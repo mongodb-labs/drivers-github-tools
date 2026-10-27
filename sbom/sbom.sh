@@ -14,12 +14,12 @@ else
 fi
 echo "Generating SBOM file for ${KONDUKTO_BRANCH}..."
 echo "Updating SBOM file..."
-docker run --platform="linux/amd64" -i --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+docker run --platform="linux/amd64" -i --rm -v ${RELEASE_ASSETS}:/pwd -v "$(pwd)":/repo \
   --env-file=${KONDUKTO_ENVFILE} \
   ${ECR_REGISTRY}/${ECR_REPOSITORY} \
   update --sbom-in /repo/${SBOM_IN_PATH} --sbom-out /pwd/cyclonedx.sbom.json --generate-new-serial-number
 echo "Augumenting SBOM file..."
-docker run --platform="linux/amd64" -i --rm -v ${RELEASE_ASSETS}:/pwd -v $(pwd):/repo \
+docker run --platform="linux/amd64" -i --rm -v ${RELEASE_ASSETS}:/pwd -v "$(pwd)":/repo \
   --env-file=${KONDUKTO_ENVFILE} \
   ${ECR_REGISTRY}/${ECR_REPOSITORY} \
   augment --sbom-in /pwd/cyclonedx.sbom.json --repo ${GITHUB_REPOSITORY} --branch ${KONDUKTO_BRANCH} --sbom-out /pwd/cyclonedx.sbom.json

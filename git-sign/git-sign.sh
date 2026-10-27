@@ -10,7 +10,7 @@ WORKING_DIR=/home/git-checkout
 docker run \
   --env-file=$GARASIGN_ENVFILE \
   --rm \
-  -v $(pwd):$WORKING_DIR \
+  -v "$(pwd)":$WORKING_DIR \
   -w $WORKING_DIR \
   ${ECR_REGISTRY}/${ECR_REPOSITORY} \
   /bin/bash -c "git config --global --add safe.directory $WORKING_DIR && gpgloader && ${COMMAND}"
