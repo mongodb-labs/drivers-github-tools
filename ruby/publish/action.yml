@@ -66,14 +66,11 @@ runs:
         permission-pull-requests: write
       env:
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-    - name: Store GitHub token in environment
-      run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
-      shell: bash
     - name: Check out the repository
       uses: actions/checkout@v7
       with:
         ref: ${{ inputs.ref }}
-        token: ${{ env.GH_TOKEN }}
+        token: ${{ steps.app-token.outputs.token }}
         fetch-depth: 1
         submodules: true
       env:
@@ -146,6 +143,7 @@ runs:
     - name: Generate SSDLC Reports
       shell: bash
       env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
         PRODUCT_NAME: ${{ inputs.product_name }}
         RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
         DIST_FILENAMES: '*.gem'
@@ -181,6 +179,7 @@ runs:
       id: release_exists
       shell: bash
       env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
         RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: |
         if gh release view "v${RELEASE_VERSION}" >/dev/null 2>&1; then
@@ -206,6 +205,7 @@ runs:
       if: steps.release_exists.outputs.exists == 'false'
       shell: bash
       env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
         RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: gh release create v${RELEASE_VERSION} --title ${RELEASE_VERSION} --notes-file release_notes.txt --draft
 
@@ -213,12 +213,14 @@ runs:
       if: steps.release_exists.outputs.exists == 'true'
       shell: bash
       env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
         RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: gh release edit v${RELEASE_VERSION} --notes-file release_notes.txt
 
     - name: Upload release artifacts
       shell: bash
       env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
         RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
         RELEASE_ASSETS: ${{ env.RELEASE_ASSETS }}
       run: gh release upload --clobber v${RELEASE_VERSION} *.gem ${RELEASE_ASSETS}/*.sig
@@ -258,5 +260,6 @@ runs:
       if: inputs.dry_run == 'false'
       shell: bash
       env:
+        GH_TOKEN: ${{ steps.app-token.outputs.token }}
         RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
       run: gh release edit v${RELEASE_VERSION} --draft=false
