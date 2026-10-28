@@ -1,2 +1,9 @@
 # Default ownership
 * @mongodb-labs/dbx-drivers-tools-maintainers
+
+# Language-specific actions are owned by the relevant language team
+/golang/ @mongodb/dbx-go
+/node/ @mongodb/dbx-node-devs
+/python/ @mongodb/dbx-python
+/python-labs/ @mongodb/dbx-python
+/ruby/ @mongodb/dbx-ruby
