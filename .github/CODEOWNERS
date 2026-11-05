@@ -1,2 +1,11 @@
 # Default ownership
 * @mongodb-labs/dbx-drivers-tools-maintainers
+
+# Language-specific actions are owned by the relevant language team, plus the
+# maintainers. All owners for a pattern must be on the same line; otherwise only
+# the last one listed is matched.
+/golang/ @mongodb-labs/dbx-go @mongodb-labs/dbx-drivers-tools-maintainers
+/node/ @mongodb-labs/dbx-node @mongodb-labs/dbx-drivers-tools-maintainers
+/python/ @mongodb-labs/dbx-python @mongodb-labs/dbx-drivers-tools-maintainers
+/python-labs/ @mongodb-labs/dbx-python @mongodb-labs/dbx-drivers-tools-maintainers
+/ruby/ @mongodb-labs/dbx-ruby @mongodb-labs/dbx-drivers-tools-maintainers
