@@ -109,6 +109,9 @@ jobs:
         run: |
           bash python/uv-lock-update/test_diff_lock.sh
           bash python/uv-lock-update/test_update_lock.sh
+          bash python/uv-lock-update/test_align_uv_pin.sh
+          bash python/uv-lock-update/test_dependabot_uv.sh
+          bash python/uv-lock-update/test_install_uv.sh
 
   test-shared-actions:
     name: Shared Action Tests

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Summarize the upgraded lock file, commit it to the bot owned branch, push,
 # and report the summary as step outputs. action.yml gates
-# $/open-or-update-pr on `changed`.
+# $/open-or-update-pr on `changed`. ALIGNED=true adds the rewritten
+# required-version (OLD_PIN to NEW_PIN) to the same commit and pull request.
 set -euo pipefail
 
 # Write a step output that may span lines. A random delimiter stops a value
@@ -22,18 +23,36 @@ emit_output() {
 # Compare against the copy taken before the upgrade, the same baseline
 # diff_lock.py uses. `git diff` compares against HEAD, so an already dirty
 # workspace could open a pull request whose body reports no changes.
-if cmp -s "$OLD_LOCK" uv.lock; then
+# The aligned pin rides in the same pull request: a pin-only week opens one too.
+if cmp -s "$OLD_LOCK" uv.lock && [ "${ALIGNED:-false}" != "true" ]; then
   echo "No changes detected, skipping PR creation"
   echo "changed=false" >> "$GITHUB_OUTPUT"
   exit 0
 fi
 
-# diff_lock.py needs tomllib, so Python 3.11+. uv already required here, so
-# let it supply the interpreter rather than the runner's python3.
-UPDATES=$(uv run --no-project --python '>=3.11' python "$ACTION_PATH/diff_lock.py" "$OLD_LOCK" uv.lock)
+# diff_lock.py needs tomllib, so Python 3.11+. Run it through UV_BIN
+# (Dependabot's uv) when set, else the uv on PATH.
+UV=(uv)
+if [ -n "${UV_BIN:-}" ]; then
+  UV=("$UV_BIN")
+fi
+UPDATES=$("${UV[@]}" run --no-project --python '>=3.11' python "$ACTION_PATH/diff_lock.py" "$OLD_LOCK" uv.lock)
+
+BODY=""
+if [ "${ALIGNED:-false}" = "true" ]; then
+  BODY="## uv version alignment"$'\n\n'
+  BODY+="\`required-version\` updated: \`${OLD_PIN}\` → \`${NEW_PIN}\`, tracking the uv in Dependabot's latest updater image (uv ${DEPENDABOT_UV}); the lock file below was regenerated with that same uv."
+fi
 
 if [ -n "$UPDATES" ]; then
-  BODY="## Updated packages"$'\n\n'"${UPDATES}"
+  [ -n "$BODY" ] && BODY+=$'\n\n'
+  BODY+="## Updated packages"$'\n\n'"${UPDATES}"
+elif [ -n "$BODY" ]; then
+  if cmp -s "$OLD_LOCK" uv.lock; then
+    BODY+=$'\n\n'"No package version changes; the lock file itself is unchanged."
+  else
+    BODY+=$'\n\n'"No package version changes. The lock file metadata changed; see the file diff for details."
+  fi
 else
   BODY="No package version changes. The lock file metadata changed; see the file diff for details."
 fi
@@ -46,7 +65,12 @@ if [ "$DRY_RUN" != "true" ]; then
   git config user.email "github-actions[bot]@users.noreply.github.com"
   git checkout -B "$BRANCH"
   git add uv.lock
-  git commit -m "Update uv.lock"
+  COMMIT_MSG="Update uv.lock"
+  if [ "${ALIGNED:-false}" = "true" ]; then
+    git add pyproject.toml
+    COMMIT_MSG="Update uv.lock and track Dependabot uv ${DEPENDABOT_UV}"
+  fi
+  git commit -m "$COMMIT_MSG"
 
   # Credentials come from a helper reading GH_TOKEN from the environment, so
   # the token never lands in .git/config, the remote URL, or an argument. The
