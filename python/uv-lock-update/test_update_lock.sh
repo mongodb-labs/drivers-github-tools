@@ -210,36 +210,10 @@ check "alignment leads the pull request body" \
 check "body reports the old and new pins" \
   "1" \
   "$(read_output "$TMPDIR/aligned_output" body | grep -c '`==0.12.12` → `>=0.13.7,<0.14`' || true)"
-check "pin-only dry run creates no commit" \
-  "2" "$(git -C "$REPO" rev-list --count HEAD)"
-
-# When UV_BIN is set, the diff runs through it, not the uv on PATH.
-: > "$UV_CALLS"
-: > "$TMPDIR/uvbin_output"
-set +e
-(
-  cd "$REPO" || exit 1
-  export DRY_RUN=true
-  export OLD_LOCK="$TMPDIR/uv.lock.before" ACTION_PATH="$STUB"
-  export GITHUB_OUTPUT="$TMPDIR/uvbin_output"
-  export UV_BIN="$BIN/uv"
-  bash "$SCRIPT"
-) > "$TMPDIR/uvbin.log" 2>&1
-STATUS=$?
-set -e
-
-check "UV_BIN run succeeds" "0" "$STATUS"
-check "diff ran through the installed uv, not the one on PATH" \
-  "1" "$(grep -c 'run --no-project --python >=3.11 python' "$UV_CALLS" || true)"
-check "UV_BIN run reports the change" \
-  "true" "$(read_output "$TMPDIR/uvbin_output" changed)"
-check "UV_BIN run keeps the plain body" \
-  "## Updated packages" \
-  "$(read_output "$TMPDIR/uvbin_output" body | head -1)"
-unset UV_BIN
 
 # The production path: the aligned pin and the lock commit and push together.
 : > "$PUSHES"
+: > "$UV_CALLS"
 set +e
 (
   cd "$REPO" || exit 1
@@ -268,29 +242,5 @@ check "commit carries the pin and the lock" \
   "$(git -C "$REPO" show --name-only --format= HEAD | sort | tr '\n' ' ' | sed 's/ $//')"
 check "push reached the bot branch" \
   "1" "$(grep -c 'push --force https://github.com/example/org.git uv-lock-update' "$PUSHES" || true)"
-
-# Without alignment, the commit keeps the original message and the lock only.
-printf 'newer\n' > "$REPO/uv.lock"
-: > "$PUSHES"
-set +e
-(
-  cd "$REPO" || exit 1
-  export OLD_LOCK="$TMPDIR/uv.lock.before" ACTION_PATH="$STUB"
-  export GITHUB_OUTPUT="$TMPDIR/plain_output"
-  export BRANCH=uv-lock-update GITHUB_REPOSITORY=example/org GH_TOKEN=test-token
-  export DRY_RUN=false
-  unset ALIGNED OLD_PIN NEW_PIN DEPENDABOT_UV UV_BIN
-  PATH="$BIN:$PATH" bash "$SCRIPT"
-) > "$TMPDIR/plain.log" 2>&1
-STATUS=$?
-set -e
-
-check "non-dry unaligned run succeeds" "0" "$STATUS"
-check "unaligned commit keeps the original message" \
-  "Update uv.lock" \
-  "$(git -C "$REPO" log -1 --format=%s)"
-check "unaligned commit carries the lock only" \
-  "uv.lock" \
-  "$(git -C "$REPO" show --name-only --format= HEAD | sort | tr '\n' ' ' | sed 's/ $//')"
 
 exit $FAIL

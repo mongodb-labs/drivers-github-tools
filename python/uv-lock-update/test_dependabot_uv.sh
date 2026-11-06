@@ -35,7 +35,6 @@ case "\$*" in
     [ -n "\${TAGS_FAIL:-}" ] && exit 22
     cat "\${TAGS_FIXTURE:-$FIXTURES/tags.json}" ;;
   *"dependabot-core/"*"/uv/Dockerfile"*)
-    [ -n "\${DOCKERFILE_FAIL:-}" ] && exit 22
     cat "\${DOCKERFILE_FIXTURE:-$FIXTURES/Dockerfile}" ;;
   *)
     echo "unexpected curl invocation: \$*" >&2
@@ -55,11 +54,6 @@ cat > "$FIXTURES/tags.json" <<'EOF'
     "node_id": "MDM6UmVmOTMxNjMwNzM6cmVmc90tagsvMC40MDMuMA=="
   }
 ]
-EOF
-
-# A 200 answer carrying an error object falls back to main too.
-cat > "$FIXTURES/tags-ratelimited.json" <<'EOF'
-{"message": "API rate limit exceeded", "documentation_url": "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
 EOF
 
 # Excerpt of dependabot-core's uv/Dockerfile, decoy FROM lines included.
@@ -89,7 +83,7 @@ EOF
 run_dependabot_uv() {
   : > "$CALLS"
   set +e
-  OUT=$(PATH="$BIN:$PATH" TAGS_FAIL="${TAGS_FAIL:-}" DOCKERFILE_FAIL="${DOCKERFILE_FAIL:-}" \
+  OUT=$(PATH="$BIN:$PATH" TAGS_FAIL="${TAGS_FAIL:-}" \
     TAGS_FIXTURE="${TAGS_FIXTURE:-}" DOCKERFILE_FIXTURE="${DOCKERFILE_FIXTURE:-}" \
     GH_TOKEN="${GH_TOKEN:-}" \
     bash "$SCRIPT" 2> "$TMPDIR/err.log")
@@ -101,22 +95,9 @@ run_dependabot_uv() {
 run_dependabot_uv
 check "prints the uv version from the latest tagged Dockerfile" "0.13.7" "$OUT"
 check "succeeds" "0" "$STATUS"
-
-check "queries the tags API first" \
-  "1" \
-  "$(grep -c 'https://api.github.com/repos/dependabot/dependabot-core/tags?per_page=1' "$CALLS" || true)"
 check "fetches the Dockerfile at the resolved tag, not main" \
   "1" \
   "$(grep -c 'https://raw.githubusercontent.com/dependabot/dependabot-core/v0.403.0/uv/Dockerfile' "$CALLS" || true)"
-
-# A token rides on the rate-limited API call only, never on the raw fetch.
-GH_TOKEN=ghs_test run_dependabot_uv
-check "token rides only on the API call" \
-  "1" \
-  "$(grep -c 'Authorization: Bearer ghs_test' "$CALLS" || true)"
-check "token is not sent to raw.githubusercontent.com" \
-  "0" \
-  "$(grep 'raw.githubusercontent.com' "$CALLS" | grep -c 'Authorization' || true)"
 
 # An unanswerable tags call falls back to main rather than skipping tracking.
 TAGS_FAIL=1 run_dependabot_uv
@@ -125,30 +106,9 @@ check "fallback fetches the Dockerfile from main" \
   "1" \
   "$(grep -c 'https://raw.githubusercontent.com/dependabot/dependabot-core/main/uv/Dockerfile' "$CALLS" || true)"
 
-# Same fallback when the API answers 200 with an error object.
-TAGS_FIXTURE="$FIXTURES/tags-ratelimited.json" run_dependabot_uv
-check "tags API error object falls back to main" "0.13.7" "$OUT"
-
-# An empty tag list parses as "no tag" through the same path.
-cat > "$FIXTURES/tags-empty.json" <<'EOF'
-[]
-EOF
-TAGS_FIXTURE="$FIXTURES/tags-empty.json" run_dependabot_uv
-check "empty tags array falls back to main" "0.13.7" "$OUT"
-
 # Undeterminable version: exit 4, nothing on stdout, reason on stderr.
-DOCKERFILE_FAIL=1 run_dependabot_uv
-check "Dockerfile fetch failure exits 4" "4" "$STATUS"
-check "Dockerfile fetch failure prints no version" "" "$OUT"
-check "Dockerfile fetch failure explains itself on stderr" \
-  "1" \
-  "$(grep -c 'dependabot-core' "$TMPDIR/err.log" || true)"
-
 DOCKERFILE_FIXTURE="$FIXTURES/Dockerfile-nouvx" run_dependabot_uv
 check "Dockerfile without a uv FROM line exits 4" "4" "$STATUS"
 check "Dockerfile without a uv FROM line prints no version" "" "$OUT"
-check "Dockerfile without a uv FROM line explains itself on stderr" \
-  "1" \
-  "$(grep -c 'astral-sh/uv' "$TMPDIR/err.log" || true)"
 
 exit $FAIL

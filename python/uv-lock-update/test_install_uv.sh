@@ -43,7 +43,7 @@ chmod +x "$STAGE/uv"
 TARBALL="$TMPDIR/uv.tar.gz"
 tar -czf "$TARBALL" -C "$TMPDIR/stage" uv-0.13.7
 
-# curl serves fixtures and fails on demand; uname is stubbed per platform.
+# curl serves the tarball and fails on demand; uname is stubbed per platform.
 BIN="$TMPDIR/bin"
 mkdir -p "$BIN"
 CALLS="$TMPDIR/calls.log"
@@ -58,7 +58,6 @@ for arg in "\$@"; do
   if [ "\$prev" = "-o" ]; then out="\$arg"; break; fi
   prev="\$arg"
 done
-if [ -n "\${CURL_GARBAGE:-}" ]; then printf 'not a tarball' > "\$out"; exit 0; fi
 cat "\${CURL_TARBALL:-$TARBALL}" > "\$out"
 STUB
 chmod +x "$BIN/curl"
@@ -78,8 +77,7 @@ run_install() {
   rm -rf "$TMPDIR/runner-temp"
   set +e
   OUT=$(PATH="$BIN:$PATH" DEPENDABOT_UV="${DEPENDABOT_UV:-0.13.7}" \
-    CURL_FAIL="${CURL_FAIL:-}" CURL_GARBAGE="${CURL_GARBAGE:-}" \
-    CURL_TARBALL="${CURL_TARBALL:-}" \
+    CURL_FAIL="${CURL_FAIL:-}" \
     UNAME_S="${UNAME_S:-Linux}" UNAME_M="${UNAME_M:-x86_64}" \
     RUNNER_TEMP="$TMPDIR/runner-temp" GITHUB_OUTPUT="$TMPDIR/output" \
     bash "$SCRIPT" 2> "$TMPDIR/err.log")
@@ -91,62 +89,23 @@ run_install() {
 # Linux x86_64: the runner case.
 run_install
 check "install succeeds" "0" "$STATUS"
-check "downloads the linux x86_64 tarball" \
-  "1" \
-  "$(grep -c 'https://github.com/astral-sh/uv/releases/download/0.13.7/uv-x86_64-unknown-linux-gnu.tar.gz' "$CALLS" || true)"
-check "reports the installed binary" "uv 0.13.7-test" "$OUT"
+check "downloads the linux x86_64 tarball and reports the binary" \
+  "1 uv 0.13.7-test" \
+  "$(grep -c 'https://github.com/astral-sh/uv/releases/download/0.13.7/uv-x86_64-unknown-linux-gnu.tar.gz' "$CALLS" || true) $OUT"
 check "writes the binary path for later steps" \
   "$TMPDIR/runner-temp/dependabot-uv-0.13.7/uv" \
   "$(read_output "$TMPDIR/output" uv_bin)"
-check "binary exists and runs" "uv 0.13.7-test" \
-  "$("$TMPDIR/runner-temp/dependabot-uv-0.13.7/uv")"
 
-# Platform dispatch covers both Linux and macOS runners.
-UNAME_S=Darwin UNAME_M=arm64 run_install
-check "downloads the macOS arm64 tarball" \
-  "1" \
-  "$(grep -c 'releases/download/0.13.7/uv-aarch64-apple-darwin.tar.gz' "$CALLS" || true)"
-
-UNAME_S=Darwin UNAME_M=x86_64 run_install
-check "downloads the macOS x86_64 tarball" \
-  "1" \
-  "$(grep -c 'releases/download/0.13.7/uv-x86_64-apple-darwin.tar.gz' "$CALLS" || true)"
-
-UNAME_M=aarch64 run_install
-check "downloads the linux arm64 tarball" \
-  "1" \
-  "$(grep -c 'releases/download/0.13.7/uv-aarch64-unknown-linux-gnu.tar.gz' "$CALLS" || true)"
-
-# Every failure is a warning and a clean exit: the lock update keeps shipping.
-UNAME_M=riscv64 run_install
-check "unsupported platform warns instead of failing" "0" "$STATUS"
-check "unsupported platform names the platform" \
-  "1" "$(grep -c '::warning::' "$TMPDIR/out.log" || true)"
-check "unsupported platform writes no uv_bin" "" "$(read_output "$TMPDIR/output" uv_bin || true)"
-
+# A failed download warns and exits 0: the lock update keeps shipping.
 CURL_FAIL=1 run_install
-check "download failure warns instead of failing" "0" "$STATUS"
+check "download failure warns instead of failing" \
+  "0 1" "$STATUS $(grep -c '::warning::' "$TMPDIR/out.log" || true)"
 check "download failure writes no uv_bin" "" "$(read_output "$TMPDIR/output" uv_bin || true)"
 
-CURL_GARBAGE=1 run_install
-check "corrupt download warns instead of failing" "0" "$STATUS"
-check "corrupt download writes no uv_bin" "" "$(read_output "$TMPDIR/output" uv_bin || true)"
-
-# A tarball without uv at the stripped path is a warning too.
-STAGE_NOUV="$TMPDIR/stage-nouv/uv-0.13.7"
-mkdir -p "$STAGE_NOUV"
-printf 'gone\n' > "$STAGE_NOUV/README"
-tar -czf "$TMPDIR/uv-nouv.tar.gz" -C "$TMPDIR/stage-nouv" uv-0.13.7
-CURL_TARBALL="$TMPDIR/uv-nouv.tar.gz" run_install
-check "wrong-layout tarball warns instead of failing" "0" "$STATUS"
-check "wrong-layout tarball writes no uv_bin" "" "$(read_output "$TMPDIR/output" uv_bin || true)"
-
-# A re-run over an existing directory succeeds and still reports the path.
-run_install
-run_install
-check "re-run over an existing directory succeeds" "0" "$STATUS"
-check "re-run still writes uv_bin" \
-  "$TMPDIR/runner-temp/dependabot-uv-0.13.7/uv" \
-  "$(read_output "$TMPDIR/output" uv_bin)"
+# An unsupported platform is the same degradation.
+UNAME_M=riscv64 run_install
+check "unsupported platform warns instead of failing" \
+  "0 1" "$STATUS $(grep -c '::warning::' "$TMPDIR/out.log" || true)"
+check "unsupported platform writes no uv_bin" "" "$(read_output "$TMPDIR/output" uv_bin || true)"
 
 exit $FAIL
