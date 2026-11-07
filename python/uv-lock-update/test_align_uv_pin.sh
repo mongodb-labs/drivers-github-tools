@@ -75,13 +75,37 @@ check "pin rewritten in place" \
   "$(grep '^required-version' "$TMPDIR/pyproject.toml")"
 check "comment above the pin survives" "1" "$(grep -c "$OLD_LINE" "$TMPDIR/pyproject.toml" || true)"
 
-# A pin that already accepts Dependabot's uv is left strictly alone.
-write_pyproject '==0.13.7'
+# An unsatisfied minor-range pin — the house style — is matched and rewritten too.
+write_pyproject '>=0.12.12,<0.13'
+run_align "$TMPDIR/pyproject.toml" 0.13.7
+check "unsatisfied range pin succeeds" "0" "$STATUS"
+check "range rewrite reports old and new specifiers" \
+  ">=0.12.12,<0.13 >=0.13.7,<0.14" \
+  "$(read_output "$TMPDIR/github_output" old_pin) $(read_output "$TMPDIR/github_output" new_pin)"
+check "range rewrite is reported as aligned and compatible" \
+  "true true" \
+  "$(read_output "$TMPDIR/github_output" aligned) $(read_output "$TMPDIR/github_output" compatible)"
+check "range pin rewritten in place" \
+  'required-version = ">=0.13.7,<0.14"' \
+  "$(grep '^required-version' "$TMPDIR/pyproject.toml")"
+
+# A minor range that already accepts Dependabot's uv is left strictly alone.
+write_pyproject '>=0.13,<0.14'
 run_align "$TMPDIR/pyproject.toml" 0.13.7
 check "satisfied pin untouched" "0" "$STATUS"
 check "satisfied pin reports no alignment" \
   "false" "$(read_output "$TMPDIR/github_output" aligned)"
 check "satisfied pin reports compatibility, so UV_BIN stays usable" \
+  "true" "$(read_output "$TMPDIR/github_output" compatible)"
+
+# An exact pin is still handled as input too: one that already matches
+# Dependabot's uv is left strictly alone, same as a satisfied range.
+write_pyproject '==0.13.7'
+run_align "$TMPDIR/pyproject.toml" 0.13.7
+check "satisfied exact pin untouched" "0" "$STATUS"
+check "satisfied exact pin reports no alignment" \
+  "false" "$(read_output "$TMPDIR/github_output" aligned)"
+check "satisfied exact pin reports compatibility, so UV_BIN stays usable" \
   "true" "$(read_output "$TMPDIR/github_output" compatible)"
 
 # A repository without a pin gets a notice and no other change.

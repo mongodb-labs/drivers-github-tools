@@ -17,7 +17,7 @@ from packaging.version import InvalidVersion, Version
 
 USAGE = 2
 
-# required-version = "==0.12.12"  # comment
+# required-version = ">=0.12.12,<0.13"  # comment
 # Groups: key, quote, value, tail, line ending (kept for CRLF round-trips).
 PIN_LINE = re.compile(
     r"^(\s*required-version\s*=\s*)(['\"])(.*?)\2([^\r\n]*)(\r?\n?)$"
