@@ -1,5 +1,8 @@
 name: uv Lock Update
-description: Runs `uv lock --upgrade` and opens or refreshes a single pull request with the lock file changes
+description: >-
+  Runs `uv lock --upgrade` and opens or refreshes a single pull request with
+  the lock file changes. Optionally keeps [tool.uv] required-version aligned
+  with the uv version Dependabot's updater image ships.
 inputs:
   app_id:
     description: GitHub App ID for authenticated pushes. Required unless dry_run is true.
@@ -18,6 +21,12 @@ inputs:
   labels:
     description: Labels to apply to the pull request
     default: dependencies
+  track_dependabot_uv:
+    description: >-
+      Keep [tool.uv] required-version compatible with the uv version
+      Dependabot's latest updater image ships, and regenerate the lock file
+      with that same uv. No pin, no effect.
+    default: "false"
   dry_run:
     description: If 'true', report intended actions without pushing or modifying pull requests
     default: "false"
@@ -55,10 +64,60 @@ runs:
         fi
         cp uv.lock "$OLD_LOCK"
 
+    # Gated on the tracking input; every tracking failure degrades to a
+    # warning and a plain lock update, so the weekly pull request keeps shipping.
+    - name: Resolve Dependabot's uv version
+      id: dependabot-uv
+      if: inputs.track_dependabot_uv == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.dry_run == 'true' && github.token || steps.app-token.outputs.token }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        if version=$("$ACTION_PATH/dependabot_uv.sh"); then
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "available=true" >> "$GITHUB_OUTPUT"
+          echo "Dependabot's updater image ships uv $version"
+        else
+          echo "::warning::Could not determine the uv version in Dependabot's updater image; skipping required-version alignment. The lock update continues with the uv on PATH."
+          echo "available=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    # Installing before the align step keeps a failed download from
+    # stranding a rewritten pin the uv on PATH could no longer lock with.
+    - name: Install Dependabot's uv
+      id: install-uv
+      if: inputs.track_dependabot_uv == 'true' && steps.dependabot-uv.outputs.available == 'true'
+      shell: bash
+      env:
+        DEPENDABOT_UV: ${{ steps.dependabot-uv.outputs.version }}
+      run: ${{ github.action_path }}/install_uv.sh
+
+    - name: Align required-version with Dependabot's uv
+      id: align-pin
+      if: inputs.track_dependabot_uv == 'true' && steps.install-uv.outputs.uv_bin != ''
+      shell: bash
+      env:
+        DEPENDABOT_UV: ${{ steps.dependabot-uv.outputs.version }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        # --no-config: the workspace pin may reject the uv on PATH in exactly
+        # the run that rewrites it. Exit 0 is every handled case; 2 fails.
+        uv run --no-project --no-config --python '>=3.11' --with packaging \
+          python "$ACTION_PATH/align_uv_pin.py" pyproject.toml "$DEPENDABOT_UV"
+
     - name: Upgrade the lock file
       shell: bash
+      env:
+        # Dependabot's uv only runs this workspace when the pin accepts it;
+        # anything else falls back to the uv on PATH.
+        UV_BIN: ${{ steps.align-pin.outputs.compatible == 'true' && steps.install-uv.outputs.uv_bin || '' }}
       run: |
-        uv lock --upgrade
+        if [ -n "$UV_BIN" ]; then
+          "$UV_BIN" lock --upgrade
+        else
+          uv lock --upgrade
+        fi
 
     - name: Commit and summarize the upgrade
       id: prepare
@@ -72,6 +131,11 @@ runs:
         DRY_RUN: ${{ inputs.dry_run }}
         OLD_LOCK: ${{ runner.temp }}/uv.lock.before
         ACTION_PATH: ${{ github.action_path }}
+        ALIGNED: ${{ steps.align-pin.outputs.aligned }}
+        OLD_PIN: ${{ steps.align-pin.outputs.old_pin }}
+        NEW_PIN: ${{ steps.align-pin.outputs.new_pin }}
+        DEPENDABOT_UV: ${{ steps.dependabot-uv.outputs.version }}
+        UV_BIN: ${{ steps.align-pin.outputs.compatible == 'true' && steps.install-uv.outputs.uv_bin || '' }}
       run: ${{ github.action_path }}/update_lock.sh
 
     # Skipped when nothing changed, so a quiet run never touches an existing

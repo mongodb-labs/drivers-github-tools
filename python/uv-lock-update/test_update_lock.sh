@@ -134,4 +134,113 @@ for VAR in DRY_RUN OLD_LOCK ACTION_PATH GITHUB_OUTPUT; do
   check "missing $VAR fails the run" "1" "$([ "$STATUS" -ne 0 ] && echo 1 || echo 0)"
 done
 
+# A git stub intercepts push so the non-dry path runs here; the intercepted
+# pushes are logged for assertion.
+BIN="$TMPDIR/bin"
+mkdir -p "$BIN"
+PUSHES="$TMPDIR/pushes.log"
+REAL_GIT="$(command -v git)"
+cat > "$BIN/git" <<STUB
+#!/usr/bin/env bash
+# The first argument that is neither an -c flag nor its value is the subcommand.
+skip_next=0
+for arg in "\$@"; do
+  if [ "\$skip_next" = 1 ]; then skip_next=0; continue; fi
+  case "\$arg" in
+    -c) skip_next=1 ;;
+    *) first="\$arg"; break ;;
+  esac
+done
+if [ "\${first:-}" = push ]; then
+  echo "\$*" >> "$PUSHES"
+  exit 0
+fi
+exec "$REAL_GIT" "\$@"
+STUB
+chmod +x "$BIN/git"
+
+# A committed pyproject.toml whose simulated pin satisfies whatever uv runs
+# this harness; align_uv_pin.py's own rewrites live in test_align_uv_pin.sh.
+cat > "$REPO/pyproject.toml" <<'EOF'
+[tool.uv]
+# Pin the uv binary version across local dev, GitHub Actions, and Evergreen.
+required-version = "==0.12.12"
+EOF
+git -C "$REPO" add pyproject.toml
+git -C "$REPO" commit -qm pin
+sed -i 's/==0.12.12/>=0.9,<99/' "$REPO/pyproject.toml"
+
+# A uv stub for UV_BIN: logs its call and passes the inner python to the
+# real interpreter, so the fake diff_lock.py keeps serving the diff.
+UV_CALLS="$TMPDIR/uv_calls.log"
+cat > "$BIN/uv" <<STUB
+#!/usr/bin/env bash
+echo "uv \$*" >> "$UV_CALLS"
+while [ "\$#" -gt 0 ] && [ "\$1" != python ]; do shift; done
+if [ "\$#" -eq 0 ]; then
+  echo "uv stub: not a python invocation" >&2
+  exit 1
+fi
+shift
+exec "\$(command -v python3)" "\$@"
+STUB
+chmod +x "$BIN/uv"
+
+# A pin-only week still opens its pull request, alignment first in the body.
+printf 'new\n' > "$TMPDIR/uv.lock.matching"
+: > "$TMPDIR/aligned_output"
+set +e
+(
+  cd "$REPO" || exit 1
+  export DRY_RUN=true
+  export OLD_LOCK="$TMPDIR/uv.lock.matching" ACTION_PATH="$STUB"
+  export GITHUB_OUTPUT="$TMPDIR/aligned_output"
+  export ALIGNED=true OLD_PIN='==0.12.12' NEW_PIN='>=0.13.7,<0.14' DEPENDABOT_UV=0.13.7
+  bash "$SCRIPT"
+) > "$TMPDIR/aligned.log" 2>&1
+STATUS=$?
+set -e
+
+check "pin-only change succeeds" "0" "$STATUS"
+check "pin-only change still opens the pull request" \
+  "true" "$(read_output "$TMPDIR/aligned_output" changed)"
+check "alignment leads the pull request body" \
+  "## uv version alignment" \
+  "$(read_output "$TMPDIR/aligned_output" body | head -1)"
+check "body reports the old and new pins" \
+  "1" \
+  "$(read_output "$TMPDIR/aligned_output" body | grep -c '`==0.12.12` → `>=0.13.7,<0.14`' || true)"
+
+# The production path: the aligned pin and the lock commit and push together.
+: > "$PUSHES"
+: > "$UV_CALLS"
+set +e
+(
+  cd "$REPO" || exit 1
+  export OLD_LOCK="$TMPDIR/uv.lock.before" ACTION_PATH="$STUB"
+  export GITHUB_OUTPUT="$TMPDIR/nondry_output"
+  export BRANCH=uv-lock-update GITHUB_REPOSITORY=example/org GH_TOKEN=test-token
+  export ALIGNED=true OLD_PIN='==0.12.12' NEW_PIN='>=0.13.7,<0.14' DEPENDABOT_UV=0.13.7
+  export DRY_RUN=false
+  # Production hands over the installed uv whenever it aligned the pin.
+  export UV_BIN="$BIN/uv"
+  PATH="$BIN:$PATH" bash "$SCRIPT"
+) > "$TMPDIR/nondry.log" 2>&1
+STATUS=$?
+set -e
+
+check "non-dry aligned run succeeds" "0" "$STATUS"
+check "non-dry aligned run reports the change" \
+  "true" "$(read_output "$TMPDIR/nondry_output" changed)"
+check "aligned commit lands on the bot branch" \
+  "3" "$(git -C "$REPO" rev-list --count HEAD)"
+check "commit message names the tracked uv" \
+  "Update uv.lock and track Dependabot uv 0.13.7" \
+  "$(git -C "$REPO" log -1 --format=%s)"
+check "commit carries the pin and the lock" \
+  "pyproject.toml uv.lock" \
+  "$(git -C "$REPO" show --name-only --format= HEAD | sort | tr '\n' ' ' | sed 's/ $//')"
+check "push reached the bot branch" \
+  "1" "$(grep -c 'push --force https://github.com/example/org.git uv-lock-update' "$PUSHES" || true)"
+
 exit $FAIL
