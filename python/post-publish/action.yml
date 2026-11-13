@@ -55,7 +55,9 @@ runs:
       # point hatch at the uv the setup action installed (which honors the
       # pin). Without an installed uv this is a no-op and hatch keeps its
       # bundled one.
-      run: |
+      # GITHUB_ENV is the only way a composite action exports to later steps.
+      # The value is a single resolved path, so it cannot inject extra lines.
+      run: | # zizmor: ignore[github-env]
         if command -v uv >/dev/null; then
           echo "HATCH_ENV_TYPE_VIRTUAL_UV_PATH=$(command -v uv)" >> "$GITHUB_ENV"
         fi
