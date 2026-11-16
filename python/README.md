@@ -110,6 +110,11 @@ post-publish:
       dry_run: ${{ inputs.dry_run }}
 ```
 
+Projects that pin uv with `[tool.uv] required-version` must run the setup action
+(or otherwise put a compliant `uv` on `PATH`) before this action. Hatch bundles
+its own uv and uses it to create its environments, and a bundled uv that violates
+the pin makes the version bump fail.
+
 ## uv Lock Update
 
 This action runs `uv lock --upgrade` and opens a pull request with the resulting
