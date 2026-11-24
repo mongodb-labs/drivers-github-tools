@@ -64,8 +64,8 @@ signing `dist` files and uploading report assets to S3.
 It will also push the following (dev) version to the source branch.
 It will create a draft GitHub release with auto-generated release notes and
 attach the signature files.
-Set `publish_release` to `"true"` to publish that draft once the assets are
-attached.
+The draft is published once the assets are attached; set `publish_release` to
+`"false"` to leave it as a draft.
 If `dry_run` is set, nothing will be pushed.
 
 The jobs should look something like:
@@ -111,7 +111,6 @@ post-publish:
       product_name: winkerberos
       token: ${{ github.token }}
       dry_run: ${{ inputs.dry_run }}
-      publish_release: "true"
 ```
 
 Projects that pin uv with `[tool.uv] required-version` must run the setup action

@@ -40,8 +40,8 @@ inputs:
     description: >-
       Publish the draft GitHub Release once its assets are attached. Publishing
       is the final step because immutable releases lock the tag and assets once
-      published.
-    default: "false"
+      published. Set to "false" to leave the release as a draft.
+    default: "true"
 
 runs:
   using: composite
