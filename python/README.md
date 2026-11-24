@@ -62,7 +62,10 @@ To be run after separately publishing the [Python package](https://github.com/py
 Handles follow-up tasks related to publishing Python packages, including
 signing `dist` files and uploading report assets to S3.
 It will also push the following (dev) version to the source branch.
-It will create a draft GitHub release and attach the signature files.
+It will create a draft GitHub release with auto-generated release notes and
+attach the signature files.
+The draft is published once the assets are attached; set `publish_release` to
+`"false"` to leave it as a draft.
 If `dry_run` is set, nothing will be pushed.
 
 The jobs should look something like:

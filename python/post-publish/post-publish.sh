@@ -16,8 +16,12 @@ if [ "$DRY_RUN" == "false" ]; then
     echo "Creating draft release with attached files"
     TITLE="${PRODUCT_NAME} ${VERSION}"
     TAG=$(echo "${TAG_TEMPLATE}" | envsubst)
-    gh release create ${TAG} --draft --verify-tag --title "${TITLE}" --notes "Community notes: <link>"
+    gh release create ${TAG} --draft --verify-tag --title "${TITLE}" --generate-notes
     gh release upload ${TAG} $RELEASE_ASSETS/*.*
+    if [ "$PUBLISH_RELEASE" == "true" ]; then
+        echo "Publishing release"
+        gh release edit ${TAG} --draft=false
+    fi
     JSON="url,tagName,assets,author,createdAt"
     JQ='.url,.tagName,.author.login,.createdAt,.assets[].name'
     echo "\## $TITLE" >> $GITHUB_STEP_SUMMARY
