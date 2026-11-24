@@ -36,6 +36,12 @@ inputs:
   dry_run:
     description: Whether this is a dry run
     required: true
+  publish_release:
+    description: >-
+      Publish the draft GitHub Release once its assets are attached. Publishing
+      is the final step because immutable releases lock the tag and assets once
+      published.
+    default: "false"
 
 runs:
   using: composite
@@ -118,6 +124,7 @@ runs:
         PRODUCT_NAME: ${{ inputs.product_name }}
         DRY_RUN: ${{ inputs.dry_run }}
         FOLLOWING_VERSION: ${{ inputs.following_version }}
+        PUBLISH_RELEASE: ${{ inputs.publish_release }}
     - uses: actions/attest-build-provenance@v4
       if: inputs.dry_run == 'false'
       with:
